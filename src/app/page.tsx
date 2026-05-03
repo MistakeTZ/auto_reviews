@@ -1,63 +1,83 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { MessageCircle, Star, Zap, ShieldCheck, Globe } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+
+export default function LandingPage() {
+  const isAuthenticated = useAppStore(state => state.isAuthenticated);
+  const router = useRouter();
+  const { t, language, setLanguage } = useTranslation();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ru' : 'en');
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">AutoReviews</h1>
+        <div className="space-x-4 flex items-center">
+          <button onClick={toggleLanguage} className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mr-2">
+            <Globe size={20} className="text-gray-600 dark:text-gray-300" />
+          </button>
+          <Link href="/login" className="text-gray-600 dark:text-gray-300 hover:text-purple-600 font-medium">{t('common.login')}</Link>
+          <Link href="/register">
+            <Button>{t('common.signUp')}</Button>
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 max-w-3xl">
+          {t('landing.title').split('Wildberries')[0]}<span className="text-purple-600">Wildberries</span>{t('landing.title').split('Wildberries')[1]}
+        </h2>
+        <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl">
+          {t('landing.subtitle')}
+        </p>
+
+        <div className="flex space-x-4 mb-20">
+          <Link href="/register">
+            <Button className="px-8 py-4 text-lg">{t('landing.getStarted')}</Button>
+          </Link>
+          <Link href="/demo">
+            <Button variant="outline" className="px-8 py-4 text-lg">{t('landing.viewDemo')}</Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full text-left">
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 text-purple-600"><Zap size={32} /></div>
+              <h3 className="text-xl font-bold mb-2">{t('landing.feature1Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{t('landing.feature1Desc')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 text-purple-600"><Star size={32} /></div>
+              <h3 className="text-xl font-bold mb-2">{t('landing.feature2Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{t('landing.feature2Desc')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 text-purple-600"><ShieldCheck size={32} /></div>
+              <h3 className="text-xl font-bold mb-2">{t('landing.feature3Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{t('landing.feature3Desc')}</p>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

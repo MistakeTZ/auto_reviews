@@ -1,0 +1,59 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
+
+class UserBase(BaseModel):
+    email: EmailStr
+    name: str
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    id: int
+    wb_api_token: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class RuleBase(BaseModel):
+    name: str
+    target: str
+    nm_id: Optional[str] = None
+    condition_rating_operator: str
+    condition_rating: Optional[int] = None
+    condition_keyword: Optional[str] = None
+    action_text: str
+
+class RuleCreate(RuleBase):
+    pass
+
+class Rule(RuleBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+class ReviewBase(BaseModel):
+    wb_review_id: str
+    nm_id: str
+    product_name: str
+    rating: int
+    text: str
+    date: str
+    status: str
+    auto_answer_text: Optional[str] = None
+
+class ReviewCreate(ReviewBase):
+    pass
+
+class Review(ReviewBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
