@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
 :root {
+  /* Core Backgrounds */
   --background: #ffffff;
-  --foreground: #171717;
-}
+  --foreground: #0f172a;
+  /* slate-900 */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand Colors (Modern Purple) */
+  --primary: #7c3aed;
+  /* violet-600 */
+  --primary-foreground: #ffffff;
+
+  /* Surface Elements (Cards, Panels) */
+  --surface: #f8fafc;
+  /* slate-50 */
+  --surface-foreground: #334155;
+  /* slate-700 */
+
+  /* UI Elements */
+  --border: #e2e8f0;
+  /* slate-200 */
+  --input: #f1f5f9;
+  /* slate-100 */
+  --ring: #7c3aed;
+
+  /* Global Border Radius */
+  --radius: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617;
+    /* slate-950 */
+    --foreground: #f8fafc;
+    /* slate-50 */
+
+    --primary: #8b5cf6;
+    /* violet-500 */
+    --primary-foreground: #ffffff;
+
+    --surface: #0f172a;
+    /* slate-900 */
+    --surface-foreground: #cbd5e1;
+    /* slate-300 */
+
+    --border: #1e293b;
+    /* slate-800 */
+    --input: #0f172a;
+    --ring: #8b5cf6;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Map variables to Tailwind's utility classes */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+
+  /* Set default border color for all elements */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    /* Improve text rendering on modern screens */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Custom text selection to match brand */
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
 }

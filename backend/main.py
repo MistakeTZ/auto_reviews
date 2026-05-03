@@ -6,7 +6,7 @@ from .routers import auth, rules, reviews, settings, products
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Wildberries AutoReviews API")
+app = FastAPI(title="Wildberries ReviewAI API")
 
 app.add_middleware(
     CORSMiddleware,

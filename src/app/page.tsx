@@ -37,7 +37,7 @@ export default function LandingPage() {
               <MessageCircle size={20} className="text-white" />
             </div>
             <h1 className="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
-              AutoReviews
+              ReviewAI
             </h1>
           </div>
           <div className="flex items-center space-x-3 sm:space-x-6">
@@ -271,7 +271,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-white flex items-center justify-center">
               <MessageCircle size={16} className="text-white dark:text-slate-900" />
             </div>
-            <span className="font-bold text-slate-900 dark:text-white tracking-tight">AutoReviews</span>
+            <span className="font-bold text-slate-900 dark:text-white tracking-tight">ReviewAI</span>
           </div>
           <p className="text-sm font-medium text-slate-500">{t('landing.footerRights')}</p>
         </div>

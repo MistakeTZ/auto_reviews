@@ -7,23 +7,23 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "AutoReviews | Smart Wildberries Automation",
-    template: "%s | AutoReviews"
+    default: "ReviewAI | Smart Wildberries Automation",
+    template: "%s | ReviewAI"
   },
   description: "Automate your Wildberries review responses using AI. Boost your seller rating, save time, and increase sales with smart rule-based auto-replies.",
   keywords: ["wildberries", "wb", "reviews", "automation", "ai replies", "seller rating", "autoresponder"],
-  authors: [{ name: "AutoReviews Team" }],
+  authors: [{ name: "ReviewAI Team" }],
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://autoreviews.app",
-    title: "AutoReviews - Smart Wildberries Review Automation",
+    title: "ReviewAI - Smart Wildberries Review Automation",
     description: "Automate your Wildberries review responses using AI. Boost your seller rating and save hours of manual work.",
-    siteName: "AutoReviews",
+    siteName: "ReviewAI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AutoReviews - Smart Wildberries Review Automation",
+    title: "ReviewAI - Smart Wildberries Review Automation",
     description: "Automate your Wildberries review responses using AI. Boost your seller rating and save hours of manual work.",
   },
 };
