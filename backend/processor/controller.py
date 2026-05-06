@@ -6,14 +6,14 @@ from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from chat_processor import ChatProcesor
-from gpt import AsyncOpenAIClient
+from .chat_processor import ChatProcessor
+from .gpt import AsyncOpenAIClient
 
 
 class MainController:
     def __init__(
         self,
-        processor: ChatProcesor,
+        processor: ChatProcessor,
         gpt_client: AsyncOpenAIClient,
         poll_interval: int = 30,
         use_gpt_for_feedbacks: bool = True,
@@ -25,20 +25,8 @@ class MainController:
 
         # Runtime deduplication to avoid repeated replies while process is alive.
         self._processed_chat_signatures: set[str] = set()
-
-        _examples_path = Path(__file__).parent / "questions_short.json"
-        try:
-            with _examples_path.open(encoding="utf-8") as _f:
-                self._question_examples: List[Dict] = json.load(_f)
-        except Exception:
-            self._question_examples = []
-
-        _feedback_examples_path = Path(__file__).parent / "feedbacks_short.json"
-        try:
-            with _feedback_examples_path.open(encoding="utf-8") as _f:
-                self._feedback_examples: List[Dict] = json.load(_f)
-        except Exception:
-            self._feedback_examples = []
+        self._question_examples: List[Dict] = []
+        self._feedback_examples: List[Dict] = []
 
     async def run(self):
         while True:
@@ -52,7 +40,7 @@ class MainController:
     async def poll_once(self):
         await asyncio.gather(
             # self._handle_chats(),
-            self._handle_questions(),
+            # self._handle_questions(),
             self._handle_feedbacks(),
         )
 
@@ -472,7 +460,7 @@ class MainController:
 
 
 def build_controller(
-    processor: ChatProcesor,
+    processor: ChatProcessor,
     gpt_client: AsyncOpenAIClient,
     poll_interval: int = 30,
     use_gpt_for_feedbacks: bool = True,

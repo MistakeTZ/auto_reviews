@@ -28,6 +28,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  controller:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "-m", "backend.run_controller"]
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/autoreviews
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
