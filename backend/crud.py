@@ -52,6 +52,26 @@ def create_review(db: Session, review: schemas.ReviewCreate, user_id: int):
     db.refresh(db_review)
     return db_review
 
+def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
+    db_review = db.query(models.Review).filter(
+        models.Review.wb_review_id == review_data.wb_review_id,
+        models.Review.user_id == user_id
+    ).first()
+    
+    if db_review:
+        db_review.text = review_data.text
+        db_review.rating = review_data.rating
+        db_review.status = review_data.status
+        if review_data.auto_answer_text:
+            db_review.auto_answer_text = review_data.auto_answer_text
+    else:
+        db_review = models.Review(**review_data.model_dump(), user_id=user_id)
+        db.add(db_review)
+        
+    db.commit()
+    db.refresh(db_review)
+    return db_review
+
 def update_review_status(db: Session, review_id: int, user_id: int, status: str, auto_answer_text: str = None):
     db_review = db.query(models.Review).filter(models.Review.id == review_id, models.Review.user_id == user_id).first()
     if db_review:

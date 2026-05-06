@@ -1,0 +1,485 @@
+import asyncio
+import json
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
+
+from chat_processor import ChatProcesor
+from gpt import AsyncOpenAIClient
+
+
+class MainController:
+    def __init__(
+        self,
+        processor: ChatProcesor,
+        gpt_client: AsyncOpenAIClient,
+        poll_interval: int = 30,
+        use_gpt_for_feedbacks: bool = True,
+    ):
+        self.processor = processor
+        self.gpt = gpt_client
+        self.poll_interval = poll_interval
+        self.use_gpt_for_feedbacks = use_gpt_for_feedbacks
+
+        # Runtime deduplication to avoid repeated replies while process is alive.
+        self._processed_chat_signatures: set[str] = set()
+
+        _examples_path = Path(__file__).parent / "questions_short.json"
+        try:
+            with _examples_path.open(encoding="utf-8") as _f:
+                self._question_examples: List[Dict] = json.load(_f)
+        except Exception:
+            self._question_examples = []
+
+        _feedback_examples_path = Path(__file__).parent / "feedbacks_short.json"
+        try:
+            with _feedback_examples_path.open(encoding="utf-8") as _f:
+                self._feedback_examples: List[Dict] = json.load(_f)
+        except Exception:
+            self._feedback_examples = []
+
+    async def run(self):
+        while True:
+            try:
+                await self.poll_once()
+            except Exception as exc:
+                logger.exception("Poll error: %s", exc)
+
+            await asyncio.sleep(self.poll_interval)
+
+    async def poll_once(self):
+        await asyncio.gather(
+            # self._handle_chats(),
+            self._handle_questions(),
+            self._handle_feedbacks(),
+        )
+
+    async def _handle_chats(self):
+        chats = await self.processor.get_chat_messages(take=50)
+        for chat in chats:
+            chat_id = str(chat.get("chatID", ""))
+            reply_sign = chat.get("replySign")
+            if not chat_id or not reply_sign:
+                continue
+
+            messages = await self.processor.get_chat_history(chat_id=chat_id, take=30)
+            if not messages:
+                continue
+
+            normalized = self._normalize_messages(messages)
+            if not normalized:
+                continue
+
+            pending_client_message = self._get_pending_client_message(normalized)
+            if pending_client_message is None:
+                continue
+
+            signature = f"{chat_id}:{pending_client_message['id']}:{pending_client_message['timestamp']}"
+            if signature in self._processed_chat_signatures:
+                continue
+
+            gpt_payload = await self._decide_chat_reply(chat, normalized)
+            if not gpt_payload.get("is_send"):
+                self._processed_chat_signatures.add(signature)
+                continue
+
+            answer = str(gpt_payload.get("answer", "")).strip()
+            if not answer:
+                self._processed_chat_signatures.add(signature)
+                continue
+
+            response = await self.processor.send_message(
+                reply_sign=reply_sign, text=answer
+            )
+            if self._is_success_response(response):
+                self._processed_chat_signatures.add(signature)
+                logger.info("[chat] sent answer for chat_id=%s", chat_id)
+            else:
+                logger.warning(
+                    "[chat] failed to send answer for chat_id=%s: %s", chat_id, response
+                )
+
+    async def _handle_questions(self):
+        count = await self.processor.get_count_unanswered_questions()
+        if count == 0:
+            logger.debug("[questions] no unanswered questions, skipping")
+            return
+
+        logger.info("[questions] %d unanswered question(s) found", count)
+        questions = await self.processor.get_questions(is_answered=False, take=50)
+        for question in questions:
+            question_id = str(question.get("id", ""))
+
+            result = await self._build_question_answer(question)
+            text = result.get("text", "")
+            state = result.get("state", "none")
+            if not text.strip():
+                logger.warning(
+                    "[questions] empty answer for question_id=%s, skipping", question_id
+                )
+                continue
+
+            response = await self.processor.answer_question(
+                question_id=question_id, text=text, state=state
+            )
+            if self._is_success_response(response):
+                logger.info(
+                    "[questions] answered question_id=%s state=%s", question_id, state
+                )
+            else:
+                logger.warning(
+                    "[questions] failed question_id=%s: %s", question_id, response
+                )
+
+    async def _handle_feedbacks(self):
+        count = await self.processor.get_count_unanswered_feedbacks()
+        if count == 0:
+            logger.debug("[feedbacks] no unanswered feedbacks, skipping answer step")
+        else:
+            logger.info("[feedbacks] %d unanswered feedback(s) found", count)
+            feedbacks = await self.processor.get_feedbacks(is_answered=False, take=50)
+            for feedback in feedbacks:
+                feedback_id = str(feedback.get("id", ""))
+                if not feedback_id:
+                    continue
+
+                text = await self._build_feedback_answer(feedback)
+                if not text.strip():
+                    logger.warning(
+                        "[feedbacks] empty answer for feedback_id=%s, skipping", feedback_id
+                    )
+                    continue
+
+                response = await self.processor.answer_feedback(
+                    feedback_id=feedback_id, text=text
+                )
+                if self._is_success_response(response):
+                    logger.info("[feedbacks] answered feedback_id=%s", feedback_id)
+                else:
+                    logger.warning(
+                        "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
+                    )
+
+        # Audit: WB can auto-mark feedbacks as answered even with no reply text.
+        # Fetch 5 recently "answered" feedbacks and re-answer any that have no text.
+        answered_feedbacks = await self.processor.get_feedbacks(is_answered=True, take=5)
+        for feedback in answered_feedbacks:
+            feedback_id = str(feedback.get("id", ""))
+            if not feedback_id:
+                continue
+            answer = feedback.get("answer") or {}
+            if answer.get("text", "").strip():
+                continue  # real answer present, skip
+
+            logger.info(
+                "[feedbacks] audit: re-answering feedback_id=%s (no answer text)", feedback_id
+            )
+            text = await self._build_feedback_answer(feedback)
+            if not text.strip():
+                continue
+            response = await self.processor.answer_feedback(
+                feedback_id=feedback_id, text=text
+            )
+            if self._is_success_response(response):
+                logger.info("[feedbacks] audit: re-answered feedback_id=%s", feedback_id)
+            else:
+                logger.warning(
+                    "[feedbacks] audit: failed to re-answer feedback_id=%s: %s",
+                    feedback_id,
+                    response,
+                )
+
+    def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
+        normalized: List[Dict] = []
+        for idx, msg in enumerate(messages):
+            text = str(msg.get("text") or msg.get("message") or "").strip()
+            if not text:
+                continue
+
+            sender = self._extract_sender_role(msg)
+            timestamp = (
+                msg.get("addTimestamp")
+                or msg.get("createdDate")
+                or msg.get("createdAt")
+                or msg.get("timestamp")
+                or idx
+            )
+            message_id = msg.get("id") or msg.get("messageID") or idx
+
+            normalized.append(
+                {
+                    "id": str(message_id),
+                    "timestamp": timestamp,
+                    "role": sender,
+                    "text": text,
+                }
+            )
+
+        # Normalize order to oldest -> newest.
+        normalized.sort(key=lambda x: str(x["timestamp"]))
+        return normalized
+
+    def _extract_sender_role(self, msg: Dict) -> str:
+        parts = [
+            str(msg.get("senderType", "")),
+            str(msg.get("sender", "")),
+            str(msg.get("authorType", "")),
+            str(msg.get("author", "")),
+            str(msg.get("from", "")),
+        ]
+        raw = " ".join(parts).lower()
+
+        if any(word in raw for word in ("client", "buyer", "user", "customer")):
+            return "client"
+        if any(word in raw for word in ("seller", "supplier", "manager", "operator")):
+            return "seller"
+        if msg.get("isIncoming") is True:
+            return "client"
+        if msg.get("isOutgoing") is True:
+            return "seller"
+        return "unknown"
+
+    def _get_pending_client_message(self, messages: List[Dict]) -> Optional[Dict]:
+        last_client_idx = None
+        for i, message in enumerate(messages):
+            if message["role"] == "client":
+                last_client_idx = i
+
+        if last_client_idx is None:
+            return None
+
+        for message in messages[last_client_idx + 1 :]:
+            if message["role"] == "seller":
+                return None
+
+        return messages[last_client_idx]
+
+    async def _decide_chat_reply(self, chat: Dict, messages: List[Dict]) -> Dict:
+        history_lines = []
+        for message in messages:
+            history_lines.append(f"[{message['role']}] {message['text']}")
+
+        prompt = (
+            "You are a support assistant for a Wildberries seller. "
+            "Analyze the dialog and decide whether to send a reply now. "
+            "Return strict JSON only with this schema: "
+            '{"is_send": true/false, "answer": "text"}. '
+            "If no reply is needed, use is_send=false and empty answer. "
+            "Reply language must match customer language."
+        )
+
+        raw = await self.gpt.chat_completion(
+            messages=[
+                {"role": "system", "content": prompt},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Chat meta: {json.dumps(chat, ensure_ascii=False)}\n"
+                        f"Last {len(messages)} messages:\n" + "\n".join(history_lines)
+                    ),
+                },
+            ],
+            model="gpt-4",
+            temperature=0.2,
+            max_tokens=300,
+        )
+        return self._safe_parse_json_response(raw)
+
+    async def _build_question_answer(self, question: Dict) -> Dict:
+        examples_json = ""
+        if self._question_examples:
+            examples = [
+                {
+                    "question": ex["text"],
+                    "answer": ex["answer"],
+                    "global_answer": ex["global_answer"],
+                }
+                for ex in self._question_examples[:15]
+            ]
+            examples_json = (
+                "\n\nExamples (learn tone, style, and when global_answer is true vs false):\n"
+                + json.dumps(examples, ensure_ascii=False, indent=2)
+            )
+
+        prompt = (
+            "You are a Wildberries seller support assistant. "
+            "Write a concise and polite reply to the customer question. "
+            "Only RUSSIAN language. "
+            "Set global_answer=true for factual/general product questions suitable for all buyers, "
+            "false for personal issues, complaints, or individual situations. "
+            'Return strict JSON only: {"answer": "...", "global_answer": true/false}.'
+            + examples_json
+        )
+
+        raw = await self.gpt.chat_completion(
+            messages=[
+                {"role": "system", "content": prompt},
+                {
+                    "role": "user",
+                    "content": json.dumps(question, ensure_ascii=False),
+                },
+            ],
+            model="gpt-4",
+            temperature=0.3,
+            max_tokens=300,
+        )
+
+        text_val = ""
+        global_answer = False
+        raw_str = str(raw).strip()
+        start = raw_str.find("{")
+        end = raw_str.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            try:
+                data = json.loads(raw_str[start : end + 1])
+                if isinstance(data, dict):
+                    text_val = str(data.get("answer", "")).strip()
+                    global_answer = bool(data.get("global_answer", False))
+            except json.JSONDecodeError:
+                text_val = raw_str
+        else:
+            text_val = raw_str
+
+        return {
+            "text": text_val,
+            "state": "wbRu" if global_answer else "none",
+        }
+
+    async def _build_feedback_answer(self, feedback: Dict) -> str:
+        if not self.use_gpt_for_feedbacks:
+            valuation = feedback.get("productValuation")
+            user_name = (feedback.get("userName") or "").strip()
+            
+            is_positive = valuation is None or int(valuation) >= 4
+            
+            if is_positive:
+                if user_name:
+                    return f"Здравствуйте, {user_name}! Благодарим за отзыв и высокую оценку. Будем рады видеть Вас снова!"
+                return "Здравствуйте! Благодарим за отзыв и высокую оценку. Будем рады видеть Вас снова!"
+            else:
+                if user_name:
+                    return f"Здравствуйте, {user_name}! Сожалеем, что товар не оправдал Ваших ожиданий. Мы обязательно учтем Ваши замечания."
+                return "Здравствуйте! Сожалеем, что товар не оправдал Ваших ожиданий. Мы обязательно учтем Ваши замечания."
+
+        text = (feedback.get("text") or "").strip()
+        pros = (feedback.get("pros") or "").strip()
+        cons = (feedback.get("cons") or "").strip()
+        valuation = feedback.get("productValuation")
+        user_name = (feedback.get("userName") or "").strip()
+        subject_name = (feedback.get("subjectName") or "").strip()
+        has_video = bool(feedback.get("video"))
+        photo_count = len(feedback.get("photoLinks") or [])
+
+        parts: List[str] = []
+        if user_name:
+            parts.append(f"Customer name: {user_name}")
+        if subject_name:
+            parts.append(f"Product: {subject_name}")
+        if valuation is not None:
+            parts.append(f"Rating: {valuation}/5 stars")
+        if text:
+            parts.append(f"Review text: {text}")
+        if pros:
+            parts.append(f"Pros: {pros}")
+        if cons:
+            parts.append(f"Cons: {cons}")
+        if has_video:
+            parts.append("Customer attached a video")
+        if photo_count:
+            parts.append(f"Customer attached {photo_count} photo(s)")
+
+        feedback_summary = "\n".join(parts)
+
+        examples_json = ""
+        if hasattr(self, '_feedback_examples') and self._feedback_examples:
+            examples = [
+                {
+                    "feedback": ex.get("text", ""),
+                    "answer": ex.get("answer", "")
+                }
+                for ex in self._feedback_examples[:15] if ex.get("answer")
+            ]
+            if examples:
+                examples_json = (
+                    "\n\nExamples (learn tone and style):\n"
+                    + json.dumps(examples, ensure_ascii=False, indent=2)
+                )
+
+        prompt = (
+            "You are a Wildberries seller support assistant. "
+            "Write a polite reply to the customer feedback below. "
+            "Address the customer by name if provided. "
+            "If the product name is mentioned, refer to it as a common noun (e.g. 'ирригатора'), never repeat the catalog title verbatim. "
+            "If cons or complaints are mentioned, acknowledge them and offer help. "
+            "If photos or video are attached, thank the customer for the media. "
+            "Keep the reply to 2-4 sentences maximum. "
+            'You are "VIRONIX" team manager. '
+            "If feedback is negative (1-2 stars) or has cons, offer to help resolve the issue. "
+            "Only RUSSIAN language. "
+            "Return answer only without additional text, no JSON."
+            + examples_json
+        )
+
+        raw = await self.gpt.chat_completion(
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": feedback_summary},
+            ],
+            model="gpt-4",
+            temperature=0.3,
+            max_tokens=260,
+        )
+        return str(raw).strip()
+
+    def _safe_parse_json_response(self, raw: str) -> Dict:
+        text = str(raw).strip()
+        try:
+            data = json.loads(text)
+            if isinstance(data, dict):
+                return {
+                    "is_send": bool(data.get("is_send", False)),
+                    "answer": str(data.get("answer", "")),
+                }
+        except json.JSONDecodeError:
+            pass
+
+        # Fallback for cases where model wraps JSON with extra text.
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            try:
+                data = json.loads(text[start : end + 1])
+                if isinstance(data, dict):
+                    return {
+                        "is_send": bool(data.get("is_send", False)),
+                        "answer": str(data.get("answer", "")),
+                    }
+            except json.JSONDecodeError:
+                pass
+
+        return {"is_send": False, "answer": ""}
+
+    def _is_success_response(self, response: Dict) -> bool:
+        if not isinstance(response, dict):
+            return False
+        if response.get("error"):
+            return False
+        if response.get("errors"):
+            return False
+        return True
+
+
+def build_controller(
+    processor: ChatProcesor,
+    gpt_client: AsyncOpenAIClient,
+    poll_interval: int = 30,
+    use_gpt_for_feedbacks: bool = True,
+) -> MainController:
+    return MainController(
+        processor=processor,
+        gpt_client=gpt_client,
+        poll_interval=poll_interval,
+        use_gpt_for_feedbacks=use_gpt_for_feedbacks,
+    )

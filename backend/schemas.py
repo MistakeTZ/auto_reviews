@@ -27,6 +27,7 @@ class RuleBase(BaseModel):
     condition_rating: Optional[int] = None
     condition_keyword: Optional[str] = None
     action_text: str
+    action_type: str = "template"
 
 class RuleCreate(RuleBase):
     pass

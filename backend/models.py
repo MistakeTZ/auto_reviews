@@ -25,6 +25,7 @@ class Rule(Base):
     condition_rating = Column(Integer, nullable=True)
     condition_keyword = Column(String, nullable=True)
     action_text = Column(String)
+    action_type = Column(String, default="template")
     user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="rules")
