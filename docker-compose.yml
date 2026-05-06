@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: autoreviews
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8002:8000"
+      - "127.0.0.1:8002:8000"
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/autoreviews
     depends_on:
@@ -45,9 +45,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:8002/api
+        NEXT_PUBLIC_API_URL: https://reanswer.ru/api
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3002:3000"
     depends_on:
       - backend
 
