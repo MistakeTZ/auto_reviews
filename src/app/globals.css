@@ -1,57 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  /* Core Backgrounds */
-  --background: #ffffff;
+  /* Core Backgrounds - Soft airy feel */
+  --background: #f8fafc;
+  /* slate-50 */
   --foreground: #0f172a;
   /* slate-900 */
 
-  /* Brand Colors (Modern Purple) */
-  --primary: #7c3aed;
-  /* violet-600 */
+  /* Brand Colors - Modern Indigo */
+  --primary: #4f46e5;
+  /* indigo-600 */
   --primary-foreground: #ffffff;
 
   /* Surface Elements (Cards, Panels) */
-  --surface: #f8fafc;
-  /* slate-50 */
-  --surface-foreground: #334155;
-  /* slate-700 */
+  --surface: #ffffff;
+  --surface-foreground: #1e293b;
+  /* slate-800 */
 
   /* UI Elements */
   --border: #e2e8f0;
   /* slate-200 */
   --input: #f1f5f9;
   /* slate-100 */
-  --ring: #7c3aed;
+  --ring: #4f46e5;
 
-  /* Global Border Radius */
-  --radius: 0.75rem;
+  /* Global Border Radius - Softer curves */
+  --radius: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020617;
-    /* slate-950 */
-    --foreground: #f8fafc;
-    /* slate-50 */
-
-    --primary: #8b5cf6;
-    /* violet-500 */
-    --primary-foreground: #ffffff;
-
-    --surface: #0f172a;
-    /* slate-900 */
-    --surface-foreground: #cbd5e1;
-    /* slate-300 */
-
-    --border: #1e293b;
-    /* slate-800 */
-    --input: #0f172a;
-    --ring: #8b5cf6;
-  }
-}
-
-/* Map variables to Tailwind's utility classes */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -63,17 +39,16 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: var(--radius);
+  --radius-lg: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 6px);
+  --radius-sm: calc(var(--radius) - 8px);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer base {
 
-  /* Set default border color for all elements */
   *,
   ::before,
   ::after {
@@ -82,19 +57,18 @@
 
   html {
     scroll-behavior: smooth;
+    background-color: var(--background);
   }
 
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    /* Improve text rendering on modern screens */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
-  /* Custom text selection to match brand */
   ::selection {
     background-color: var(--primary);
     color: var(--primary-foreground);

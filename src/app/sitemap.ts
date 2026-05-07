@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://autoreviews.app';
+const BASE_URL = 'https://reanswer.ru';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
