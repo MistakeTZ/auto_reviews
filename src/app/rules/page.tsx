@@ -71,7 +71,7 @@ export default function RulesPage() {
                 type="text"
                 value={newRule.name}
                 onChange={e => setNewRule({ ...newRule, name: e.target.value })}
-                className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder=""
               />
             </div>
@@ -82,7 +82,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.target}
                   onChange={e => setNewRule({ ...newRule, target: e.target.value as 'general' | 'specific_nm', nmId: e.target.value === 'general' ? '' : products[0]?.nmId || '' })}
-                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="general">{t('rules.generalAll')}</option>
                   <option value="specific_nm">{t('rules.specificProduct')}</option>
@@ -95,7 +95,7 @@ export default function RulesPage() {
                   <select
                     value={newRule.nmId}
                     onChange={e => setNewRule({ ...newRule, nmId: e.target.value })}
-                    className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
                     {products.map(p => (
                       <option key={p.nmId} value={p.nmId}>{p.name} ({p.nmId})</option>
@@ -111,11 +111,11 @@ export default function RulesPage() {
                 <select
                   value={newRule.conditionRatingOperator}
                   onChange={e => setNewRule({ ...newRule, conditionRatingOperator: e.target.value as 'exact' | 'less_than' | 'more_than' })}
-                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="exact">{t('rules.exactly')}</option>
                   <option value="less_than">{t('rules.lessThan')}</option>
                   <option value="more_than">{t('rules.moreThan')}</option>
+                  <option value="exact">{t('rules.exactly')}</option>
                 </select>
               </div>
               <div>
@@ -123,7 +123,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.conditionRating || 5}
                   onChange={e => setNewRule({ ...newRule, conditionRating: Number(e.target.value) })}
-                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value={5}>5 {t('rules.stars')}</option>
                   <option value={4}>4 {t('rules.stars')}</option>
@@ -138,7 +138,7 @@ export default function RulesPage() {
                   type="text"
                   value={newRule.conditionKeyword}
                   onChange={e => setNewRule({ ...newRule, conditionKeyword: e.target.value })}
-                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                   placeholder=""
                 />
               </div>
@@ -152,7 +152,7 @@ export default function RulesPage() {
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     newRule.actionType === 'template'
                       ? 'bg-purple-600 text-white'
-                      : 'bg-white bg-gray-900 text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
+                      : 'bg-white text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
                   }`}
                 >
                   {t('rules.actionTypeTemplate')}
@@ -163,7 +163,7 @@ export default function RulesPage() {
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     newRule.actionType === 'gpt'
                       ? 'bg-purple-600 text-white'
-                      : 'bg-white bg-gray-900 text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
+                      : 'bg-white text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
                   }`}
                 >
                   {t('rules.actionTypeGpt')}
@@ -177,7 +177,7 @@ export default function RulesPage() {
               <textarea
                 value={newRule.actionText}
                 onChange={e => setNewRule({ ...newRule, actionText: e.target.value })}
-                className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 h-24 resize-none"
+                className="w-full px-4 py-2 bg-white border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 h-24 resize-none"
                 placeholder=""
               />
             </div>
@@ -229,7 +229,7 @@ export default function RulesPage() {
           </Card>
         ))}
         {rules.length === 0 && !isAdding && (
-          <div className="text-center py-12 text-gray-500 bg-white bg-gray-900 rounded-xl border border-dashed border-gray-300 border-gray-700">
+          <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300 border-gray-700">
             {t('rules.noRules')}
           </div>
         )}

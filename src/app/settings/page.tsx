@@ -54,7 +54,7 @@ export default function SettingsPage() {
                 type="password"
                 value={tokenInput}
                 onChange={e => setTokenInput(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-50 bg-gray-900/50 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder=""
               />
               <p className="text-xs text-gray-500 mt-2">{t('settings.neverShareToken')}</p>
