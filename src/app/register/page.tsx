@@ -29,7 +29,7 @@ export default function RegisterPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, name, password })
         });
-        
+
         if (regRes.ok) {
           const formData = new URLSearchParams();
           formData.append('username', email);
@@ -58,7 +58,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50  flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl">{t('auth.createAccount')}</CardTitle>
@@ -71,7 +71,7 @@ export default function RegisterPage() {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white  border border-gray-300  rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder="John Doe"
                 required
               />
@@ -82,7 +82,7 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white  border border-gray-300  rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder="you@example.com"
                 required
               />
@@ -93,7 +93,7 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white  border border-gray-300  rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder="••••••••"
                 required
               />
@@ -101,7 +101,7 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full">{t('common.signUp')}</Button>
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           </form>
-          <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-4 text-center text-sm text-gray-600 ">
             {t('auth.hasAccount')} <Link href="/login" className="text-purple-600 hover:underline">{t('auth.signIn')}</Link>
           </div>
         </CardContent>
