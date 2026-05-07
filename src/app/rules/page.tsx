@@ -23,6 +23,7 @@ export default function RulesPage() {
     conditionRatingOperator: 'exact',
     conditionRating: 5,
     conditionKeyword: '',
+    actionType: 'template',
     actionText: ''
   });
 
@@ -30,7 +31,7 @@ export default function RulesPage() {
     if (newRule.name && newRule.actionText) {
       addRule(newRule);
       setIsAdding(false);
-      setNewRule({ name: '', target: 'general', nmId: '', conditionRatingOperator: 'exact', conditionRating: 5, conditionKeyword: '', actionText: '' });
+      setNewRule({ name: '', target: 'general', nmId: '', conditionRatingOperator: 'exact', conditionRating: 5, conditionKeyword: '', actionType: 'template', actionText: '' });
     }
   };
 
@@ -143,7 +144,36 @@ export default function RulesPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">{t('rules.actionReplyText')}</label>
+              <label className="block text-sm font-medium mb-2">{t('rules.actionType')}</label>
+              <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 w-fit">
+                <button
+                  type="button"
+                  onClick={() => setNewRule({ ...newRule, actionType: 'template' })}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    newRule.actionType === 'template'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {t('rules.actionTypeTemplate')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewRule({ ...newRule, actionType: 'gpt' })}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    newRule.actionType === 'gpt'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {t('rules.actionTypeGpt')}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {newRule.actionType === 'gpt' ? t('rules.actionPrompt') : t('rules.actionReplyText')}
+              </label>
               <textarea
                 value={newRule.actionText}
                 onChange={e => setNewRule({ ...newRule, actionText: e.target.value })}
@@ -170,13 +200,22 @@ export default function RulesPage() {
                   <span className={`px-2 py-0.5 text-xs rounded-full ${rule.target === 'general' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'}`}>
                     {rule.target === 'general' ? t('rules.general') : `${t('rules.productNm')} ${rule.nmId}`}
                   </span>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${
+                    rule.actionType === 'gpt'
+                      ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                  }`}>
+                    {rule.actionType === 'gpt' ? 'GPT' : t('rules.actionTypeTemplate')}
+                  </span>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg text-sm mb-3 border border-gray-100 dark:border-gray-800">
                   <span className="font-medium text-gray-500 dark:text-gray-400">{t('rules.if')}</span> {t('rules.rating')} <span className="font-bold">{formatOperator(rule.conditionRatingOperator).toLowerCase()} {rule.conditionRating} {t('rules.stars')}</span>
                   {rule.conditionKeyword && <span> {t('dashboard.andContains')} "{rule.conditionKeyword}"</span>}
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-lg text-sm border border-green-100 dark:border-green-900/30">
-                  <span className="font-medium text-green-600 dark:text-green-500 block mb-1">{t('rules.thenReplyWith')}</span>
+                  <span className="font-medium text-green-600 dark:text-green-500 block mb-1">
+                    {rule.actionType === 'gpt' ? t('rules.actionPrompt') : t('rules.thenReplyWith')}
+                  </span>
                   <span className="text-gray-700 dark:text-gray-300">{rule.actionText}</span>
                 </div>
               </div>

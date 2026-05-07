@@ -28,6 +28,7 @@ export interface Rule {
   conditionRatingOperator: 'exact' | 'less_than' | 'more_than';
   conditionRating: number | null;
   conditionKeyword: string;
+  actionType: 'template' | 'gpt';
   actionText: string;
 }
 
@@ -115,7 +116,7 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
-            set({ rules: data.map((r: any) => ({ ...r, id: String(r.id), nmId: r.nm_id, conditionRatingOperator: r.condition_rating_operator, conditionRating: r.condition_rating, conditionKeyword: r.condition_keyword, actionText: r.action_text })) });
+            set({ rules: data.map((r: any) => ({ ...r, id: String(r.id), nmId: r.nm_id, conditionRatingOperator: r.condition_rating_operator, conditionRating: r.condition_rating, conditionKeyword: r.condition_keyword, actionType: r.action_type ?? 'template', actionText: r.action_text })) });
           }
         } catch (e) {
           console.error(e);
@@ -170,6 +171,7 @@ export const useAppStore = create<AppState>()(
             condition_rating_operator: rule.conditionRatingOperator,
             condition_rating: rule.conditionRating,
             condition_keyword: rule.conditionKeyword || null,
+            action_type: rule.actionType,
             action_text: rule.actionText
           };
           const res = await fetch(`${API_URL}/rules/`, {
@@ -190,6 +192,7 @@ export const useAppStore = create<AppState>()(
               conditionRatingOperator: r.condition_rating_operator,
               conditionRating: r.condition_rating,
               conditionKeyword: r.condition_keyword,
+              actionType: r.action_type ?? 'template',
               actionText: r.action_text
             };
             set({ rules: [...rules, newRule] });
