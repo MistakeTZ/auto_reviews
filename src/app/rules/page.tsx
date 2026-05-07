@@ -3,7 +3,7 @@
 import { useAppStore, Rule } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -12,6 +12,7 @@ export default function RulesPage() {
   const products = useAppStore(state => state.products);
   const addRule = useAppStore(state => state.addRule);
   const deleteRule = useAppStore(state => state.deleteRule);
+  const fetchProducts = useAppStore(state => state.fetchProducts);
   const { t } = useTranslation();
 
   const [isAdding, setIsAdding] = useState(false);
@@ -39,6 +40,14 @@ export default function RulesPage() {
     return t('rules.exactly');
   };
 
+  useEffect(() => {
+    // After initial page data load, do one extra additive refresh from WB.
+    const run = async () => {
+      await fetchProducts(true, false);
+    };
+    void run();
+  }, [fetchProducts]);
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8">
@@ -65,7 +74,7 @@ export default function RulesPage() {
                 placeholder=""
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">{t('rules.target')}</label>
@@ -78,7 +87,7 @@ export default function RulesPage() {
                   <option value="specific_nm">{t('rules.specificProduct')}</option>
                 </select>
               </div>
-              
+
               {newRule.target === 'specific_nm' && (
                 <div>
                   <label className="block text-sm font-medium mb-1">{t('rules.selectProduct')}</label>

@@ -14,6 +14,7 @@ class User(Base):
 
     rules = relationship("Rule", back_populates="owner")
     reviews = relationship("Review", back_populates="owner")
+    nm_ids = relationship("NmIDs", back_populates="owner")
 
 
 class Rule(Base):
@@ -50,3 +51,14 @@ class Review(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="reviews")
+
+
+class NmIDs(Base):
+    __tablename__ = "nm_ids"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nm_id = Column(String, unique=True, index=True)
+    product_name = Column(String)
+    user_d_id = Column(Integer, ForeignKey("users.id"))
+
+    owner = relationship("User", back_populates="nm_ids")

@@ -43,7 +43,7 @@ interface AppState {
   logout: () => void;
   setLanguage: (lang: 'en' | 'ru') => void;
   fetchMe: () => Promise<void>;
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (refresh?: boolean, replace?: boolean) => Promise<void>;
   fetchRules: () => Promise<void>;
   fetchReviews: () => Promise<void>;
   setToken: (token: string) => Promise<void>;
@@ -87,11 +87,14 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      fetchProducts: async () => {
+      fetchProducts: async (refresh = false, replace = false) => {
         const { jwtToken } = get();
         if (!jwtToken) return;
         try {
-          const res = await fetch(`${API_URL}/products/`, {
+          const qs = refresh
+            ? `?refresh=true&replace=${replace ? 'true' : 'false'}`
+            : '';
+          const res = await fetch(`${API_URL}/products/${qs}`, {
             headers: { Authorization: `Bearer ${jwtToken}` }
           });
           if (res.ok) {
@@ -149,6 +152,7 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             set({ apiToken: token });
+            await get().fetchProducts(true, true);
           }
         } catch (e) {
           console.error(e);

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from .auth import get_password_hash
 
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -81,3 +82,43 @@ def update_review_status(db: Session, review_id: int, user_id: int, status: str,
         db.commit()
         db.refresh(db_review)
     return db_review
+
+
+def get_nm_ids(db: Session, user_id: int):
+    return db.query(models.NmIDs).filter(models.NmIDs.user_d_id == user_id).all()
+
+
+def clear_nm_ids(db: Session, user_id: int):
+    db.query(models.NmIDs).filter(models.NmIDs.user_d_id == user_id).delete()
+    db.commit()
+
+
+def upsert_nm_ids_bulk(db: Session, user_id: int, products: list[dict]):
+    existing_for_user = {
+        row.nm_id: row
+        for row in db.query(models.NmIDs).filter(models.NmIDs.user_d_id == user_id).all()
+    }
+    existing_global = {row.nm_id: row for row in db.query(models.NmIDs).all()}
+
+    for product in products:
+        nm_id = str(product.get("nmId") or "").strip()
+        if not nm_id:
+            continue
+        name = str(product.get("name") or "").strip()
+
+        if nm_id in existing_for_user:
+            existing_for_user[nm_id].product_name = name
+        elif nm_id in existing_global:
+            # Table currently has a global unique constraint on nm_id.
+            # Keep existing owner and update visible name only.
+            existing_global[nm_id].product_name = name
+        else:
+            db.add(
+                models.NmIDs(
+                    nm_id=nm_id,
+                    product_name=name,
+                    user_d_id=user_id,
+                )
+            )
+
+    db.commit()
