@@ -60,7 +60,7 @@ export default function RulesPage() {
       </div>
 
       {isAdding && (
-        <Card className="mb-8 border-purple-200 dark:border-purple-900/50 shadow-md">
+        <Card className="mb-8 border-purple-200 border-purple-900/50 shadow-md">
           <CardHeader>
             <CardTitle>{t('rules.createRule')}</CardTitle>
           </CardHeader>
@@ -71,7 +71,7 @@ export default function RulesPage() {
                 type="text"
                 value={newRule.name}
                 onChange={e => setNewRule({ ...newRule, name: e.target.value })}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder=""
               />
             </div>
@@ -82,7 +82,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.target}
                   onChange={e => setNewRule({ ...newRule, target: e.target.value as 'general' | 'specific_nm', nmId: e.target.value === 'general' ? '' : products[0]?.nmId || '' })}
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="general">{t('rules.generalAll')}</option>
                   <option value="specific_nm">{t('rules.specificProduct')}</option>
@@ -95,7 +95,7 @@ export default function RulesPage() {
                   <select
                     value={newRule.nmId}
                     onChange={e => setNewRule({ ...newRule, nmId: e.target.value })}
-                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
                     {products.map(p => (
                       <option key={p.nmId} value={p.nmId}>{p.name} ({p.nmId})</option>
@@ -111,7 +111,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.conditionRatingOperator}
                   onChange={e => setNewRule({ ...newRule, conditionRatingOperator: e.target.value as 'exact' | 'less_than' | 'more_than' })}
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="exact">{t('rules.exactly')}</option>
                   <option value="less_than">{t('rules.lessThan')}</option>
@@ -123,7 +123,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.conditionRating || 5}
                   onChange={e => setNewRule({ ...newRule, conditionRating: Number(e.target.value) })}
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value={5}>5 {t('rules.stars')}</option>
                   <option value={4}>4 {t('rules.stars')}</option>
@@ -138,21 +138,21 @@ export default function RulesPage() {
                   type="text"
                   value={newRule.conditionKeyword}
                   onChange={e => setNewRule({ ...newRule, conditionKeyword: e.target.value })}
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                   placeholder=""
                 />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">{t('rules.actionType')}</label>
-              <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 w-fit">
+              <div className="flex rounded-lg overflow-hidden border border-gray-300 border-gray-700 w-fit">
                 <button
                   type="button"
                   onClick={() => setNewRule({ ...newRule, actionType: 'template' })}
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     newRule.actionType === 'template'
                       ? 'bg-purple-600 text-white'
-                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      : 'bg-white bg-gray-900 text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
                   }`}
                 >
                   {t('rules.actionTypeTemplate')}
@@ -163,7 +163,7 @@ export default function RulesPage() {
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     newRule.actionType === 'gpt'
                       ? 'bg-purple-600 text-white'
-                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      : 'bg-white bg-gray-900 text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
                   }`}
                 >
                   {t('rules.actionTypeGpt')}
@@ -177,7 +177,7 @@ export default function RulesPage() {
               <textarea
                 value={newRule.actionText}
                 onChange={e => setNewRule({ ...newRule, actionText: e.target.value })}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 h-24 resize-none"
+                className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 h-24 resize-none"
                 placeholder=""
               />
             </div>
@@ -196,30 +196,30 @@ export default function RulesPage() {
             <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-semibold text-purple-700 dark:text-purple-400">{rule.name}</h3>
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${rule.target === 'general' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'}`}>
+                  <h3 className="text-lg font-semibold text-purple-700 text-purple-400">{rule.name}</h3>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${rule.target === 'general' ? 'bg-blue-100 text-blue-700 bg-blue-900/30 text-blue-300' : 'bg-orange-100 text-orange-700 bg-orange-900/30 text-orange-300'}`}>
                     {rule.target === 'general' ? t('rules.general') : `${t('rules.productNm')} ${rule.nmId}`}
                   </span>
                   <span className={`px-2 py-0.5 text-xs rounded-full ${
                     rule.actionType === 'gpt'
-                      ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      ? 'bg-violet-100 text-violet-700 bg-violet-900/30 text-violet-300'
+                      : 'bg-gray-100 text-gray-600 bg-gray-800 text-gray-400'
                   }`}>
                     {rule.actionType === 'gpt' ? 'GPT' : t('rules.actionTypeTemplate')}
                   </span>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg text-sm mb-3 border border-gray-100 dark:border-gray-800">
-                  <span className="font-medium text-gray-500 dark:text-gray-400">{t('rules.if')}</span> {t('rules.rating')} <span className="font-bold">{formatOperator(rule.conditionRatingOperator).toLowerCase()} {rule.conditionRating} {t('rules.stars')}</span>
+                <div className="bg-gray-50 bg-gray-800/50 p-3 rounded-lg text-sm mb-3 border border-gray-100 border-gray-800">
+                  <span className="font-medium text-gray-500 text-gray-400">{t('rules.if')}</span> {t('rules.rating')} <span className="font-bold">{formatOperator(rule.conditionRatingOperator).toLowerCase()} {rule.conditionRating} {t('rules.stars')}</span>
                   {rule.conditionKeyword && <span> {t('dashboard.andContains')} "{rule.conditionKeyword}"</span>}
                 </div>
-                <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-lg text-sm border border-green-100 dark:border-green-900/30">
-                  <span className="font-medium text-green-600 dark:text-green-500 block mb-1">
+                <div className="bg-green-50 bg-green-900/10 p-3 rounded-lg text-sm border border-green-100 border-green-900/30">
+                  <span className="font-medium text-green-600 text-green-500 block mb-1">
                     {rule.actionType === 'gpt' ? t('rules.actionPrompt') : t('rules.thenReplyWith')}
                   </span>
-                  <span className="text-gray-700 dark:text-gray-300">{rule.actionText}</span>
+                  <span className="text-gray-700 text-gray-300">{rule.actionText}</span>
                 </div>
               </div>
-              <div className="sm:pl-6 border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-gray-800 pt-4 sm:pt-0">
+              <div className="sm:pl-6 border-t sm:border-t-0 sm:border-l border-gray-100 border-gray-800 pt-4 sm:pt-0">
                 <Button variant="danger" onClick={() => deleteRule(rule.id)} className="w-full sm:w-auto flex items-center justify-center gap-2">
                   <Trash2 size={16} />
                   {t('common.delete')}
@@ -229,7 +229,7 @@ export default function RulesPage() {
           </Card>
         ))}
         {rules.length === 0 && !isAdding && (
-          <div className="text-center py-12 text-gray-500 bg-white dark:bg-gray-900 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+          <div className="text-center py-12 text-gray-500 bg-white bg-gray-900 rounded-xl border border-dashed border-gray-300 border-gray-700">
             {t('rules.noRules')}
           </div>
         )}

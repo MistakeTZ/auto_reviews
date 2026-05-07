@@ -15,7 +15,7 @@ export default function DemoPage() {
   }, [login, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 bg-gray-950">
       <div className="animate-pulse text-purple-600 font-semibold text-lg">
         Setting up demo environment...
       </div>

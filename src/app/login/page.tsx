@@ -49,7 +49,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 bg-gray-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl">{t('auth.welcomeBack')}</CardTitle>
@@ -62,7 +62,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder="you@example.com"
                 required
               />
@@ -73,7 +73,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 bg-white bg-gray-900 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
                 placeholder="••••••••"
                 required
               />
@@ -81,7 +81,7 @@ export default function LoginPage() {
             <Button type="submit" className="w-full">{t('auth.signIn')}</Button>
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           </form>
-          <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-4 text-center text-sm text-gray-600 text-gray-400">
             {t('auth.noAccount')} <Link href="/register" className="text-purple-600 hover:underline">{t('common.signUp')}</Link>
           </div>
         </CardContent>
