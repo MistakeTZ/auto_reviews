@@ -1,8 +1,7 @@
 import asyncio
 import json
 import logging
-from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +16,15 @@ class MainController:
         gpt_client: AsyncOpenAIClient,
         poll_interval: int = 30,
         use_gpt_for_feedbacks: bool = True,
+        user_id: Optional[int] = None,
+        db_factory: Optional[Callable] = None,
     ):
         self.processor = processor
         self.gpt = gpt_client
         self.poll_interval = poll_interval
         self.use_gpt_for_feedbacks = use_gpt_for_feedbacks
+        self.user_id = user_id
+        self.db_factory = db_factory
 
         # Runtime deduplication to avoid repeated replies while process is alive.
         self._processed_chat_signatures: set[str] = set()
@@ -121,7 +124,93 @@ class MainController:
                     "[questions] failed question_id=%s: %s", question_id, response
                 )
 
+    def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Any]:
+        """Return the first rule that matches this feedback, or None."""
+        nm_id = str(feedback.get("nmId") or "").strip()
+        rating = feedback.get("productValuation")
+        text = (feedback.get("text") or "").lower()
+
+        for rule in rules:
+            # Check nm_id match
+            if rule.target == "general":
+                nm_match = True
+            elif rule.nm_id:
+                allowed = [x.strip() for x in rule.nm_id.split(",")]
+                nm_match = nm_id in allowed
+            else:
+                nm_match = False
+
+            if not nm_match:
+                continue
+
+            # Check rating condition
+            if rule.condition_rating is not None and rating is not None:
+                r = int(rating)
+                cr = int(rule.condition_rating)
+                op = rule.condition_rating_operator
+                if op == "exact" and r != cr:
+                    continue
+                elif op == "less_than" and r >= cr:
+                    continue
+                elif op == "more_than" and r <= cr:
+                    continue
+
+            # Check keyword condition
+            if rule.condition_keyword:
+                if rule.condition_keyword.lower() not in text:
+                    continue
+
+            return rule
+
+        return None
+
+    def _upsert_review_in_db(
+        self, feedback: Dict, answer_text: str, status: str
+    ) -> None:
+        """Persist/update a review record in the database."""
+        if not self.db_factory or not self.user_id:
+            return
+
+        from ..crud import upsert_review
+        from ..schemas import ReviewCreate
+
+        wb_review_id = str(feedback.get("id") or "")
+        if not wb_review_id:
+            return
+
+        review_data = ReviewCreate(
+            wb_review_id=wb_review_id,
+            nm_id=str(feedback.get("nmId") or ""),
+            product_name=str(feedback.get("subjectName") or ""),
+            rating=int(feedback.get("productValuation") or 0),
+            text=str(feedback.get("text") or ""),
+            date=str(feedback.get("createdDate") or ""),
+            status=status,
+            auto_answer_text=answer_text or None,
+        )
+
+        try:
+            db = self.db_factory()
+            upsert_review(db, review_data, self.user_id)
+            db.close()
+        except Exception as exc:
+            logger.exception(
+                "[feedbacks] failed to upsert review %s: %s", wb_review_id, exc
+            )
+
     async def _handle_feedbacks(self):
+        # Load rules from DB once per poll cycle
+        rules: List[Any] = []
+        if self.db_factory and self.user_id:
+            from ..crud import get_rules
+
+            try:
+                db = self.db_factory()
+                rules = get_rules(db, self.user_id)
+                db.close()
+            except Exception as exc:
+                logger.exception("[feedbacks] failed to load rules: %s", exc)
+
         count = await self.processor.get_count_unanswered_feedbacks()
         if count == 0:
             logger.debug("[feedbacks] no unanswered feedbacks, skipping answer step")
@@ -133,45 +222,78 @@ class MainController:
                 if not feedback_id:
                     continue
 
-                text = await self._build_feedback_answer(feedback)
+                matched_rule = self._match_rule(rules, feedback)
+
+                if matched_rule is not None and matched_rule.action_type == "template":
+                    text = matched_rule.action_text
+                    answer_status = "auto-answered"
+                else:
+                    text = await self._build_feedback_answer(feedback)
+                    answer_status = (
+                        "auto-answered" if matched_rule is not None else "manual-review"
+                    )
+
                 if not text.strip():
                     logger.warning(
-                        "[feedbacks] empty answer for feedback_id=%s, skipping", feedback_id
+                        "[feedbacks] empty answer for feedback_id=%s, skipping",
+                        feedback_id,
                     )
+                    self._upsert_review_in_db(feedback, "", "manual-review")
                     continue
 
                 response = await self.processor.answer_feedback(
                     feedback_id=feedback_id, text=text
                 )
                 if self._is_success_response(response):
-                    logger.info("[feedbacks] answered feedback_id=%s", feedback_id)
+                    logger.info(
+                        "[feedbacks] answered feedback_id=%s (rule=%s)",
+                        feedback_id,
+                        matched_rule.name if matched_rule else "none",
+                    )
+                    self._upsert_review_in_db(feedback, text, answer_status)
                 else:
                     logger.warning(
                         "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
                     )
+                    self._upsert_review_in_db(feedback, text, "manual-review")
 
         # Audit: WB can auto-mark feedbacks as answered even with no reply text.
         # Fetch 5 recently "answered" feedbacks and re-answer any that have no text.
-        answered_feedbacks = await self.processor.get_feedbacks(is_answered=True, take=5)
+        answered_feedbacks = await self.processor.get_feedbacks(
+            is_answered=True, take=5
+        )
         for feedback in answered_feedbacks:
             feedback_id = str(feedback.get("id", ""))
             if not feedback_id:
                 continue
             answer = feedback.get("answer") or {}
             if answer.get("text", "").strip():
-                continue  # real answer present, skip
+                # Persist answered feedback to DB even if already answered
+                self._upsert_review_in_db(
+                    feedback, answer.get("text", ""), "auto-answered"
+                )
+                continue  # real answer present, skip re-answering
 
             logger.info(
-                "[feedbacks] audit: re-answering feedback_id=%s (no answer text)", feedback_id
+                "[feedbacks] audit: re-answering feedback_id=%s (no answer text)",
+                feedback_id,
             )
-            text = await self._build_feedback_answer(feedback)
+            matched_rule = self._match_rule(rules, feedback)
+            if matched_rule is not None and matched_rule.action_type == "template":
+                text = matched_rule.action_text
+            else:
+                text = await self._build_feedback_answer(feedback)
+
             if not text.strip():
                 continue
             response = await self.processor.answer_feedback(
                 feedback_id=feedback_id, text=text
             )
             if self._is_success_response(response):
-                logger.info("[feedbacks] audit: re-answered feedback_id=%s", feedback_id)
+                logger.info(
+                    "[feedbacks] audit: re-answered feedback_id=%s", feedback_id
+                )
+                self._upsert_review_in_db(feedback, text, "auto-answered")
             else:
                 logger.warning(
                     "[feedbacks] audit: failed to re-answer feedback_id=%s: %s",
@@ -339,9 +461,9 @@ class MainController:
         if not self.use_gpt_for_feedbacks:
             valuation = feedback.get("productValuation")
             user_name = (feedback.get("userName") or "").strip()
-            
+
             is_positive = valuation is None or int(valuation) >= 4
-            
+
             if is_positive:
                 if user_name:
                     return f"Здравствуйте, {user_name}! Благодарим за отзыв и высокую оценку. Будем рады видеть Вас снова!"
@@ -381,18 +503,15 @@ class MainController:
         feedback_summary = "\n".join(parts)
 
         examples_json = ""
-        if hasattr(self, '_feedback_examples') and self._feedback_examples:
+        if hasattr(self, "_feedback_examples") and self._feedback_examples:
             examples = [
-                {
-                    "feedback": ex.get("text", ""),
-                    "answer": ex.get("answer", "")
-                }
-                for ex in self._feedback_examples[:15] if ex.get("answer")
+                {"feedback": ex.get("text", ""), "answer": ex.get("answer", "")}
+                for ex in self._feedback_examples[:15]
+                if ex.get("answer")
             ]
             if examples:
-                examples_json = (
-                    "\n\nExamples (learn tone and style):\n"
-                    + json.dumps(examples, ensure_ascii=False, indent=2)
+                examples_json = "\n\nExamples (learn tone and style):\n" + json.dumps(
+                    examples, ensure_ascii=False, indent=2
                 )
 
         prompt = (
@@ -406,8 +525,7 @@ class MainController:
             'You are "VIRONIX" team manager. '
             "If feedback is negative (1-2 stars) or has cons, offer to help resolve the issue. "
             "Only RUSSIAN language. "
-            "Return answer only without additional text, no JSON."
-            + examples_json
+            "Return answer only without additional text, no JSON." + examples_json
         )
 
         raw = await self.gpt.chat_completion(
@@ -464,10 +582,14 @@ def build_controller(
     gpt_client: AsyncOpenAIClient,
     poll_interval: int = 30,
     use_gpt_for_feedbacks: bool = True,
+    user_id: Optional[int] = None,
+    db_factory: Optional[Callable] = None,
 ) -> MainController:
     return MainController(
         processor=processor,
         gpt_client=gpt_client,
         poll_interval=poll_interval,
         use_gpt_for_feedbacks=use_gpt_for_feedbacks,
+        user_id=user_id,
+        db_factory=db_factory,
     )

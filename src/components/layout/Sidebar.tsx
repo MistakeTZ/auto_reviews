@@ -44,7 +44,7 @@ export default function Sidebar() {
     <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">ReviewAI</h1>
+          <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">reAnswer</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Wildberries</p>
         </div>
         <button onClick={toggleLanguage} className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Toggle Language">

@@ -42,7 +42,7 @@ export const en = {
     stat3Desc: 'Automated Support',
     trustedBanner: 'Trusted by 500+ sellers on Wildberries',
     testimonialsTitle: 'Loved by Sellers',
-    testimonial1Text: '"ReviewAI completely changed my daily routine. I used to spend 2 hours a day replying to reviews. Now it takes me 0 minutes."',
+    testimonial1Text: '"reAnswer completely changed my daily routine. I used to spend 2 hours a day replying to reviews. Now it takes me 0 minutes."',
     testimonial1Author: 'Alexey V.',
     testimonial1Role: 'Top Seller, Clothing',
     testimonial2Text: '"My rating jumped from 4.2 to 4.8 in just a month. Fast replies show customers we care."',
@@ -70,7 +70,7 @@ export const en = {
     faq2A: 'Yes! We offer a 14-day free trial on all plans with no credit card required.',
     faq3Q: 'What happens if a review is complicated?',
     faq3A: 'You can set up rules to only auto-reply to 5-star reviews without text, and leave detailed reviews for manual response.',
-    footerRights: '© 2026 ReviewAI. All rights reserved.',
+    footerRights: '© 2026 reAnswer. All rights reserved.',
   },
   auth: {
     welcomeBack: 'Welcome Back',
