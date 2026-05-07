@@ -202,9 +202,9 @@ export default function LandingPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
               {[
-                { title: t('landing.pricingStarter'), price: t('landing.pricingStarterPrice'), desc: t('landing.pricingStarterDesc'), isPopular: false },
-                { title: t('landing.pricingPro'), price: t('landing.pricingProPrice'), desc: t('landing.pricingProDesc'), isPopular: true },
-                { title: t('landing.pricingEnterprise'), price: t('landing.pricingEnterprisePrice'), desc: t('landing.pricingEnterpriseDesc'), isPopular: false }
+                { title: t('landing.pricingStarter'), price: t('landing.pricingStarterPrice'), desc: t('landing.pricingStarterDesc'), isPopular: false, period: t('landing.pricingHalfMonth') },
+                { title: t('landing.pricingPro'), price: t('landing.pricingProPrice'), desc: t('landing.pricingProDesc'), isPopular: true, period: t('landing.pricingMonth') },
+                { title: t('landing.pricingEnterprise'), price: t('landing.pricingEnterprisePrice'), desc: t('landing.pricingEnterpriseDesc'), isPopular: false, period: t('landing.pricingWeek') }
               ].map((plan, idx) => (
                 <div key={idx} className={`relative p-8 rounded-3xl ${plan.isPopular ? 'bg-gradient-to-b from-purple-600 to-indigo-700 text-white shadow-2xl shadow-purple-600/30 md:-translate-y-4' : 'bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800'}`}>
                   {plan.isPopular && (
@@ -216,7 +216,7 @@ export default function LandingPage() {
                   <p className={`mb-6 font-medium ${plan.isPopular ? 'text-purple-200' : 'text-slate-500'}`}>{plan.desc}</p>
                   <div className="flex items-baseline gap-1 mb-8">
                     <span className="text-5xl font-black">{plan.price}</span>
-                    <span className={`font-bold ${plan.isPopular ? 'text-purple-200' : 'text-slate-500'}`}>{t('landing.pricingMonth')}</span>
+                    <span className={`font-bold ${plan.isPopular ? 'text-purple-200' : 'text-slate-500'}`}>{plan.period}</span>
                   </div>
                   <ul className="space-y-4 mb-8">
                     {[1, 2, 3].map((_, i) => (

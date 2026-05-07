@@ -61,7 +61,7 @@ export const ru = {
     pricingEnterprise: 'Реферрер',
     pricingEnterprisePrice: '0₽',
     pricingEnterpriseDesc: 'Получайте неделю бесплатно за каждого приглашенного реферала.',
-    pricingMonth: '/мес',
+    pricingMonth: '/ мес',
     pricingHalfMonth: '/ 14 дней',
     pricingWeek: '/ 7 дней',
     pricingBtn: 'Начать бесплатно',
