@@ -8,6 +8,7 @@ export const ru = {
     autoAnswerRules: 'Правила автоответов',
     settings: 'Настройки',
     sellerAccount: 'Аккаунт продавца',
+    activePlan: 'Активный план',
     cancel: 'Отмена',
     save: 'Сохранить',
     delete: 'Удалить',

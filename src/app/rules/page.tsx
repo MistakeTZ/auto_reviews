@@ -162,7 +162,7 @@ export default function RulesPage() {
       {isAdding && (
         <Card className="mb-8 border border-slate-200 shadow-lg rounded-2xl bg-white overflow-hidden">
           <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
-            <CardTitle className="text-lg font-bold text-slate-800">
+            <CardTitle className="text-lg font-bold text-purple-700">
               {editingRuleId ? `${t('rules.editRule')} "${newRule.name}"` : t('rules.createRule')}
             </CardTitle>
           </CardHeader>

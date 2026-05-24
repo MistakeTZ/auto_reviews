@@ -8,6 +8,7 @@ export const en = {
     autoAnswerRules: 'Auto-Answer Rules',
     settings: 'Settings',
     sellerAccount: 'Seller Account',
+    activePlan: 'Active Plan',
     cancel: 'Cancel',
     save: 'Save',
     delete: 'Delete',

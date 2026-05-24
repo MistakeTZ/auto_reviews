@@ -1,10 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from models import Base
 from database import engine
 from routers import auth, rules, reviews, settings, products
 import sqlite3
 import os
+from bot import configure_webhook, process_update
 
 
 def run_migrations():
@@ -69,6 +70,42 @@ app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(rules.router, prefix="/api/rules", tags=["rules"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
+
+
+@app.on_event("startup")
+async def setup_bot_webhooks():
+    webhook_base_url = os.getenv("BOT_WEBHOOK_BASE_URL", "").strip()
+    webhook_secret = os.getenv("BOT_WEBHOOK_SECRET", "").strip()
+
+    if not webhook_base_url or not webhook_secret:
+        return
+
+    tg_token = os.getenv("TG_BOT_TOKEN", "").strip()
+    max_token = os.getenv("MAX_BOT_TOKEN", "").strip()
+
+    if tg_token:
+        await configure_webhook(tg_token, "telegram", webhook_base_url, webhook_secret)
+    if max_token:
+        await configure_webhook(max_token, "max", webhook_base_url, webhook_secret)
+
+
+@app.post("/api/bot/webhook/{bot_type}/{secret}")
+async def bot_webhook(bot_type: str, secret: str, request: Request):
+    expected_secret = os.getenv("BOT_WEBHOOK_SECRET", "").strip()
+    if not expected_secret or secret != expected_secret:
+        raise HTTPException(status_code=403, detail="Invalid webhook secret")
+
+    if bot_type not in {"telegram", "max"}:
+        raise HTTPException(status_code=404, detail="Unknown bot type")
+
+    token_env = "TG_BOT_TOKEN" if bot_type == "telegram" else "MAX_BOT_TOKEN"
+    token = os.getenv(token_env, "").strip()
+    if not token:
+        raise HTTPException(status_code=503, detail=f"{token_env} is not configured")
+
+    payload = await request.json()
+    await process_update(payload, token, bot_type)
+    return {"ok": True}
 
 
 @app.get("/api/health")

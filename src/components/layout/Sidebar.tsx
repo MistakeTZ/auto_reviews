@@ -160,7 +160,7 @@ export default function Sidebar() {
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-bold text-slate-800 truncate">{userName || t('common.sellerAccount')}</p>
-              <p className="text-xs text-slate-500 truncate">Active Plan</p>
+              <p className="text-xs text-slate-500 truncate">{t('common.activePlan')}</p>
             </div>
           </div>
           <button onClick={handleLogout} className="flex items-center justify-center space-x-2 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors w-full px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100">
