@@ -36,8 +36,14 @@ export interface Rule {
   priority?: number;
   sendNotification?: boolean;
   isEditedFeedback?: boolean;
-  telegramNotification?: boolean;
-  maxNotification?: boolean;
+}
+
+export interface NotificationMethod {
+  id: number;
+  userId: number;
+  type: 'email' | 'telegram' | 'max';
+  value: string;
+  isActive?: boolean;
 }
 
 interface AppState {
@@ -45,10 +51,12 @@ interface AppState {
   jwtToken: string | null;
   apiToken: string | null;
   userName: string | null;
+  userUuid: string | null;
   language: 'en' | 'ru';
   reviews: Review[];
   rules: Rule[];
   products: Product[];
+  notificationMethods: NotificationMethod[];
   login: (token: string) => void;
   logout: () => void;
   setLanguage: (lang: 'en' | 'ru') => void;
@@ -61,6 +69,9 @@ interface AppState {
   updateRule: (id: string, rule: Partial<Rule>) => Promise<void>;
   deleteRule: (id: string) => Promise<void>;
   markReviewAsAnswered: (id: string, text: string) => Promise<void>;
+  fetchNotificationMethods: () => Promise<void>;
+  addNotificationMethod: (method: Omit<NotificationMethod, 'id' | 'userId'>) => Promise<void>;
+  deleteNotificationMethod: (id: number) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -70,14 +81,16 @@ export const useAppStore = create<AppState>()(
       jwtToken: null,
       apiToken: null,
       userName: null,
+      userUuid: null,
       language: 'ru',
       products: [],
       reviews: [],
       rules: [],
+      notificationMethods: [],
 
       login: (token: string) => set({ isAuthenticated: true, jwtToken: token }),
 
-      logout: () => set({ isAuthenticated: false, jwtToken: null, apiToken: null, userName: null, reviews: [], rules: [], products: [] }),
+      logout: () => set({ isAuthenticated: false, jwtToken: null, apiToken: null, userName: null, userUuid: null, reviews: [], rules: [], products: [], notificationMethods: [] }),
 
       setLanguage: (lang) => set({ language: lang }),
 
@@ -90,7 +103,7 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
-            set({ apiToken: data.wb_api_token, userName: data.name });
+            set({ apiToken: data.wb_api_token, userName: data.name, userUuid: data.uuid });
           } else if (res.status === 401) {
             get().logout();
           }
@@ -327,6 +340,80 @@ export const useAppStore = create<AppState>()(
           if (res.ok) {
             set({
               reviews: reviews.map(r => r.id === id ? { ...r, status: 'manual-review', autoAnswerText: text } : r)
+            });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
+
+      fetchNotificationMethods: async () => {
+        const { jwtToken } = get();
+        if (!jwtToken) return;
+        try {
+          const res = await fetch(`${API_URL}/settings/notifications`, {
+            headers: { Authorization: `Bearer ${jwtToken}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            set({
+              notificationMethods: data.map((m: any) => ({
+                id: m.id,
+                userId: m.user_id,
+                type: m.type,
+                value: m.value,
+                isActive: m.is_active
+              }))
+            });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
+
+      addNotificationMethod: async (method) => {
+        const { jwtToken, notificationMethods } = get();
+        if (!jwtToken) return;
+        try {
+          const res = await fetch(`${API_URL}/settings/notifications`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({
+              type: method.type,
+              value: method.value,
+              is_active: method.isActive !== undefined ? method.isActive : true
+            })
+          });
+          if (res.ok) {
+            const m = await res.json();
+            const newMethod: NotificationMethod = {
+              id: m.id,
+              userId: m.user_id,
+              type: m.type,
+              value: m.value,
+              isActive: m.is_active
+            };
+            set({ notificationMethods: [...notificationMethods, newMethod] });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
+
+      deleteNotificationMethod: async (id) => {
+        const { jwtToken, notificationMethods } = get();
+        if (!jwtToken) return;
+        try {
+          const res = await fetch(`${API_URL}/settings/notifications/${id}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${jwtToken}` }
+          });
+          if (res.ok) {
+            set({
+              notificationMethods: notificationMethods.filter(m => m.id !== id)
             });
           }
         } catch (e) {

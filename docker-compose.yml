@@ -40,6 +40,19 @@ services:
       db:
         condition: service_healthy
 
+  bots:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "backend/bot.py"]
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/autoreviews
+      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
+      - MAX_BOT_TOKEN=${MAX_BOT_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+
   frontend:
     build:
       context: .

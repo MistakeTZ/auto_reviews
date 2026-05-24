@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
@@ -11,10 +12,12 @@ class User(Base):
     hashed_password = Column(String)
     name = Column(String)
     wb_api_token = Column(String, nullable=True)
+    uuid = Column(String, unique=True, default=lambda: str(uuid.uuid4()))
 
     rules = relationship("Rule", back_populates="owner")
     reviews = relationship("Review", back_populates="owner")
     nm_ids = relationship("NmIDs", back_populates="owner")
+    notification_methods = relationship("NotificationMethod", back_populates="owner")
 
 
 class Rule(Base):
@@ -68,3 +71,15 @@ class NmIDs(Base):
     user_d_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="nm_ids")
+
+
+class NotificationMethod(Base):
+    __tablename__ = "notification_methods"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    type = Column(String)  # 'email', 'telegram', 'max'
+    value = Column(String)  # email address, or telegram/max chat ID or code
+    is_active = Column(Boolean, default=True)
+
+    owner = relationship("User", back_populates="notification_methods")

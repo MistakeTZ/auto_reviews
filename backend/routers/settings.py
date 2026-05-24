@@ -10,6 +10,9 @@ from services.wb_products import sync_user_products
 import base64
 import json
 from datetime import datetime
+import schemas
+from typing import List
+import os
 
 
 router = APIRouter()
@@ -85,3 +88,50 @@ def update_token(
     sync_user_products(db=db, user=updated_user, replace_existing=True)
 
     return {"ok": True, "message": "Token updated successfully"}
+
+
+@router.get("/notifications", response_model=List[schemas.NotificationMethod])
+def get_notifications(
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return crud.get_notification_methods(db, user_id=current_user.id)
+
+
+@router.post("/notifications", response_model=schemas.NotificationMethod)
+def add_notification(
+    method_data: schemas.NotificationMethodCreate,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    existing = crud.get_notification_methods(db, user_id=current_user.id)
+    if len(existing) >= 5:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum of 5 notification methods allowed per user",
+        )
+    return crud.create_notification_method(
+        db, method=method_data, user_id=current_user.id
+    )
+
+
+@router.delete("/notifications/{method_id}")
+def delete_notification(
+    method_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    success = crud.delete_notification_method(
+        db, method_id=method_id, user_id=current_user.id
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Notification method not found")
+    return {"ok": True, "message": "Notification method deleted successfully"}
+
+
+@router.get("/bots-config")
+def get_bots_config():
+    return {
+        "tg_bot": os.getenv("TG_BOT", "autoreviews_bot"),
+        "max_bot": os.getenv("MAX_BOT", "max_notification_bot"),
+    }

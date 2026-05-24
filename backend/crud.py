@@ -182,3 +182,37 @@ def upsert_nm_ids_bulk(db: Session, user_id: int, products: list[dict]):
             )
 
     db.commit()
+
+
+def get_notification_methods(db: Session, user_id: int):
+    return (
+        db.query(models.NotificationMethod)
+        .filter(models.NotificationMethod.user_id == user_id)
+        .all()
+    )
+
+
+def create_notification_method(
+    db: Session, method: schemas.NotificationMethodCreate, user_id: int
+):
+    db_method = models.NotificationMethod(**method.model_dump(), user_id=user_id)
+    db.add(db_method)
+    db.commit()
+    db.refresh(db_method)
+    return db_method
+
+
+def delete_notification_method(db: Session, method_id: int, user_id: int):
+    db_method = (
+        db.query(models.NotificationMethod)
+        .filter(
+            models.NotificationMethod.id == method_id,
+            models.NotificationMethod.user_id == user_id,
+        )
+        .first()
+    )
+    if db_method:
+        db.delete(db_method)
+        db.commit()
+        return True
+    return False

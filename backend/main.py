@@ -14,6 +14,7 @@ def run_migrations():
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
+            # Migrations for rules table
             for col, col_type in [
                 ("with_video", "BOOLEAN DEFAULT 0"),
                 ("with_photo", "BOOLEAN DEFAULT 0"),
@@ -26,6 +27,23 @@ def run_migrations():
                     cursor.execute(f"ALTER TABLE rules ADD COLUMN {col} {col_type}")
                 except sqlite3.OperationalError:
                     pass
+            
+            # Migrations for users table
+            try:
+                cursor.execute("ALTER TABLE users ADD COLUMN uuid TEXT")
+            except sqlite3.OperationalError:
+                pass
+                
+            # Backfill unique uuids for users that don't have one
+            try:
+                import uuid
+                cursor.execute("SELECT id FROM users WHERE uuid IS NULL")
+                null_users = cursor.fetchall()
+                for (uid,) in null_users:
+                    cursor.execute("UPDATE users SET uuid = ? WHERE id = ?", (str(uuid.uuid4()), uid))
+            except Exception as users_err:
+                print("Backfill users uuid warning:", users_err)
+                
             conn.commit()
             conn.close()
         except Exception as e:

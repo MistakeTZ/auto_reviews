@@ -32,9 +32,7 @@ export default function RulesPage() {
     withPhoto: false,
     withName: false,
     sendNotification: false,
-    isEditedFeedback: false,
-    telegramNotification: false,
-    maxNotification: false
+    isEditedFeedback: false
   });
 
   const handleSave = () => {
@@ -59,9 +57,7 @@ export default function RulesPage() {
         withPhoto: false,
         withName: false,
         sendNotification: false,
-        isEditedFeedback: false,
-        telegramNotification: false,
-        maxNotification: false
+        isEditedFeedback: false
       });
     }
   };
@@ -82,9 +78,7 @@ export default function RulesPage() {
       withPhoto: false,
       withName: false,
       sendNotification: false,
-      isEditedFeedback: false,
-      telegramNotification: false,
-      maxNotification: false
+      isEditedFeedback: false
     });
   };
 
@@ -104,8 +98,6 @@ export default function RulesPage() {
       withName: rule.withName || false,
       sendNotification: rule.sendNotification || false,
       isEditedFeedback: rule.isEditedFeedback || false,
-      telegramNotification: rule.telegramNotification || false,
-      maxNotification: rule.maxNotification || false
     });
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -322,13 +314,7 @@ export default function RulesPage() {
                     type="checkbox"
                     checked={!!newRule.sendNotification}
                     onChange={e => {
-                      const checked = e.target.checked;
-                      setNewRule({
-                        ...newRule,
-                        sendNotification: checked,
-                        telegramNotification: checked ? newRule.telegramNotification : false,
-                        maxNotification: checked ? newRule.maxNotification : false
-                      });
+                      setNewRule({ ...newRule, sendNotification: e.target.checked });
                     }}
                     className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                   />

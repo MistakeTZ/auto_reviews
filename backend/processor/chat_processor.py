@@ -1,7 +1,11 @@
 import asyncio
+import logging
 from typing import Dict, List, Optional
 
 import aiohttp
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class ChatProcessor:
@@ -151,6 +155,7 @@ class ChatProcessor:
         feedback_id: str,
         text: str,
     ) -> Dict:
+        logger.info(f"Answer feedback: {feedback_id}, text: {text}")
         return {"feedback_id": feedback_id, "text": text}
         endpoints = [
             (

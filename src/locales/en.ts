@@ -150,5 +150,16 @@ export const en = {
     preferences: 'Preferences',
     emailNotif: 'Email Notifications',
     emailNotifDesc: 'Receive an email summary of auto-answered reviews daily.',
+    notifMethods: 'Notification Methods',
+    notifMethodsDesc: 'Manage notification recipients for your rules.',
+    addMethod: 'Add Method',
+    methodType: 'Type',
+    methodName: 'Name (e.g., Personal Telegram)',
+    methodValue: 'Email Address',
+    methodValuePlaceholder: 'Enter email address',
+    awaitingConnection: 'Awaiting Connection',
+    connected: 'Connected',
+    connectBot: 'Connect Bot',
+    confirmConnection: 'Confirm Connection',
   }
 };

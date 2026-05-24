@@ -3,18 +3,57 @@
 import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Mail, Send, Plus, Trash2, ExternalLink, Bell, Bot, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export default function SettingsPage() {
   const apiToken = useAppStore(state => state.apiToken);
   const setToken = useAppStore(state => state.setToken);
+  const notificationMethods = useAppStore(state => state.notificationMethods);
+  const fetchNotificationMethods = useAppStore(state => state.fetchNotificationMethods);
+  const addNotificationMethod = useAppStore(state => state.addNotificationMethod);
+  const deleteNotificationMethod = useAppStore(state => state.deleteNotificationMethod);
+  const userUuid = useAppStore(state => state.userUuid);
+  const fetchMe = useAppStore(state => state.fetchMe);
+
   const { t } = useTranslation();
   const [tokenInput, setTokenInput] = useState(apiToken || '');
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showToken, setShowToken] = useState(false);
+
+  // Notification states
+  const [newMethodType, setNewMethodType] = useState<'email' | 'telegram' | 'max'>('email');
+  const [newMethodValue, setNewMethodValue] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [botsConfig, setBotsConfig] = useState({ tg_bot: 'autoreviews_bot', max_bot: 'max_notification_bot' });
+
+  // Initial load
+  useEffect(() => {
+    fetchNotificationMethods();
+    fetchMe();
+
+    // Fetch bots configuration
+    fetch(`${API_URL}/settings/bots-config`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.tg_bot) {
+          setBotsConfig(data);
+        }
+      })
+      .catch(err => console.error("Error loading bots config:", err));
+  }, [fetchNotificationMethods, fetchMe]);
+
+  // Live polling for instant bot connection verification
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotificationMethods();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [fetchNotificationMethods]);
 
   const handleTokenChange = (val: string) => {
     setTokenInput(val);
@@ -33,26 +72,53 @@ export default function SettingsPage() {
     }
   };
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchNotificationMethods();
+    setIsRefreshing(false);
+  };
+
+  const handleAddEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMethodType !== 'email' || !newMethodValue) return;
+
+    if (notificationMethods.length >= 5) {
+      alert("Достигнут лимит 5 способов уведомлений!");
+      return;
+    }
+
+    await addNotificationMethod({
+      type: 'email',
+      value: newMethodValue,
+      isActive: true
+    });
+
+    setNewMethodValue('');
+  };
+
+  const reachedLimit = notificationMethods.length >= 5;
+
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 max-w-3xl mx-auto">
+    <div className="pt-24 px-4 pb-8 md:p-8 max-w-3xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
 
-      <Card className="mb-6">
+      {/* WB Integration Card */}
+      <Card>
         <CardHeader>
           <CardTitle>{t('settings.wbApiIntegration')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {!apiToken ? (
-            <div className="bg-orange-50 bg-orange-900/20 text-black p-4 rounded-lg flex items-start gap-3 text-sm">
-              <AlertCircle size={20} className="mt-0.5 flex-shrink-0" />
+            <div className="bg-orange-50/50 border border-orange-100 text-slate-800 p-4 rounded-lg flex items-start gap-3 text-sm">
+              <AlertCircle size={20} className="mt-0.5 flex-shrink-0 text-orange-500" />
               <div>
                 <p className="font-semibold mb-1">{t('settings.apiTokenNotSet')}</p>
                 <p>{t('settings.apiTokenNotSetDesc')}</p>
               </div>
             </div>
           ) : (
-            <div className="bg-green-50 bg-green-900/20 text-green-800 text-green-300 p-4 rounded-lg flex items-center gap-3 text-sm">
-              <CheckCircle2 size={20} className="flex-shrink-0" />
+            <div className="bg-green-50/50 border border-green-100 text-green-800 p-4 rounded-lg flex items-center gap-3 text-sm">
+              <CheckCircle2 size={20} className="flex-shrink-0 text-green-600" />
               <p className="font-medium">{t('settings.apiConnected')}</p>
             </div>
           )}
@@ -65,22 +131,22 @@ export default function SettingsPage() {
                   type={showToken ? "text" : "password"}
                   value={tokenInput || apiToken || ''}
                   onChange={e => handleTokenChange(e.target.value)}
-                  className="w-full pl-4 pr-12 py-2 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-4 pr-12 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white text-slate-800"
                   placeholder=""
                 />
                 <button
                   type="button"
                   onClick={() => setShowToken(!showToken)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400 focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-400 focus:outline-none"
                 >
                   {showToken ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-2">{t('settings.neverShareToken')}</p>
+              <p className="text-xs text-slate-400 mt-2">{t('settings.neverShareToken')}</p>
             </div>
 
             {errorMsg && (
-              <div className="bg-red-50 bg-red-900/20 text-red-800 text-red-300 p-4 rounded-lg flex items-start gap-3 text-sm">
+              <div className="bg-red-50/50 border border-red-100 text-red-800 p-4 rounded-lg flex items-start gap-3 text-sm">
                 <AlertCircle size={20} className="mt-0.5 flex-shrink-0 text-red-500" />
                 <div>
                   <p className="font-semibold mb-1">{t('settings.tokenError')}</p>
@@ -96,20 +162,164 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Notification Methods Card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('settings.preferences')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="font-medium">{t('settings.emailNotif')}</p>
-              <p className="text-sm text-gray-500">{t('settings.emailNotifDesc')}</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-indigo-600" />
+              <CardTitle>
+                {t('settings.notifMethods')} <span className="text-xs font-normal text-slate-400">(макс. 5)</span>
+              </CardTitle>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 peer-focus:ring-purple-800 rounded-full peer bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-purple-600"></div>
-            </label>
+            <button
+              onClick={handleManualRefresh}
+              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+              title="Refresh list"
+            >
+              <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">{t('settings.notifMethodsDesc')}</p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Current Methods List */}
+          <div className="space-y-3">
+            {notificationMethods && notificationMethods.map((method) => {
+              const isTelegram = method.type === 'telegram';
+              const isMax = method.type === 'max';
+              const isEmail = method.type === 'email';
+
+              return (
+                <div 
+                  key={method.id} 
+                  className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-all gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2.5 rounded-lg ${
+                      isEmail ? 'bg-blue-50 text-blue-600' :
+                      isTelegram ? 'bg-sky-50 text-sky-600' : 'bg-purple-50 text-purple-600'
+                    }`}>
+                      {isEmail && <Mail size={18} />}
+                      {isTelegram && <Send size={18} />}
+                      {isMax && <Bot size={18} />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800 text-sm">
+                          {isEmail ? 'Email адрес' : isTelegram ? 'Telegram канал' : 'Max Бот'}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">
+                          {t('settings.connected')}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-mono mt-0.5">
+                        {isEmail ? method.value : `Chat ID: ${method.value}`}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => deleteNotificationMethod(method.id)}
+                      className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Remove method"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {(!notificationMethods || notificationMethods.length === 0) && (
+              <div className="text-center py-6 text-slate-400 text-sm">
+                Нет добавленных способов уведомлений. Подключите их ниже.
+              </div>
+            )}
+          </div>
+
+          {/* Add New Method Section */}
+          <div className="pt-6 border-t border-slate-100 space-y-4">
+            <h3 className="text-sm font-bold text-slate-700">Подключить новый канал</h3>
+
+            {reachedLimit ? (
+              <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-lg flex items-center gap-2.5 text-xs text-amber-800">
+                <AlertCircle size={16} className="text-amber-500 flex-shrink-0" />
+                <span>Достигнут максимальный лимит 5 способов уведомлений. Удалите один из текущих для добавления нового.</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="w-full max-w-xs space-y-1">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.methodType')}</label>
+                  <select
+                    value={newMethodType}
+                    onChange={e => setNewMethodType(e.target.value as any)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="email">Email адрес</option>
+                    <option value="telegram">Telegram Бот</option>
+                    <option value="max">Max Бот</option>
+                  </select>
+                </div>
+
+                {/* Email Add Form */}
+                {newMethodType === 'email' && (
+                  <form onSubmit={handleAddEmail} className="flex gap-3 max-w-lg items-end">
+                    <div className="flex-1 space-y-1">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.methodValue')}</label>
+                      <input
+                        type="email"
+                        required
+                        placeholder={t('settings.methodValuePlaceholder')}
+                        value={newMethodValue}
+                        onChange={e => setNewMethodValue(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1.5 h-[38px]">
+                      <Plus size={16} />
+                      <span>{t('settings.addMethod')}</span>
+                    </Button>
+                  </form>
+                )}
+
+                {/* Telegram & Max Bot Connection Cards */}
+                {(newMethodType === 'telegram' || newMethodType === 'max') && (
+                  <div className="p-4 rounded-xl border border-indigo-100 bg-indigo-50/20 max-w-lg space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Bot className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-bold text-slate-800">
+                          Подключение {newMethodType === 'telegram' ? 'Telegram' : 'Max'} бота
+                        </h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          Для привязки перейдите по кнопке ниже в бот и нажмите «Старт». Наша система автоматически распознает ваше устройство и привяжет уведомления к вашему кабинету.
+                        </p>
+                      </div>
+                    </div>
+
+                    {userUuid ? (
+                      <a
+                        href={newMethodType === 'telegram'
+                          ? `https://t.me/${botsConfig.tg_bot}?start=${userUuid}`
+                          : `https://t.me/${botsConfig.max_bot}?start=${userUuid}`
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md hover:shadow-indigo-600/20"
+                      >
+                        <ExternalLink size={14} />
+                        <span>Открыть в Telegram</span>
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400 animate-pulse">Генерация ссылки...</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

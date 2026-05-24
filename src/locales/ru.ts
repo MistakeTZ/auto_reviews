@@ -152,5 +152,16 @@ export const ru = {
     preferences: 'Предпочтения',
     emailNotif: 'Email уведомления',
     emailNotifDesc: 'Получать ежедневную сводку по автоответам на почту.',
+    notifMethods: 'Способы уведомлений',
+    notifMethodsDesc: 'Управляйте получателями уведомлений для ваших правил.',
+    addMethod: 'Добавить способ',
+    methodType: 'Тип',
+    methodName: 'Название (например, Личный Telegram)',
+    methodValue: 'Email адрес',
+    methodValuePlaceholder: 'Введите email адрес',
+    awaitingConnection: 'Ожидает подключения',
+    connected: 'Подключено',
+    connectBot: 'Подключить бота',
+    confirmConnection: 'Подтвердить подключение',
   }
 };

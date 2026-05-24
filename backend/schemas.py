@@ -14,6 +14,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     wb_api_token: Optional[str] = None
+    uuid: str
 
     class Config:
         from_attributes = True
@@ -86,6 +87,24 @@ class ReviewCreate(ReviewBase):
 
 
 class Review(ReviewBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationMethodBase(BaseModel):
+    type: str  # 'email', 'telegram', 'max'
+    value: str
+    is_active: Optional[bool] = True
+
+
+class NotificationMethodCreate(NotificationMethodBase):
+    pass
+
+
+class NotificationMethod(NotificationMethodBase):
     id: int
     user_id: int
 
