@@ -152,7 +152,7 @@ export default function RulesPage() {
               setIsAdding(true);
             }
           }}
-          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95"
         >
           <Plus size={16} />
           {isAdding ? t('common.cancel') : t('rules.createRule')}
@@ -163,7 +163,7 @@ export default function RulesPage() {
         <Card className="mb-8 border border-slate-200 shadow-lg rounded-2xl bg-white overflow-hidden">
           <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
             <CardTitle className="text-lg font-bold text-slate-800">
-              {editingRuleId ? `Редактировать правило "${newRule.name}"` : t('rules.createRule')}
+              {editingRuleId ? `${t('rules.editRule')} "${newRule.name}"` : t('rules.createRule')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-5">
@@ -173,8 +173,8 @@ export default function RulesPage() {
                 type="text"
                 value={newRule.name}
                 onChange={e => setNewRule({ ...newRule, name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none text-slate-800 text-sm font-medium transition-all"
-                placeholder="Например: Автоответ на 5 звезд"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                placeholder={t('rules.ruleNamePlaceholder')}
               />
             </div>
 
@@ -184,7 +184,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.target}
                   onChange={e => setNewRule({ ...newRule, target: e.target.value as 'general' | 'specific_nm', nmId: e.target.value === 'general' ? '' : products[0]?.nmId || '' })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
                 >
                   <option value="general">{t('rules.generalAll')}</option>
                   <option value="specific_nm">{t('rules.specificProduct')}</option>
@@ -194,7 +194,7 @@ export default function RulesPage() {
               {newRule.target === 'specific_nm' && (
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                    {t('rules.selectProduct')} ({newRule.nmId ? newRule.nmId.split(',').length : 0} выбрано)
+                    {t('rules.selectProduct')} ({newRule.nmId ? newRule.nmId.split(',').length : 0} {t('rules.selected')})
                   </label>
                   <div className="border border-slate-200 rounded-xl p-3 max-h-44 overflow-y-auto space-y-2 bg-slate-50/50">
                     {products.map(p => {
@@ -214,7 +214,7 @@ export default function RulesPage() {
                               }
                               setNewRule({ ...newRule, nmId: nextIds.join(',') });
                             }}
-                            className="rounded border-slate-300 text-slate-700 focus:ring-slate-400 h-4.5 w-4.5 cursor-pointer"
+                            className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                           />
                           <span className="text-xs text-slate-700 leading-tight">
                             <span className="font-bold text-slate-900">{p.name}</span>{' '}
@@ -224,7 +224,7 @@ export default function RulesPage() {
                       );
                     })}
                     {products.length === 0 && (
-                      <p className="text-xs text-slate-500 text-center py-4">Нет доступных товаров</p>
+                      <p className="text-xs text-slate-500 text-center py-4">{t('rules.noProducts')}</p>
                     )}
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.conditionRatingOperator}
                   onChange={e => setNewRule({ ...newRule, conditionRatingOperator: e.target.value as 'exact' | 'less_than' | 'more_than' })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
                 >
                   <option value="less_than">{t('rules.lessThan')}</option>
                   <option value="more_than">{t('rules.moreThan')}</option>
@@ -249,7 +249,7 @@ export default function RulesPage() {
                 <select
                   value={newRule.conditionRating || 5}
                   onChange={e => setNewRule({ ...newRule, conditionRating: Number(e.target.value) })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
                 >
                   <option value={5}>5 {t('rules.stars')}</option>
                   <option value={4}>4 {t('rules.stars')}</option>
@@ -264,50 +264,50 @@ export default function RulesPage() {
                   type="text"
                   value={newRule.conditionKeyword}
                   onChange={e => setNewRule({ ...newRule, conditionKeyword: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none text-slate-800 text-sm font-medium transition-all"
-                  placeholder="Например: брак, ремонт"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                  placeholder={t('rules.keywordPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="border-t border-slate-100 pt-5 mt-2">
-              <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Дополнительные условия (отзыв должен содержать)</span>
+              <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{t('rules.extraConditions')}</span>
               <div className="flex flex-wrap gap-6">
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
                   <input
                     type="checkbox"
                     checked={!!newRule.withVideo}
                     onChange={e => setNewRule({ ...newRule, withVideo: e.target.checked })}
-                    className="rounded border-slate-300 text-slate-700 focus:ring-slate-400 h-4.5 w-4.5 cursor-pointer"
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                   />
-                  <span>С видео</span>
+                  <span>{t('rules.withVideo')}</span>
                 </label>
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
                   <input
                     type="checkbox"
                     checked={!!newRule.withPhoto}
                     onChange={e => setNewRule({ ...newRule, withPhoto: e.target.checked })}
-                    className="rounded border-slate-300 text-slate-700 focus:ring-slate-400 h-4.5 w-4.5 cursor-pointer"
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                   />
-                  <span>С фото</span>
+                  <span>{t('rules.withPhoto')}</span>
                 </label>
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
                   <input
                     type="checkbox"
                     checked={!!newRule.withName}
                     onChange={e => setNewRule({ ...newRule, withName: e.target.checked })}
-                    className="rounded border-slate-300 text-slate-700 focus:ring-slate-400 h-4.5 w-4.5 cursor-pointer"
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                   />
-                  <span>С именем покупателя</span>
+                  <span>{t('rules.withName')}</span>
                 </label>
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
                   <input
                     type="checkbox"
                     checked={!!newRule.isEditedFeedback}
                     onChange={e => setNewRule({ ...newRule, isEditedFeedback: e.target.checked })}
-                    className="rounded border-slate-300 text-slate-700 focus:ring-slate-400 h-4.5 w-4.5 cursor-pointer"
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                   />
-                  <span>Измененный отзыв</span>
+                  <span>{t('rules.editedFeedback')}</span>
                 </label>
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
                   <input
@@ -316,9 +316,9 @@ export default function RulesPage() {
                     onChange={e => {
                       setNewRule({ ...newRule, sendNotification: e.target.checked });
                     }}
-                    className="rounded border-slate-300 text-slate-700 focus:ring-slate-400 h-4.5 w-4.5 cursor-pointer"
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                   />
-                  <span>Присылать уведомление</span>
+                  <span>{t('rules.sendNotification')}</span>
                 </label>
               </div>
             </div>
@@ -330,7 +330,7 @@ export default function RulesPage() {
                   type="button"
                   onClick={() => setNewRule({ ...newRule, actionType: 'template' })}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${newRule.actionType === 'template'
-                    ? 'bg-white text-slate-900 shadow-sm'
+                    ? 'bg-white text-purple-700 shadow-sm'
                     : 'text-slate-600 hover:text-slate-800'
                     }`}
                 >
@@ -340,7 +340,7 @@ export default function RulesPage() {
                   type="button"
                   onClick={() => setNewRule({ ...newRule, actionType: 'gpt' })}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${newRule.actionType === 'gpt'
-                    ? 'bg-white text-slate-900 shadow-sm'
+                    ? 'bg-white text-purple-700 shadow-sm'
                     : 'text-slate-600 hover:text-slate-800'
                     }`}
                 >
@@ -357,7 +357,7 @@ export default function RulesPage() {
                 <button
                   type="button"
                   onClick={insertTagName}
-                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 shadow-sm active:scale-95"
+                  className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 shadow-sm active:scale-95"
                 >
                   <span>{'{ }'}</span>
                   <span>[name]</span>
@@ -367,8 +367,8 @@ export default function RulesPage() {
                 id="action-text-area"
                 value={newRule.actionText}
                 onChange={e => setNewRule({ ...newRule, actionText: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-300 focus:border-slate-400 outline-none h-28 resize-none text-slate-800 text-sm font-medium transition-all"
-                placeholder={newRule.actionType === 'gpt' ? "Напишите инструкции для ИИ..." : "Здравствуйте, [name]! Спасибо..."}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none h-28 resize-none text-slate-800 text-sm font-medium transition-all"
+                placeholder={newRule.actionType === 'gpt' ? t('rules.actionPromptPlaceholder') : t('rules.actionReplyPlaceholder')}
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
@@ -377,15 +377,15 @@ export default function RulesPage() {
                   onClick={handleCancel}
                   className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95"
                 >
-                  Отмена
+                  {t('common.cancel')}
                 </Button>
               )}
               <Button
                 onClick={handleSave}
                 disabled={!newRule.name || !newRule.actionText}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
               >
-                {editingRuleId ? 'Сохранить изменения' : t('rules.saveRule')}
+                {editingRuleId ? t('rules.saveChanges') : t('rules.saveRule')}
               </Button>
             </div>
           </CardContent>
@@ -395,10 +395,10 @@ export default function RulesPage() {
       {/* Rules list header controls */}
       <div className="flex justify-between items-center mb-6 bg-slate-100 px-5 py-3.5 rounded-xl border border-slate-200/70 shadow-sm animate-fade-in">
         <span className="text-sm font-semibold text-slate-700">
-          Всего правил: <span className="font-extrabold text-slate-900 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg ml-1 shadow-sm">{rules.length}</span>
+          {t('rules.totalRules')} <span className="font-extrabold text-slate-900 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg ml-1 shadow-sm">{rules.length}</span>
         </span>
         <span className="text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:inline">
-          чем больше приоритет, тем раньше применяется
+          {t('rules.priorityHint')}
         </span>
       </div>
 
@@ -413,19 +413,19 @@ export default function RulesPage() {
                     type="button"
                     onClick={() => updateRule(rule.id, { priority: (rule.priority ?? 0) + 1 })}
                     className="p-1 hover:bg-slate-200/80 rounded-md text-slate-500 hover:text-slate-900 transition-colors shadow-sm bg-white border border-slate-100 active:scale-90"
-                    title="Повысить приоритет"
+                    title={t('rules.increasePriority')}
                   >
                     <ChevronUp size={16} />
                   </button>
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Приоритет</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">{t('rules.priority')}</span>
                     <span className="text-sm font-extrabold text-slate-800 mt-0.5 leading-tight">{rule.priority ?? 0}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => updateRule(rule.id, { priority: (rule.priority ?? 0) - 1 })}
                     className="p-1 hover:bg-slate-200/80 rounded-md text-slate-500 hover:text-slate-900 transition-colors shadow-sm bg-white border border-slate-100 active:scale-90"
-                    title="Понизить приоритет"
+                    title={t('rules.decreasePriority')}
                   >
                     <ChevronDown size={16} />
                   </button>
@@ -438,10 +438,10 @@ export default function RulesPage() {
                       {rule.target === 'general' ? t('rules.general') : `${t('rules.productNm')} ${rule.nmId ? `(${rule.nmId.split(',').slice(0, 2).join(', ')}${rule.nmId.split(',').length > 2 ? ', ...' : ''})` : ''}`}
                     </span>
                     <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${rule.actionType === 'gpt'
-                      ? 'bg-slate-100 text-slate-700 border-slate-200'
+                      ? 'bg-purple-50 text-purple-700 border-purple-200'
                       : 'bg-slate-50 text-slate-600 border-slate-200'
                       }`}>
-                      {rule.actionType === 'gpt' ? 'GPT' : t('rules.actionTypeTemplate')}
+                      {rule.actionType === 'gpt' ? t('rules.gptLabel') : t('rules.actionTypeTemplate')}
                     </span>
                   </div>
 
@@ -453,7 +453,7 @@ export default function RulesPage() {
                         <span>
                           {' '}
                           {t('dashboard.andContains')}{' '}
-                          <span className="font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg ml-1 shadow-sm">
+                          <span className="font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-lg ml-1 shadow-sm">
                             "{rule.conditionKeyword}"
                           </span>
                         </span>
@@ -462,13 +462,13 @@ export default function RulesPage() {
 
                     {(rule.withVideo || rule.withPhoto || rule.withName || rule.isEditedFeedback || rule.sendNotification) && (
                       <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-200/50">
-                        {rule.withVideo && <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">С видео</span>}
-                        {rule.withPhoto && <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">С фото</span>}
-                        {rule.withName && <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">С именем</span>}
-                        {rule.isEditedFeedback && <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">Измененный отзыв</span>}
+                        {rule.withVideo && <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">{t('rules.withVideo')}</span>}
+                        {rule.withPhoto && <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">{t('rules.withPhoto')}</span>}
+                        {rule.withName && <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">{t('rules.withName')}</span>}
+                        {rule.isEditedFeedback && <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">{t('rules.editedFeedback')}</span>}
                         {rule.sendNotification && (
-                          <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">
-                            Уведомление
+                          <span className="bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">
+                            {t('rules.sendNotification')}
                           </span>
                         )}
                       </div>
@@ -491,7 +491,7 @@ export default function RulesPage() {
                   className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 text-sm"
                 >
                   <Edit2 size={16} />
-                  Редактировать
+                  {t('rules.edit')}
                 </button>
                 <Button
                   variant="danger"

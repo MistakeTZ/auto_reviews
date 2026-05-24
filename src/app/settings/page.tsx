@@ -29,7 +29,7 @@ export default function SettingsPage() {
   const [newMethodType, setNewMethodType] = useState<'telegram' | 'email' | 'max'>('telegram');
   const [newMethodValue, setNewMethodValue] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [botsConfig, setBotsConfig] = useState({ tg_bot: 'autoreviews_bot', max_bot: 'max_notification_bot' });
+  const [botsConfig, setBotsConfig] = useState({ tg_bot: 'holms_rage_bot', max_bot: 'max_notification_bot' });
 
   // Initial load
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function SettingsPage() {
     try {
       await setToken(tokenInput);
     } catch (e: any) {
-      setErrorMsg(e.message || 'An error occurred while saving the token');
+      setErrorMsg(e.message || t('settings.tokenSaveErrorFallback'));
     } finally {
       setIsVerifying(false);
     }
@@ -83,7 +83,7 @@ export default function SettingsPage() {
     if (newMethodType !== 'email' || !newMethodValue) return;
 
     if (notificationMethods.length >= 5) {
-      alert("Достигнут лимит 5 способов уведомлений!");
+      alert(t('settings.methodsLimitAlert'));
       return;
     }
 
@@ -169,13 +169,13 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-indigo-600" />
               <CardTitle>
-                {t('settings.notifMethods')} <span className="text-xs font-normal text-slate-400">(макс. 5)</span>
+                {t('settings.notifMethods')} <span className="text-xs font-normal text-slate-400">{t('settings.maxMethodsShort')}</span>
               </CardTitle>
             </div>
             <button
               onClick={handleManualRefresh}
               className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-              title="Refresh list"
+              title={t('settings.refreshList')}
             >
               <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
             </button>
@@ -207,14 +207,14 @@ export default function SettingsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-800 text-sm">
-                          {isEmail ? 'Email адрес' : isTelegram ? 'Telegram бот' : 'Max Бот'}
+                          {isEmail ? t('settings.methodEmailAddress') : isTelegram ? t('settings.methodTelegramBot') : t('settings.methodMaxBot')}
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">
                           {t('settings.connected')}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 font-mono mt-0.5">
-                        {isEmail ? method.value : `Chat ID: ${method.value}`}
+                        {isEmail ? method.value : `${t('settings.chatIdPrefix')} ${method.value}`}
                       </p>
                     </div>
                   </div>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={() => deleteNotificationMethod(method.id)}
                       className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Remove method"
+                      title={t('settings.removeMethod')}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -235,19 +235,19 @@ export default function SettingsPage() {
 
             {(!notificationMethods || notificationMethods.length === 0) && (
               <div className="text-center py-6 text-slate-400 text-sm">
-                Нет добавленных способов уведомлений. Подключите их ниже.
+                {t('settings.noMethodsAdded')}
               </div>
             )}
           </div>
 
           {/* Add New Method Section */}
           <div className="pt-6 border-t border-slate-100 space-y-4">
-            <h3 className="text-sm font-bold text-slate-700">Подключить новый канал</h3>
+            <h3 className="text-sm font-bold text-slate-700">{t('settings.connectNewChannel')}</h3>
 
             {reachedLimit ? (
               <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-lg flex items-center gap-2.5 text-xs text-amber-800">
                 <AlertCircle size={16} className="text-amber-500 flex-shrink-0" />
-                <span>Достигнут максимальный лимит 5 способов уведомлений. Удалите один из текущих для добавления нового.</span>
+                <span>{t('settings.methodsLimitReached')}</span>
               </div>
             ) : (
               <div className="space-y-4">
@@ -258,9 +258,9 @@ export default function SettingsPage() {
                     onChange={e => setNewMethodType(e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="email">Email адрес</option>
-                    <option value="telegram">Telegram Бот</option>
-                    <option value="max">Max Бот</option>
+                    <option value="email">{t('settings.typeEmail')}</option>
+                    <option value="telegram">{t('settings.typeTelegram')}</option>
+                    <option value="max">{t('settings.typeMax')}</option>
                   </select>
                 </div>
 
@@ -292,10 +292,10 @@ export default function SettingsPage() {
                       <Bot className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
                       <div className="space-y-1">
                         <h4 className="text-xs font-bold text-slate-800">
-                          Подключение {newMethodType === 'telegram' ? 'Telegram' : 'Max'} бота
+                          {t('settings.connectBotTitle').replace('{{bot}}', newMethodType === 'telegram' ? 'Telegram' : 'Max')}
                         </h4>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          Для привязки перейдите по кнопке ниже в бот и нажмите «Старт». Наша система автоматически распознает ваше устройство и привяжет уведомления к вашему кабинету.
+                          {t('settings.connectBotDescription')}
                         </p>
                       </div>
                     </div>
@@ -311,10 +311,10 @@ export default function SettingsPage() {
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md hover:shadow-indigo-600/20"
                       >
                         <ExternalLink size={14} />
-                        <span>Открыть в Telegram</span>
+                        <span>{t('settings.openInTelegram')}</span>
                       </a>
                     ) : (
-                      <span className="text-xs text-slate-400 animate-pulse">Генерация ссылки...</span>
+                      <span className="text-xs text-slate-400 animate-pulse">{t('settings.generatingLink')}</span>
                     )}
                   </div>
                 )}

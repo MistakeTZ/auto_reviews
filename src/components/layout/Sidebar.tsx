@@ -135,7 +135,7 @@ export default function Sidebar() {
       </aside>
 
       {/* Desktop Sidebar (existing code) */}
-      <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen sticky top-0 shadow-sm z-10">
+      <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen max-h-screen sticky top-0 overflow-hidden shadow-sm z-10">
         <div className="p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-black text-indigo-600 tracking-tight">reAnswer</h1>
@@ -146,14 +146,14 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1.5 mt-2">
+        <nav className="flex-1 min-h-0 overflow-y-auto px-4 space-y-1.5 mt-2">
           <Link href="/dashboard" className={linkClass('/dashboard')}><LayoutDashboard size={18} /><span>{t('common.dashboard')}</span></Link>
           <Link href="/reviews" className={linkClass('/reviews')}><MessageSquare size={18} /><span>{t('common.reviewsInbox')}</span></Link>
           <Link href="/rules" className={linkClass('/rules')}><ShieldAlert size={18} /><span>{t('common.autoAnswerRules')}</span></Link>
           <Link href="/settings" className={linkClass('/settings')}><Settings size={18} /><span>{t('common.settings')}</span></Link>
         </nav>
 
-        <div className="p-4 m-4 bg-slate-50 rounded-2xl border border-slate-100">
+        <div className="p-4 m-4 mt-3 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-200">
               {(userName || t('common.sellerAccount'))[0].toUpperCase()}
