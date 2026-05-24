@@ -32,6 +32,7 @@ class Rule(Base):
     with_video = Column(Boolean, default=False, nullable=True)
     with_photo = Column(Boolean, default=False, nullable=True)
     with_name = Column(Boolean, default=False, nullable=True)
+    priority = Column(Integer, default=0, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="rules")

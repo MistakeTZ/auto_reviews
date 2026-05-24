@@ -32,13 +32,44 @@ def update_user_token(db: Session, user_id: int, token: str):
     return db_user
 
 
+from sqlalchemy import func
+
+
 def get_rules(db: Session, user_id: int):
-    return db.query(models.Rule).filter(models.Rule.user_id == user_id).all()
+    return (
+        db.query(models.Rule)
+        .filter(models.Rule.user_id == user_id)
+        .order_by(models.Rule.priority.desc())
+        .all()
+    )
 
 
 def create_rule(db: Session, rule: schemas.RuleCreate, user_id: int):
-    db_rule = models.Rule(**rule.model_dump(), user_id=user_id)
+    max_order = (
+        db.query(func.max(models.Rule.priority))
+        .filter(models.Rule.user_id == user_id)
+        .scalar()
+    )
+    new_order = (max_order or 0) + 1
+    db_rule = models.Rule(**rule.model_dump(), user_id=user_id, priority=new_order)
     db.add(db_rule)
+    db.commit()
+    db.refresh(db_rule)
+    return db_rule
+
+
+def update_rule(
+    db: Session, rule_id: int, rule_update: schemas.RuleUpdate, user_id: int
+):
+    db_rule = (
+        db.query(models.Rule)
+        .filter(models.Rule.id == rule_id, models.Rule.user_id == user_id)
+        .first()
+    )
+    if not db_rule:
+        return None
+    for key, value in rule_update.model_dump(exclude_unset=True).items():
+        setattr(db_rule, key, value)
     db.commit()
     db.refresh(db_rule)
     return db_rule

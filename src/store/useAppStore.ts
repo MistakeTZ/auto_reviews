@@ -33,6 +33,7 @@ export interface Rule {
   withVideo?: boolean;
   withPhoto?: boolean;
   withName?: boolean;
+  priority?: number;
 }
 
 interface AppState {
@@ -52,6 +53,7 @@ interface AppState {
   fetchReviews: () => Promise<void>;
   setToken: (token: string) => Promise<void>;
   addRule: (rule: Omit<Rule, 'id'>) => Promise<void>;
+  updateRule: (id: string, rule: Partial<Rule>) => Promise<void>;
   deleteRule: (id: string) => Promise<void>;
   markReviewAsAnswered: (id: string, text: string) => Promise<void>;
 }
@@ -66,13 +68,13 @@ export const useAppStore = create<AppState>()(
       products: [],
       reviews: [],
       rules: [],
-      
+
       login: (token: string) => set({ isAuthenticated: true, jwtToken: token }),
-      
+
       logout: () => set({ isAuthenticated: false, jwtToken: null, apiToken: null, reviews: [], rules: [], products: [] }),
-      
+
       setLanguage: (lang) => set({ language: lang }),
-      
+
       fetchMe: async () => {
         const { jwtToken } = get();
         if (!jwtToken) return;
@@ -119,19 +121,22 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
-            set({ rules: data.map((r: any) => ({ 
-              ...r, 
-              id: String(r.id), 
-              nmId: r.nm_id, 
-              conditionRatingOperator: r.condition_rating_operator, 
-              conditionRating: r.condition_rating, 
-              conditionKeyword: r.condition_keyword, 
-              actionType: r.action_type ?? 'template', 
-              actionText: r.action_text,
-              withVideo: r.with_video,
-              withPhoto: r.with_photo,
-              withName: r.with_name
-            })) });
+            set({
+              rules: data.map((r: any) => ({
+                ...r,
+                id: String(r.id),
+                nmId: r.nm_id,
+                conditionRatingOperator: r.condition_rating_operator,
+                conditionRating: r.condition_rating,
+                conditionKeyword: r.condition_keyword,
+                actionType: r.action_type ?? 'template',
+                actionText: r.action_text,
+                withVideo: r.with_video,
+                withPhoto: r.with_photo,
+                withName: r.with_name,
+                priority: r.priority
+              }))
+            });
           }
         } catch (e) {
           console.error(e);
@@ -159,9 +164,9 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         const res = await fetch(`${API_URL}/settings/token`, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${jwtToken}` 
+            Authorization: `Bearer ${jwtToken}`
           },
           body: JSON.stringify({ token })
         });
@@ -193,9 +198,9 @@ export const useAppStore = create<AppState>()(
           };
           const res = await fetch(`${API_URL}/rules/`, {
             method: 'POST',
-            headers: { 
+            headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}` 
+              Authorization: `Bearer ${jwtToken}`
             },
             body: JSON.stringify(payload)
           });
@@ -213,7 +218,8 @@ export const useAppStore = create<AppState>()(
               actionText: r.action_text,
               withVideo: r.with_video,
               withPhoto: r.with_photo,
-              withName: r.with_name
+              withName: r.with_name,
+              priority: r.priority
             };
             set({ rules: [...rules, newRule] });
           }
@@ -238,15 +244,67 @@ export const useAppStore = create<AppState>()(
         }
       },
 
+      updateRule: async (id, updatedFields) => {
+        const { jwtToken, rules } = get();
+        if (!jwtToken) return;
+        try {
+          const payload: any = {};
+          if (updatedFields.name !== undefined) payload.name = updatedFields.name;
+          if (updatedFields.target !== undefined) payload.target = updatedFields.target;
+          if (updatedFields.nmId !== undefined) payload.nm_id = updatedFields.nmId || null;
+          if (updatedFields.conditionRatingOperator !== undefined) payload.condition_rating_operator = updatedFields.conditionRatingOperator;
+          if (updatedFields.conditionRating !== undefined) payload.condition_rating = updatedFields.conditionRating;
+          if (updatedFields.conditionKeyword !== undefined) payload.condition_keyword = updatedFields.conditionKeyword || null;
+          if (updatedFields.actionType !== undefined) payload.action_type = updatedFields.actionType;
+          if (updatedFields.actionText !== undefined) payload.action_text = updatedFields.actionText;
+          if (updatedFields.withVideo !== undefined) payload.with_video = updatedFields.withVideo;
+          if (updatedFields.withPhoto !== undefined) payload.with_photo = updatedFields.withPhoto;
+          if (updatedFields.withName !== undefined) payload.with_name = updatedFields.withName;
+          if (updatedFields.priority !== undefined) payload.priority = updatedFields.priority;
+
+          const res = await fetch(`${API_URL}/rules/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const r = await res.json();
+            const updatedRule: Rule = {
+              id: String(r.id),
+              name: r.name,
+              target: r.target,
+              nmId: r.nm_id,
+              conditionRatingOperator: r.condition_rating_operator,
+              conditionRating: r.condition_rating,
+              conditionKeyword: r.condition_keyword,
+              actionType: r.action_type ?? 'template',
+              actionText: r.action_text,
+              withVideo: r.with_video,
+              withPhoto: r.with_photo,
+              withName: r.with_name,
+              priority: r.priority
+            };
+            set({
+              rules: rules.map(rule => rule.id === id ? updatedRule : rule)
+            });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
+
       markReviewAsAnswered: async (id: string, text: string) => {
         const { jwtToken, reviews } = get();
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/reviews/${id}/reply`, {
             method: 'POST',
-            headers: { 
+            headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}` 
+              Authorization: `Bearer ${jwtToken}`
             },
             body: JSON.stringify({ text })
           });
@@ -262,11 +320,11 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'auto-reviews-storage',
-      partialize: (state) => ({ 
-        isAuthenticated: state.isAuthenticated, 
-        jwtToken: state.jwtToken, 
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        jwtToken: state.jwtToken,
         language: state.language,
-        apiToken: state.apiToken 
+        apiToken: state.apiToken
       }),
     }
   )

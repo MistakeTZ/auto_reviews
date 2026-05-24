@@ -6,6 +6,7 @@ from routers import auth, rules, reviews, settings, products
 import sqlite3
 import os
 
+
 def run_migrations():
     db_url = os.getenv("DATABASE_URL", "sqlite:///./autoreviews.db")
     if db_url.startswith("sqlite:///"):
@@ -13,15 +14,21 @@ def run_migrations():
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            for col in ["with_video", "with_photo", "with_name"]:
+            for col, col_type in [
+                ("with_video", "BOOLEAN DEFAULT 0"),
+                ("with_photo", "BOOLEAN DEFAULT 0"),
+                ("with_name", "BOOLEAN DEFAULT 0"),
+                ("priority", "INTEGER DEFAULT 0"),
+            ]:
                 try:
-                    cursor.execute(f"ALTER TABLE rules ADD COLUMN {col} BOOLEAN DEFAULT 0")
+                    cursor.execute(f"ALTER TABLE rules ADD COLUMN {col} {col_type}")
                 except sqlite3.OperationalError:
                     pass
             conn.commit()
             conn.close()
         except Exception as e:
             print("Automatic SQLite migrations warning:", e)
+
 
 run_migrations()
 
@@ -52,4 +59,4 @@ def health_check():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, port=8000)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

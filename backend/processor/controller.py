@@ -129,6 +129,14 @@ class MainController:
         nm_id = str(feedback.get("nmId") or "").strip()
         rating = feedback.get("productValuation")
         text = (feedback.get("text") or "").lower()
+        cons = (feedback.get("cons") or "").lower()
+        pros = (feedback.get("pros") or "").lower()
+
+        if cons:
+            text += f"\nНедостатки: {cons}"
+
+        if pros:
+            text += f"\nДостоинства: {pros}"
 
         for rule in rules:
             # Check nm_id match
@@ -225,16 +233,34 @@ class MainController:
                 db.close()
             except Exception as exc:
                 logger.exception("[feedbacks] failed to load rules: %s", exc)
+        if not rules:
+            logger.warning("[feedbacks] no rules found")
+            return
 
         count = await self.processor.get_count_unanswered_feedbacks()
-        if count == 0:
+        answered_feedbacks = await self.processor.get_feedbacks(
+            is_answered=True, take=3
+        )
+        answered_feedbacks = [
+            f
+            for f in answered_feedbacks
+            if not (f.get("answer") or f.get("autoAnswer"))
+        ]
+
+        if count == 0 and len(answered_feedbacks) == 0:
             logger.debug("[feedbacks] no unanswered feedbacks, skipping answer step")
         else:
             logger.info("[feedbacks] %d unanswered feedback(s) found", count)
-            feedbacks = await self.processor.get_feedbacks(is_answered=False, take=50)
+            feedbacks = []
+            if count:
+                feedbacks = await self.processor.get_feedbacks(
+                    is_answered=False, take=50
+                )
+            feedbacks += answered_feedbacks
+
             for feedback in feedbacks:
                 feedback_id = str(feedback.get("id", ""))
-                if not feedback_id:
+                if not feedback_id or feedback.get("answer"):
                     continue
 
                 matched_rule = self._match_rule(rules, feedback)
@@ -276,55 +302,6 @@ class MainController:
                         "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
                     )
                     self._upsert_review_in_db(feedback, text, "manual-review")
-
-        # Audit: WB can auto-mark feedbacks as answered even with no reply text.
-        # Fetch 5 recently "answered" feedbacks and re-answer any that have no text.
-        answered_feedbacks = await self.processor.get_feedbacks(
-            is_answered=True, take=5
-        )
-        for feedback in answered_feedbacks:
-            feedback_id = str(feedback.get("id", ""))
-            if not feedback_id:
-                continue
-            answer = feedback.get("answer") or {}
-            if answer.get("text", "").strip():
-                # Persist answered feedback to DB even if already answered
-                self._upsert_review_in_db(
-                    feedback, answer.get("text", ""), "auto-answered"
-                )
-                continue  # real answer present, skip re-answering
-
-            logger.info(
-                "[feedbacks] audit: re-answering feedback_id=%s (no answer text)",
-                feedback_id,
-            )
-            matched_rule = self._match_rule(rules, feedback)
-            if matched_rule is not None and matched_rule.action_type == "template":
-                text = matched_rule.action_text
-                user_name = (feedback.get("userName") or "").strip()
-                if user_name:
-                    text = text.replace("[name]", user_name)
-                else:
-                    text = text.replace(", [name]", "").replace("[name]", "")
-            else:
-                text = await self._build_feedback_answer(feedback)
-
-            if not text.strip():
-                continue
-            response = await self.processor.answer_feedback(
-                feedback_id=feedback_id, text=text
-            )
-            if self._is_success_response(response):
-                logger.info(
-                    "[feedbacks] audit: re-answered feedback_id=%s", feedback_id
-                )
-                self._upsert_review_in_db(feedback, text, "auto-answered")
-            else:
-                logger.warning(
-                    "[feedbacks] audit: failed to re-answer feedback_id=%s: %s",
-                    feedback_id,
-                    response,
-                )
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []

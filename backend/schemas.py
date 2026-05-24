@@ -1,12 +1,15 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
+
 class UserBase(BaseModel):
     email: EmailStr
     name: str
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class User(UserBase):
     id: int
@@ -15,9 +18,11 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+
 
 class RuleBase(BaseModel):
     name: str
@@ -31,9 +36,27 @@ class RuleBase(BaseModel):
     with_video: Optional[bool] = False
     with_photo: Optional[bool] = False
     with_name: Optional[bool] = False
+    priority: Optional[int] = 0
+
 
 class RuleCreate(RuleBase):
     pass
+
+
+class RuleUpdate(BaseModel):
+    name: Optional[str] = None
+    target: Optional[str] = None
+    nm_id: Optional[str] = None
+    condition_rating_operator: Optional[str] = None
+    condition_rating: Optional[int] = None
+    condition_keyword: Optional[str] = None
+    action_text: Optional[str] = None
+    action_type: Optional[str] = None
+    with_video: Optional[bool] = None
+    with_photo: Optional[bool] = None
+    with_name: Optional[bool] = None
+    priority: Optional[int] = None
+
 
 class Rule(RuleBase):
     id: int
@@ -41,6 +64,7 @@ class Rule(RuleBase):
 
     class Config:
         from_attributes = True
+
 
 class ReviewBase(BaseModel):
     wb_review_id: str
@@ -52,8 +76,10 @@ class ReviewBase(BaseModel):
     status: str
     auto_answer_text: Optional[str] = None
 
+
 class ReviewCreate(ReviewBase):
     pass
+
 
 class Review(ReviewBase):
     id: int

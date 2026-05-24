@@ -29,6 +29,21 @@ def create_rule(
     return crud.create_rule(db=db, rule=rule, user_id=current_user.id)
 
 
+@router.put("/{rule_id}", response_model=schemas.Rule)
+def update_rule(
+    rule_id: int,
+    rule_update: schemas.RuleUpdate,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    updated = crud.update_rule(
+        db=db, rule_id=rule_id, rule_update=rule_update, user_id=current_user.id
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    return updated
+
+
 @router.delete("/{rule_id}")
 def delete_rule(
     rule_id: int,
