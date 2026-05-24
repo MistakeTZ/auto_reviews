@@ -102,6 +102,10 @@ async def sync_reviews(
                     match = False
                 if getattr(rule, "with_name", False) and not user_name:
                     match = False
+                if getattr(rule, "is_edited_feedback", False) and not bool(
+                    fb.get("parentFeedbackId")
+                ):
+                    match = False
 
             if match:
                 matched_rule = rule
@@ -159,11 +163,14 @@ async def reply_to_review(
         raise HTTPException(status_code=404, detail="Review not found")
 
     async with ChatProcessor(current_user.wb_api_token) as processor:
-        res = await processor.answer_feedback(db_review.wb_review_id, request.text)
-        if isinstance(res, dict) and res.get("error"):
+        res = await processor.answer_feedback(
+            db_review.wb_review_id,
+            request.text,
+        )
+        if res is not True:
             raise HTTPException(
                 status_code=400,
-                detail=res.get("errorText", "Failed to reply to feedback on WB"),
+                detail=res.get("detail", "Failed to reply to feedback on WB"),
             )
 
     # Update in DB after success

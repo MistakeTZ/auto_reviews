@@ -30,7 +30,11 @@ export default function RulesPage() {
     actionText: '',
     withVideo: false,
     withPhoto: false,
-    withName: false
+    withName: false,
+    sendNotification: false,
+    isEditedFeedback: false,
+    telegramNotification: false,
+    maxNotification: false
   });
 
   const handleSave = () => {
@@ -53,7 +57,11 @@ export default function RulesPage() {
         actionText: '',
         withVideo: false,
         withPhoto: false,
-        withName: false
+        withName: false,
+        sendNotification: false,
+        isEditedFeedback: false,
+        telegramNotification: false,
+        maxNotification: false
       });
     }
   };
@@ -72,7 +80,11 @@ export default function RulesPage() {
       actionText: '',
       withVideo: false,
       withPhoto: false,
-      withName: false
+      withName: false,
+      sendNotification: false,
+      isEditedFeedback: false,
+      telegramNotification: false,
+      maxNotification: false
     });
   };
 
@@ -89,7 +101,11 @@ export default function RulesPage() {
       actionText: rule.actionText,
       withVideo: rule.withVideo || false,
       withPhoto: rule.withPhoto || false,
-      withName: rule.withName || false
+      withName: rule.withName || false,
+      sendNotification: rule.sendNotification || false,
+      isEditedFeedback: rule.isEditedFeedback || false,
+      telegramNotification: rule.telegramNotification || false,
+      maxNotification: rule.maxNotification || false
     });
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -292,6 +308,32 @@ export default function RulesPage() {
                   />
                   <span>С именем покупателя</span>
                 </label>
+                <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                  <input
+                    type="checkbox"
+                    checked={!!newRule.isEditedFeedback}
+                    onChange={e => setNewRule({ ...newRule, isEditedFeedback: e.target.checked })}
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
+                  />
+                  <span>Измененный отзыв</span>
+                </label>
+                <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                  <input
+                    type="checkbox"
+                    checked={!!newRule.sendNotification}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      setNewRule({
+                        ...newRule,
+                        sendNotification: checked,
+                        telegramNotification: checked ? newRule.telegramNotification : false,
+                        maxNotification: checked ? newRule.maxNotification : false
+                      });
+                    }}
+                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
+                  />
+                  <span>Присылать уведомление</span>
+                </label>
               </div>
             </div>
 
@@ -432,11 +474,17 @@ export default function RulesPage() {
                       )}
                     </div>
 
-                    {(rule.withVideo || rule.withPhoto || rule.withName) && (
+                    {(rule.withVideo || rule.withPhoto || rule.withName || rule.isEditedFeedback || rule.sendNotification) && (
                       <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-200/50">
                         {rule.withVideo && <span className="bg-purple-50 text-purple-700 border border-purple-100 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">С видео</span>}
                         {rule.withPhoto && <span className="bg-purple-50 text-purple-700 border border-purple-100 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">С фото</span>}
                         {rule.withName && <span className="bg-purple-50 text-purple-700 border border-purple-100 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">С именем</span>}
+                        {rule.isEditedFeedback && <span className="bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">Измененный отзыв</span>}
+                        {rule.sendNotification && (
+                          <span className="bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">
+                            Уведомление
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

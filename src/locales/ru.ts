@@ -152,7 +152,5 @@ export const ru = {
     preferences: 'Предпочтения',
     emailNotif: 'Email уведомления',
     emailNotifDesc: 'Получать ежедневную сводку по автоответам на почту.',
-    autoArchive: 'Авто-архивация отвеченных',
-    autoArchiveDesc: 'Автоматически скрывать отзывы из списка после ответа.',
   }
 };

@@ -37,6 +37,8 @@ class RuleBase(BaseModel):
     with_photo: Optional[bool] = False
     with_name: Optional[bool] = False
     priority: Optional[int] = 0
+    send_notification: Optional[bool] = False
+    is_edited_feedback: Optional[bool] = False
 
 
 class RuleCreate(RuleBase):
@@ -56,6 +58,8 @@ class RuleUpdate(BaseModel):
     with_photo: Optional[bool] = None
     with_name: Optional[bool] = None
     priority: Optional[int] = None
+    send_notification: Optional[bool] = None
+    is_edited_feedback: Optional[bool] = None
 
 
 class Rule(RuleBase):

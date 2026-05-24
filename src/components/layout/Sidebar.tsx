@@ -8,7 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useEffect, useState } from 'react';
 
 export default function Sidebar() {
-  const { isAuthenticated, jwtToken, logout, fetchMe, fetchProducts, fetchRules, fetchReviews } = useAppStore();
+  const { isAuthenticated, jwtToken, logout, fetchMe, fetchProducts, fetchRules, fetchReviews, userName } = useAppStore();
   const { t, language, setLanguage } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
@@ -114,10 +114,10 @@ export default function Sidebar() {
         <div className="p-4 m-4 bg-slate-50 rounded-2xl border border-slate-100">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-200">
-              S
+              {(userName || t('common.sellerAccount'))[0].toUpperCase()}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-bold text-slate-800 truncate">{t('common.sellerAccount')}</p>
+              <p className="text-sm font-bold text-slate-800 truncate">{userName || t('common.sellerAccount')}</p>
               <p className="text-xs text-slate-500 truncate">Active Plan</p>
             </div>
           </div>
@@ -156,10 +156,10 @@ export default function Sidebar() {
         <div className="p-4 m-4 bg-slate-50 rounded-2xl border border-slate-100">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-200">
-              S
+              {(userName || t('common.sellerAccount'))[0].toUpperCase()}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-bold text-slate-800 truncate">{t('common.sellerAccount')}</p>
+              <p className="text-sm font-bold text-slate-800 truncate">{userName || t('common.sellerAccount')}</p>
               <p className="text-xs text-slate-500 truncate">Active Plan</p>
             </div>
           </div>

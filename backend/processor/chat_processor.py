@@ -146,7 +146,12 @@ class ChatProcessor:
                             return candidate
         return []
 
-    async def answer_feedback(self, feedback_id: str, text: str) -> Dict:
+    async def answer_feedback(
+        self,
+        feedback_id: str,
+        text: str,
+    ) -> Dict:
+        return {"feedback_id": feedback_id, "text": text}
         endpoints = [
             (
                 "https://feedbacks-api.wildberries.ru/api/v1/feedbacks/answer",
@@ -158,16 +163,17 @@ class ChatProcessor:
             ),
         ]
 
-        last_response: Dict = {}
+        last_response = {}
         for url, payload in endpoints:
             for request in (self._post, self._patch):
                 try:
                     res = await request(url, json_data=payload)
                 except Exception:
                     continue
-                last_response = res if isinstance(res, dict) else {"raw": res}
-                if isinstance(last_response, dict) and not last_response.get("error"):
-                    return last_response
+                if res.status == 204:
+                    return True
+
+                last_response = res
 
         return last_response
 

@@ -34,12 +34,17 @@ export interface Rule {
   withPhoto?: boolean;
   withName?: boolean;
   priority?: number;
+  sendNotification?: boolean;
+  isEditedFeedback?: boolean;
+  telegramNotification?: boolean;
+  maxNotification?: boolean;
 }
 
 interface AppState {
   isAuthenticated: boolean;
   jwtToken: string | null;
   apiToken: string | null;
+  userName: string | null;
   language: 'en' | 'ru';
   reviews: Review[];
   rules: Rule[];
@@ -64,6 +69,7 @@ export const useAppStore = create<AppState>()(
       isAuthenticated: false,
       jwtToken: null,
       apiToken: null,
+      userName: null,
       language: 'ru',
       products: [],
       reviews: [],
@@ -71,7 +77,7 @@ export const useAppStore = create<AppState>()(
 
       login: (token: string) => set({ isAuthenticated: true, jwtToken: token }),
 
-      logout: () => set({ isAuthenticated: false, jwtToken: null, apiToken: null, reviews: [], rules: [], products: [] }),
+      logout: () => set({ isAuthenticated: false, jwtToken: null, apiToken: null, userName: null, reviews: [], rules: [], products: [] }),
 
       setLanguage: (lang) => set({ language: lang }),
 
@@ -84,7 +90,7 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
-            set({ apiToken: data.wb_api_token });
+            set({ apiToken: data.wb_api_token, userName: data.name });
           } else if (res.status === 401) {
             get().logout();
           }
@@ -134,7 +140,9 @@ export const useAppStore = create<AppState>()(
                 withVideo: r.with_video,
                 withPhoto: r.with_photo,
                 withName: r.with_name,
-                priority: r.priority
+                priority: r.priority,
+                sendNotification: r.send_notification,
+                isEditedFeedback: r.is_edited_feedback,
               }))
             });
           }
@@ -194,7 +202,9 @@ export const useAppStore = create<AppState>()(
             action_text: rule.actionText,
             with_video: rule.withVideo || false,
             with_photo: rule.withPhoto || false,
-            with_name: rule.withName || false
+            with_name: rule.withName || false,
+            send_notification: rule.sendNotification || false,
+            is_edited_feedback: rule.isEditedFeedback || false,
           };
           const res = await fetch(`${API_URL}/rules/`, {
             method: 'POST',
@@ -219,7 +229,9 @@ export const useAppStore = create<AppState>()(
               withVideo: r.with_video,
               withPhoto: r.with_photo,
               withName: r.with_name,
-              priority: r.priority
+              priority: r.priority,
+              sendNotification: r.send_notification,
+              isEditedFeedback: r.is_edited_feedback
             };
             set({ rules: [...rules, newRule] });
           }
@@ -261,6 +273,8 @@ export const useAppStore = create<AppState>()(
           if (updatedFields.withPhoto !== undefined) payload.with_photo = updatedFields.withPhoto;
           if (updatedFields.withName !== undefined) payload.with_name = updatedFields.withName;
           if (updatedFields.priority !== undefined) payload.priority = updatedFields.priority;
+          if (updatedFields.sendNotification !== undefined) payload.send_notification = updatedFields.sendNotification;
+          if (updatedFields.isEditedFeedback !== undefined) payload.is_edited_feedback = updatedFields.isEditedFeedback;
 
           const res = await fetch(`${API_URL}/rules/${id}`, {
             method: 'PUT',
@@ -285,7 +299,9 @@ export const useAppStore = create<AppState>()(
               withVideo: r.with_video,
               withPhoto: r.with_photo,
               withName: r.with_name,
-              priority: r.priority
+              priority: r.priority,
+              sendNotification: r.send_notification,
+              isEditedFeedback: r.is_edited_feedback
             };
             set({
               rules: rules.map(rule => rule.id === id ? updatedRule : rule)

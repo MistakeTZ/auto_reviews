@@ -19,6 +19,8 @@ def run_migrations():
                 ("with_photo", "BOOLEAN DEFAULT 0"),
                 ("with_name", "BOOLEAN DEFAULT 0"),
                 ("priority", "INTEGER DEFAULT 0"),
+                ("send_notification", "BOOLEAN DEFAULT 0"),
+                ("is_edited_feedback", "BOOLEAN DEFAULT 0"),
             ]:
                 try:
                     cursor.execute(f"ALTER TABLE rules ADD COLUMN {col} {col_type}")

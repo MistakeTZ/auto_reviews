@@ -150,7 +150,5 @@ export const en = {
     preferences: 'Preferences',
     emailNotif: 'Email Notifications',
     emailNotifDesc: 'Receive an email summary of auto-answered reviews daily.',
-    autoArchive: 'Auto-Archive Replied',
-    autoArchiveDesc: 'Automatically hide reviews from the inbox once they are answered.',
   }
 };

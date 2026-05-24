@@ -101,24 +101,13 @@ export default function SettingsPage() {
           <CardTitle>{t('settings.preferences')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 border-gray-800">
+          <div className="flex items-center justify-between py-2">
             <div>
               <p className="font-medium">{t('settings.emailNotif')}</p>
               <p className="text-sm text-gray-500">{t('settings.emailNotifDesc')}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 peer-focus:ring-purple-800 rounded-full peer bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-purple-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="font-medium">{t('settings.autoArchive')}</p>
-              <p className="text-sm text-gray-500">{t('settings.autoArchiveDesc')}</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 peer-focus:ring-purple-800 rounded-full peer bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all border-gray-600 peer-checked:bg-purple-600"></div>
             </label>
           </div>

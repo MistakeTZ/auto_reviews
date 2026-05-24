@@ -184,6 +184,12 @@ class MainController:
                 if not user_name or user_name.startswith("Покупатель"):
                     continue
 
+            # Check is_edited_feedback condition
+            if getattr(rule, "is_edited_feedback", False):
+                is_edited = bool(feedback.get("parentFeedbackId"))
+                if not is_edited:
+                    continue
+
             return rule
 
         return None
@@ -291,7 +297,7 @@ class MainController:
                 response = await self.processor.answer_feedback(
                     feedback_id=feedback_id, text=text
                 )
-                if self._is_success_response(response):
+                if response is True:
                     logger.info(
                         "[feedbacks] answered feedback_id=%s (rule=%s)",
                         feedback_id,

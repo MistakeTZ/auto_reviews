@@ -33,6 +33,8 @@ class Rule(Base):
     with_photo = Column(Boolean, default=False, nullable=True)
     with_name = Column(Boolean, default=False, nullable=True)
     priority = Column(Integer, default=0, nullable=True)
+    send_notification = Column(Boolean, default=False, nullable=True)
+    is_edited_feedback = Column(Boolean, default=False, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="rules")
