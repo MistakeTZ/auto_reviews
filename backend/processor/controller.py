@@ -1,3 +1,4 @@
+from aiohttp import web_urldispatcher
 import asyncio
 import json
 import logging
@@ -180,7 +181,7 @@ class MainController:
 
             if getattr(rule, "with_name", False):
                 user_name = (feedback.get("userName") or "").strip()
-                if not user_name:
+                if not user_name or user_name.startswith("Покупатель"):
                     continue
 
             return rule
@@ -268,7 +269,7 @@ class MainController:
                 if matched_rule is not None and matched_rule.action_type == "template":
                     text = matched_rule.action_text
                     user_name = (feedback.get("userName") or "").strip()
-                    if user_name:
+                    if user_name and not user_name.startswith("Покупатель"):
                         text = text.replace("[name]", user_name)
                     else:
                         text = text.replace(", [name]", "").replace("[name]", "")
@@ -463,6 +464,8 @@ class MainController:
         if not self.use_gpt_for_feedbacks:
             valuation = feedback.get("productValuation")
             user_name = (feedback.get("userName") or "").strip()
+            if user_name and user_name.startswith("Покупатель"):
+                user_name = None
 
             is_positive = valuation is None or int(valuation) >= 4
 
@@ -480,6 +483,8 @@ class MainController:
         cons = (feedback.get("cons") or "").strip()
         valuation = feedback.get("productValuation")
         user_name = (feedback.get("userName") or "").strip()
+        if user_name and user_name.startswith("Покупатель"):
+            user_name = None
         subject_name = (feedback.get("subjectName") or "").strip()
         has_video = bool(feedback.get("video"))
         photo_count = len(feedback.get("photoLinks") or [])

@@ -54,6 +54,9 @@ async def sync_reviews(
         nm_id = product_details.get("nmId", "")
         product_name = product_details.get("productName", "Unknown Product")
         created_date = fb.get("createdDate", "")
+        user_name = (fb.get("userName") or "").strip()
+        if user_name and user_name.startswith("Покупатель"):
+            user_name = None
 
         # Check rules
         auto_answer = None
@@ -92,9 +95,12 @@ async def sync_reviews(
                 # Check new checkbox conditions
                 if getattr(rule, "with_video", False) and not bool(fb.get("video")):
                     match = False
-                if getattr(rule, "with_photo", False) and len(fb.get("photoLinks") or []) == 0:
+                if (
+                    getattr(rule, "with_photo", False)
+                    and len(fb.get("photoLinks") or []) == 0
+                ):
                     match = False
-                if getattr(rule, "with_name", False) and not (fb.get("userName") or "").strip():
+                if getattr(rule, "with_name", False) and not user_name:
                     match = False
 
             if match:
@@ -105,11 +111,12 @@ async def sync_reviews(
             status = "manual-review"  # Default to manual review for safety
             if getattr(matched_rule, "action_type", "template") == "template":
                 auto_answer = matched_rule.action_text
-                user_name = (fb.get("userName") or "").strip()
                 if user_name:
                     auto_answer = auto_answer.replace("[name]", user_name)
                 else:
-                    auto_answer = auto_answer.replace(", [name]", "").replace("[name]", "")
+                    auto_answer = auto_answer.replace(", [name]", "").replace(
+                        "[name]", ""
+                    )
             elif getattr(matched_rule, "action_type", "template") == "ai":
                 # AI generation placeholder
                 auto_answer = f"[AI Generated based on: {matched_rule.action_text}] Thank you for your feedback!"
