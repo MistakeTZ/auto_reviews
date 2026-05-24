@@ -28,6 +28,9 @@ class RuleBase(BaseModel):
     condition_keyword: Optional[str] = None
     action_text: str
     action_type: str = "template"
+    with_video: Optional[bool] = False
+    with_photo: Optional[bool] = False
+    with_name: Optional[bool] = False
 
 class RuleCreate(RuleBase):
     pass

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -29,6 +29,9 @@ class Rule(Base):
     condition_keyword = Column(String, nullable=True)
     action_text = Column(String)
     action_type = Column(String, default="template")
+    with_video = Column(Boolean, default=False, nullable=True)
+    with_photo = Column(Boolean, default=False, nullable=True)
+    with_name = Column(Boolean, default=False, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="rules")

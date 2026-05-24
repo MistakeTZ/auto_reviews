@@ -5,6 +5,9 @@ import openai
 
 class AsyncOpenAIClient:
     def __init__(self, api_key: Optional[str] = None):
+        if not api_key:
+            self.client = None
+            return
         self.client = openai.AsyncOpenAI(api_key=api_key)
 
     async def chat_completion(
@@ -15,6 +18,8 @@ class AsyncOpenAIClient:
         max_tokens: Optional[int] = None,
     ) -> str:
         """Send a chat message and get a response."""
+        if not self.client:
+            return ""
         response = await self.client.chat.completions.create(
             model=model,
             messages=messages,

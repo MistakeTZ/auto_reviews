@@ -30,6 +30,9 @@ export interface Rule {
   conditionKeyword: string;
   actionType: 'template' | 'gpt';
   actionText: string;
+  withVideo?: boolean;
+  withPhoto?: boolean;
+  withName?: boolean;
 }
 
 interface AppState {
@@ -116,7 +119,19 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
-            set({ rules: data.map((r: any) => ({ ...r, id: String(r.id), nmId: r.nm_id, conditionRatingOperator: r.condition_rating_operator, conditionRating: r.condition_rating, conditionKeyword: r.condition_keyword, actionType: r.action_type ?? 'template', actionText: r.action_text })) });
+            set({ rules: data.map((r: any) => ({ 
+              ...r, 
+              id: String(r.id), 
+              nmId: r.nm_id, 
+              conditionRatingOperator: r.condition_rating_operator, 
+              conditionRating: r.condition_rating, 
+              conditionKeyword: r.condition_keyword, 
+              actionType: r.action_type ?? 'template', 
+              actionText: r.action_text,
+              withVideo: r.with_video,
+              withPhoto: r.with_photo,
+              withName: r.with_name
+            })) });
           }
         } catch (e) {
           console.error(e);
@@ -171,7 +186,10 @@ export const useAppStore = create<AppState>()(
             condition_rating: rule.conditionRating,
             condition_keyword: rule.conditionKeyword || null,
             action_type: rule.actionType,
-            action_text: rule.actionText
+            action_text: rule.actionText,
+            with_video: rule.withVideo || false,
+            with_photo: rule.withPhoto || false,
+            with_name: rule.withName || false
           };
           const res = await fetch(`${API_URL}/rules/`, {
             method: 'POST',
@@ -192,7 +210,10 @@ export const useAppStore = create<AppState>()(
               conditionRating: r.condition_rating,
               conditionKeyword: r.condition_keyword,
               actionType: r.action_type ?? 'template',
-              actionText: r.action_text
+              actionText: r.action_text,
+              withVideo: r.with_video,
+              withPhoto: r.with_photo,
+              withName: r.with_name
             };
             set({ rules: [...rules, newRule] });
           }

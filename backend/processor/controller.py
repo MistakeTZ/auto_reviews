@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from .chat_processor import ChatProcessor
-from .gpt import AsyncOpenAIClient
+from processor.chat_processor import ChatProcessor
+from processor.gpt import AsyncOpenAIClient
 
 
 class MainController:
@@ -160,6 +160,21 @@ class MainController:
                 if rule.condition_keyword.lower() not in text:
                     continue
 
+            # Check new checkbox conditions
+            if getattr(rule, "with_video", False):
+                if not bool(feedback.get("video")):
+                    continue
+
+            if getattr(rule, "with_photo", False):
+                photo_count = len(feedback.get("photoLinks") or [])
+                if photo_count == 0:
+                    continue
+
+            if getattr(rule, "with_name", False):
+                user_name = (feedback.get("userName") or "").strip()
+                if not user_name:
+                    continue
+
             return rule
 
         return None
@@ -171,8 +186,8 @@ class MainController:
         if not self.db_factory or not self.user_id:
             return
 
-        from ..crud import upsert_review
-        from ..schemas import ReviewCreate
+        from crud import upsert_review
+        from schemas import ReviewCreate
 
         wb_review_id = str(feedback.get("id") or "")
         if not wb_review_id:
@@ -202,7 +217,7 @@ class MainController:
         # Load rules from DB once per poll cycle
         rules: List[Any] = []
         if self.db_factory and self.user_id:
-            from ..crud import get_rules
+            from crud import get_rules
 
             try:
                 db = self.db_factory()
@@ -226,6 +241,11 @@ class MainController:
 
                 if matched_rule is not None and matched_rule.action_type == "template":
                     text = matched_rule.action_text
+                    user_name = (feedback.get("userName") or "").strip()
+                    if user_name:
+                        text = text.replace("[name]", user_name)
+                    else:
+                        text = text.replace(", [name]", "").replace("[name]", "")
                     answer_status = "auto-answered"
                 else:
                     text = await self._build_feedback_answer(feedback)
@@ -281,6 +301,11 @@ class MainController:
             matched_rule = self._match_rule(rules, feedback)
             if matched_rule is not None and matched_rule.action_type == "template":
                 text = matched_rule.action_text
+                user_name = (feedback.get("userName") or "").strip()
+                if user_name:
+                    text = text.replace("[name]", user_name)
+                else:
+                    text = text.replace(", [name]", "").replace("[name]", "")
             else:
                 text = await self._build_feedback_answer(feedback)
 

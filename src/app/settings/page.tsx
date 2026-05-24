@@ -3,7 +3,7 @@
 import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [tokenInput, setTokenInput] = useState(apiToken || '');
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showToken, setShowToken] = useState(false);
 
   const handleTokenChange = (val: string) => {
     setTokenInput(val);
@@ -38,7 +39,7 @@ export default function SettingsPage() {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>{t('settings.wbApiIntegration')}{apiToken}</CardTitle>
+          <CardTitle>{t('settings.wbApiIntegration')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {!apiToken ? (
@@ -59,13 +60,22 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">{t('settings.apiToken')}</label>
-              <input
-                type="password"
-                value={tokenInput}
-                onChange={e => handleTokenChange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
-                placeholder=""
-              />
+              <div className="relative">
+                <input
+                  type={showToken ? "text" : "password"}
+                  value={tokenInput || apiToken || ''}
+                  onChange={e => handleTokenChange(e.target.value)}
+                  className="w-full pl-4 pr-12 py-2 border border-gray-300 border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  placeholder=""
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(!showToken)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400 focus:outline-none"
+                >
+                  {showToken ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               <p className="text-xs text-gray-500 mt-2">{t('settings.neverShareToken')}</p>
             </div>
 

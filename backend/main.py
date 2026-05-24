@@ -3,6 +3,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import Base
 from database import engine
 from routers import auth, rules, reviews, settings, products
+import sqlite3
+import os
+
+def run_migrations():
+    db_url = os.getenv("DATABASE_URL", "sqlite:///./autoreviews.db")
+    if db_url.startswith("sqlite:///"):
+        db_path = db_url.replace("sqlite:///", "")
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            for col in ["with_video", "with_photo", "with_name"]:
+                try:
+                    cursor.execute(f"ALTER TABLE rules ADD COLUMN {col} BOOLEAN DEFAULT 0")
+                except sqlite3.OperationalError:
+                    pass
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print("Automatic SQLite migrations warning:", e)
+
+run_migrations()
 
 Base.metadata.create_all(bind=engine)
 

@@ -7,11 +7,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("controller_runner")
 
-from backend.database import SessionLocal
-from backend.models import User
-from backend.processor.chat_processor import ChatProcessor
-from backend.processor.gpt import AsyncOpenAIClient
-from backend.processor.controller import build_controller
+from database import SessionLocal
+from models import User
+from processor.chat_processor import ChatProcessor
+from processor.gpt import AsyncOpenAIClient
+from processor.controller import build_controller
 
 
 async def run_controllers():
