@@ -30,7 +30,7 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 max-w-5xl mx-auto">
+    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-8" style={{ gap: '5%' }}>
         <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('reviews.title')}</h1>
         <div className="flex space-x-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">

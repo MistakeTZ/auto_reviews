@@ -99,7 +99,7 @@ export default function SettingsPage() {
   const reachedLimit = notificationMethods.length >= 5;
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-3xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
 
       {/* WB Integration Card */}

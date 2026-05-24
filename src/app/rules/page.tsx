@@ -141,7 +141,7 @@ export default function RulesPage() {
   });
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 max-w-4xl mx-auto">
+    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('rules.title')}</h1>
         <Button
