@@ -142,21 +142,20 @@ export const useAppStore = create<AppState>()(
       setToken: async (token: string) => {
         const { jwtToken } = get();
         if (!jwtToken) return;
-        try {
-          const res = await fetch(`${API_URL}/settings/token`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}` 
-            },
-            body: JSON.stringify({ token })
-          });
-          if (res.ok) {
-            set({ apiToken: token });
-            await get().fetchProducts(true, true);
-          }
-        } catch (e) {
-          console.error(e);
+        const res = await fetch(`${API_URL}/settings/token`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwtToken}` 
+          },
+          body: JSON.stringify({ token })
+        });
+        if (res.ok) {
+          set({ apiToken: token });
+          await get().fetchProducts(true, true);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || data.message || 'Failed to verify token');
         }
       },
 

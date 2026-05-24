@@ -148,6 +148,7 @@ export const ru = {
     verifySave: 'Проверить и сохранить токен',
     updateToken: 'Обновить токен',
     verifying: 'Проверка...',
+    tokenError: 'Ошибка токена',
     preferences: 'Предпочтения',
     emailNotif: 'Email уведомления',
     emailNotifDesc: 'Получать ежедневную сводку по автоответам на почту.',

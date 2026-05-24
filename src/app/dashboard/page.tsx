@@ -16,9 +16,9 @@ export default function Dashboard() {
   const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviews || 1);
 
   return (
-    <div className="p-8">
+    <div className="pt-24 px-4 pb-8 md:p-8">
       <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-8">{t('dashboard.overview')}</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardContent className="flex items-center p-6">
@@ -31,7 +31,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="flex items-center p-6">
             <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4">
@@ -101,7 +101,7 @@ export default function Dashboard() {
             <div className="space-y-4">
               {rules.map(rule => (
                 <div key={rule.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center mb-2" style={{ gap: '5%' }}>
                     <h4 className="font-bold text-indigo-700">{rule.name}</h4>
                     <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md font-bold">{t('common.active')}</span>
                   </div>

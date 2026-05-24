@@ -50,7 +50,7 @@ export default function RulesPage() {
   }, [fetchProducts]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="pt-24 px-4 pb-8 md:p-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8" style={{ gap: '5%' }}>
         <h1 className="text-3xl font-bold">{t('rules.title')}</h1>
         <Button onClick={() => setIsAdding(!isAdding)} className="flex items-center gap-2">

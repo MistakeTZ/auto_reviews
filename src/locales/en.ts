@@ -146,6 +146,7 @@ export const en = {
     verifySave: 'Verify & Save Token',
     updateToken: 'Update Token',
     verifying: 'Verifying...',
+    tokenError: 'Token Error',
     preferences: 'Preferences',
     emailNotif: 'Email Notifications',
     emailNotifDesc: 'Receive an email summary of auto-answered reviews daily.',

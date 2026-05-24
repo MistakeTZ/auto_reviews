@@ -30,19 +30,18 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="pt-24 px-4 pb-8 md:p-8 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-8" style={{ gap: '5%' }}>
         <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('reviews.title')}</h1>
         <div className="flex space-x-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
           {(['all', 'pending', 'auto-answered'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${
-                filter === f 
-                  ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
+              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${filter === f
+                  ? 'bg-indigo-50 text-indigo-700 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               {getFilterText(f)}
             </button>
@@ -65,16 +64,15 @@ export default function ReviewsPage() {
                   </div>
                 </div>
                 <div>
-                  <span className={`px-3 py-1.5 text-xs font-bold rounded-lg ${
-                    review.status === 'auto-answered' 
-                      ? 'bg-emerald-50 text-emerald-700' 
+                  <span className={`px-3 py-1.5 text-xs font-bold rounded-lg ${review.status === 'auto-answered'
+                      ? 'bg-emerald-50 text-emerald-700'
                       : 'bg-amber-50 text-amber-700'
-                  }`}>
+                    }`}>
                     {review.status === 'auto-answered' ? t('common.answered') : t('common.pending')}
                   </span>
                 </div>
               </div>
-              
+
               <p className="text-slate-700 mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100 font-medium">
                 "{review.text}"
               </p>
