@@ -51,7 +51,10 @@ def create_rule(db: Session, rule: schemas.RuleCreate, user_id: int):
         .scalar()
     )
     new_order = (max_order or 0) + 1
-    db_rule = models.Rule(**rule.model_dump(), user_id=user_id, priority=new_order)
+    rule_data = rule.model_dump()
+    rule_data["priority"] = new_order
+
+    db_rule = models.Rule(**rule_data, user_id=user_id)
     db.add(db_rule)
     db.commit()
     db.refresh(db_rule)

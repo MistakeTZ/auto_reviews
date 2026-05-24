@@ -398,7 +398,7 @@ export default function RulesPage() {
           Всего правил: <span className="font-extrabold text-slate-900 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg ml-1 shadow-sm">{rules.length}</span>
         </span>
         <span className="text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:inline">
-          Приоритет: сверху вниз (чем больше приоритет, тем раньше применяется)
+          чем больше приоритет, тем раньше применяется
         </span>
       </div>
 
