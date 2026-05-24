@@ -6,6 +6,7 @@ import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Menu, X 
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useEffect, useState } from 'react';
+import FlagSwitcher from '@/components/ui/FlagSwitcher';
 
 export default function Sidebar() {
   const { isAuthenticated, jwtToken, logout, fetchMe, fetchProducts, fetchRules, fetchReviews, userName } = useAppStore();
@@ -24,7 +25,7 @@ export default function Sidebar() {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!isAuthenticated && pathname !== '/demo') return null;
+  if (pathname === '/' || (!isAuthenticated && pathname !== '/demo')) return null;
 
   const handleLogout = () => {
     logout();
@@ -39,30 +40,6 @@ export default function Sidebar() {
       ? 'bg-indigo-50 text-indigo-700'
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
     }`;
-
-  // Helper component for the overlapping flags to keep JSX clean
-  const FlagSwitcher = () => (
-    <div className="relative w-7 h-7 select-none">
-      <span
-        className={`absolute transition-all duration-300 leading-none ${
-          language === 'en'
-            ? 'z-10 text-xl top-0 left-0 drop-shadow-md scale-100'
-            : 'z-0 text-sm bottom-0 right-0 opacity-60 scale-90'
-        }`}
-      >
-        🇬🇧
-      </span>
-      <span
-        className={`absolute transition-all duration-300 leading-none ${
-          language === 'ru'
-            ? 'z-10 text-xl top-0 left-0 drop-shadow-md scale-100'
-            : 'z-0 text-sm bottom-0 right-0 opacity-60 scale-90'
-        }`}
-      >
-        🇷🇺
-      </span>
-    </div>
-  );
 
   return (
     <>

@@ -4,15 +4,24 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import {
-  MessageCircle, Star, Zap, ShieldCheck, Globe,
-  ArrowRight, Settings, Quote, Check, HelpCircle
+  MessageCircle, Star, Zap, ShieldCheck,
+  ArrowRight, Settings, Quote, Check,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
+import FlagSwitcher from '@/components/ui/FlagSwitcher';
 
 export default function LandingPage() {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
+  const router = useRouter();
   const { t, language, setLanguage } = useTranslation();
+
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     router.push('/dashboard');
+  //   }
+  // }, [isAuthenticated, router]);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -32,8 +41,8 @@ export default function LandingPage() {
             </h1>
           </div>
           <div className="flex items-center space-x-3 sm:space-x-6">
-            <button onClick={toggleLanguage} className="p-2.5 rounded-full hover:bg-slate-100 transition-colors group" title="Toggle Language">
-              <Globe size={20} className="text-slate-500 group-hover:text-indigo-600 transition-colors" />
+            <button onClick={toggleLanguage} className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center" title="Toggle Language">
+              <FlagSwitcher />
             </button>
             {isAuthenticated ? (
               <Link href="/dashboard">
@@ -43,15 +52,10 @@ export default function LandingPage() {
               </Link>
             ) : (
               <>
-                <Link href="/login" className="sm:hidden">
-                  <Button className="rounded-xl font-bold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all px-6">
-                    {t('common.login')}
-                  </Button>
-                </Link>
                 <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors hidden sm:block">
                   {t('common.login')}
                 </Link>
-                <Link href="/register" className="hidden sm:block">
+                <Link href="/register">
                   <Button className="rounded-xl font-bold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all px-6">
                     {t('common.signUp')}
                   </Button>
@@ -89,9 +93,9 @@ export default function LandingPage() {
               {t('landing.subtitle')}
             </p>
 
-            <Link href="/register" className="w-full sm:w-auto">
+            <Link href={isAuthenticated ? "/dashboard" : "/register"} className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto px-10 py-7 text-lg rounded-2xl shadow-xl shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 font-bold">
-                {t('landing.getStarted')}
+                {isAuthenticated ? t('common.dashboard') : t('landing.getStarted')}
                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
@@ -207,9 +211,9 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/register" className="block w-full">
+                  <Link href={isAuthenticated ? "/dashboard" : "/register"} className="block w-full">
                     <Button variant={plan.isPopular ? 'secondary' : 'primary'} className={`w-full py-6 text-base rounded-xl font-bold ${plan.isPopular ? 'bg-white text-indigo-700 hover:bg-slate-50' : ''}`}>
-                      {t('landing.pricingBtn')}
+                      {isAuthenticated ? t('common.dashboard') : t('landing.pricingBtn')}
                     </Button>
                   </Link>
                 </div>
