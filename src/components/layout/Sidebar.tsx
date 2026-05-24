@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
-import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Globe, Menu, X } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Menu, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useEffect, useState } from 'react';
@@ -40,6 +40,30 @@ export default function Sidebar() {
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
     }`;
 
+  // Helper component for the overlapping flags to keep JSX clean
+  const FlagSwitcher = () => (
+    <div className="relative w-7 h-7 select-none">
+      <span
+        className={`absolute transition-all duration-300 leading-none ${
+          language === 'en'
+            ? 'z-10 text-xl top-0 left-0 drop-shadow-md scale-100'
+            : 'z-0 text-sm bottom-0 right-0 opacity-60 scale-90'
+        }`}
+      >
+        🇬🇧
+      </span>
+      <span
+        className={`absolute transition-all duration-300 leading-none ${
+          language === 'ru'
+            ? 'z-10 text-xl top-0 left-0 drop-shadow-md scale-100'
+            : 'z-0 text-sm bottom-0 right-0 opacity-60 scale-90'
+        }`}
+      >
+        🇷🇺
+      </span>
+    </div>
+  );
+
   return (
     <>
       {/* Mobile Sticky Top Header */}
@@ -55,12 +79,14 @@ export default function Sidebar() {
           <h1 className="text-xl font-black text-indigo-600 tracking-tight leading-none">reAnswer</h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Wildberries</p>
         </div>
+        
+        {/* Mobile Language Toggle */}
         <button 
           onClick={toggleLanguage} 
-          className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 transition-colors" 
+          className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-center" 
           title="Toggle Language"
         >
-          <Globe size={18} />
+          <FlagSwitcher />
         </button>
       </header>
 
@@ -134,15 +160,21 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {/* Desktop Sidebar (existing code) */}
+      {/* Desktop Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen max-h-screen sticky top-0 overflow-hidden shadow-sm z-10">
         <div className="p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-black text-indigo-600 tracking-tight">reAnswer</h1>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Wildberries</p>
           </div>
-          <button onClick={toggleLanguage} className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 transition-colors" title="Toggle Language">
-            <Globe size={18} />
+          
+          {/* Desktop Language Toggle */}
+          <button 
+            onClick={toggleLanguage} 
+            className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-center" 
+            title="Toggle Language"
+          >
+            <FlagSwitcher />
           </button>
         </div>
 

@@ -8,20 +8,11 @@ import {
   ArrowRight, Settings, Quote, Check, HelpCircle
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function LandingPage() {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
-  const router = useRouter();
   const { t, language, setLanguage } = useTranslation();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/dashboard');
-    }
-  }, [isAuthenticated, router]);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -44,14 +35,29 @@ export default function LandingPage() {
             <button onClick={toggleLanguage} className="p-2.5 rounded-full hover:bg-slate-100 transition-colors group" title="Toggle Language">
               <Globe size={20} className="text-slate-500 group-hover:text-indigo-600 transition-colors" />
             </button>
-            <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors hidden sm:block">
-              {t('common.login')}
-            </Link>
-            <Link href="/register">
-              <Button className="rounded-xl font-bold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all px-6">
-                {t('common.signUp')}
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/dashboard">
+                <Button className="rounded-xl font-bold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all px-6">
+                  {t('common.dashboard')}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="sm:hidden">
+                  <Button className="rounded-xl font-bold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all px-6">
+                    {t('common.login')}
+                  </Button>
+                </Link>
+                <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors hidden sm:block">
+                  {t('common.login')}
+                </Link>
+                <Link href="/register" className="hidden sm:block">
+                  <Button className="rounded-xl font-bold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all px-6">
+                    {t('common.signUp')}
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
