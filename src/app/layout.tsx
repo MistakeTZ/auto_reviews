@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     template: "%s | reAnswer"
   },
   description: "Automate your Wildberries review responses using AI. Boost your seller rating, save time, and increase sales with smart rule-based auto-replies.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

@@ -51,7 +51,7 @@ export default function RulesPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8" style={{ gap: '5%' }}>
         <h1 className="text-3xl font-bold">{t('rules.title')}</h1>
         <Button onClick={() => setIsAdding(!isAdding)} className="flex items-center gap-2">
           <Plus size={16} />
@@ -149,22 +149,20 @@ export default function RulesPage() {
                 <button
                   type="button"
                   onClick={() => setNewRule({ ...newRule, actionType: 'template' })}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    newRule.actionType === 'template'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${newRule.actionType === 'template'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
+                    }`}
                 >
                   {t('rules.actionTypeTemplate')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setNewRule({ ...newRule, actionType: 'gpt' })}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    newRule.actionType === 'gpt'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${newRule.actionType === 'gpt'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 text-gray-300 hover:bg-gray-50 hover:bg-gray-800'
+                    }`}
                 >
                   {t('rules.actionTypeGpt')}
                 </button>
@@ -200,11 +198,10 @@ export default function RulesPage() {
                   <span className={`px-2 py-0.5 text-xs rounded-full ${rule.target === 'general' ? 'bg-blue-100 text-blue-700 bg-blue-900/30 text-blue-300' : 'bg-orange-100 text-orange-700 bg-orange-900/30 text-orange-300'}`}>
                     {rule.target === 'general' ? t('rules.general') : `${t('rules.productNm')} ${rule.nmId}`}
                   </span>
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${
-                    rule.actionType === 'gpt'
-                      ? 'bg-violet-100 text-violet-700 bg-violet-900/30 text-violet-300'
-                      : 'bg-gray-100 text-gray-600 bg-gray-800 text-gray-400'
-                  }`}>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${rule.actionType === 'gpt'
+                    ? 'bg-violet-100 text-violet-700 bg-violet-900/30 text-violet-300'
+                    : 'bg-gray-100 text-gray-600 bg-gray-800 text-gray-400'
+                    }`}>
                     {rule.actionType === 'gpt' ? 'GPT' : t('rules.actionTypeTemplate')}
                   </span>
                 </div>

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from .. import crud, database
-from .auth import get_current_user
-from ..models import User
+import crud
+import database
+from routers.auth import get_current_user
+from models import User
 from pydantic import BaseModel
-from ..services.wb_products import sync_user_products
+from services.wb_products import sync_user_products
 
 router = APIRouter()
 

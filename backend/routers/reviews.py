@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import crud, schemas, database
-from .auth import get_current_user
-from ..models import User
+
+import crud
+import schemas
+import database
+from routers.auth import get_current_user
+from models import User, Review
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -22,7 +25,8 @@ def read_reviews(
     return reviews
 
 
-from ..processor.chat_processor import ChatProcessor
+from processor.chat_processor import ChatProcessor
+
 
 @router.post("/sync", response_model=List[schemas.Review])
 async def sync_reviews(
@@ -30,7 +34,9 @@ async def sync_reviews(
     current_user: User = Depends(get_current_user),
 ):
     if not current_user.wb_api_token:
-        raise HTTPException(status_code=400, detail="Wildberries API token not set for user")
+        raise HTTPException(
+            status_code=400, detail="Wildberries API token not set for user"
+        )
 
     async with ChatProcessor(current_user.wb_api_token) as processor:
         # Fetch unanswered feedbacks
@@ -43,7 +49,7 @@ async def sync_reviews(
     for fb in feedbacks:
         fb_id = fb.get("id")
         text = fb.get("text", "")
-        rating = fb.get("productValuation", 5) # ProductValuation is usually rating
+        rating = fb.get("productValuation", 5)  # ProductValuation is usually rating
         product_details = fb.get("productDetails", {})
         nm_id = product_details.get("nmId", "")
         product_name = product_details.get("productName", "Unknown Product")
@@ -54,15 +60,24 @@ async def sync_reviews(
         status = "pending"
         matched_rule = None
         for rule in rules:
-            if rule.target == 'specific_nm' and str(rule.nm_id) != str(nm_id):
+            if rule.target == "specific_nm" and str(rule.nm_id) != str(nm_id):
                 continue
 
             match = False
-            if rule.condition_rating_operator == 'exact' and rule.condition_rating == rating:
+            if (
+                rule.condition_rating_operator == "exact"
+                and rule.condition_rating == rating
+            ):
                 match = True
-            elif rule.condition_rating_operator == 'less_than' and rating < rule.condition_rating:
+            elif (
+                rule.condition_rating_operator == "less_than"
+                and rating < rule.condition_rating
+            ):
                 match = True
-            elif rule.condition_rating_operator == 'more_than' and rating > rule.condition_rating:
+            elif (
+                rule.condition_rating_operator == "more_than"
+                and rating > rule.condition_rating
+            ):
                 match = True
 
             if match and rule.condition_keyword:
@@ -74,7 +89,7 @@ async def sync_reviews(
                 break
 
         if matched_rule:
-            status = "manual-review" # Default to manual review for safety
+            status = "manual-review"  # Default to manual review for safety
             if getattr(matched_rule, "action_type", "template") == "template":
                 auto_answer = matched_rule.action_text
             elif getattr(matched_rule, "action_type", "template") == "ai":
@@ -89,7 +104,7 @@ async def sync_reviews(
             text=text,
             date=created_date,
             status=status,
-            auto_answer_text=auto_answer
+            auto_answer_text=auto_answer,
         )
         saved_review = crud.upsert_review(db, review_data, current_user.id)
         synced_reviews.append(saved_review)
@@ -105,20 +120,26 @@ async def reply_to_review(
     current_user: User = Depends(get_current_user),
 ):
     if not current_user.wb_api_token:
-        raise HTTPException(status_code=400, detail="Wildberries API token not set for user")
+        raise HTTPException(
+            status_code=400, detail="Wildberries API token not set for user"
+        )
 
-    db_review = db.query(models.Review).filter(
-        models.Review.id == review_id, 
-        models.Review.user_id == current_user.id
-    ).first()
-    
+    db_review = (
+        db.query(Review)
+        .filter(Review.id == review_id, Review.user_id == current_user.id)
+        .first()
+    )
+
     if not db_review:
         raise HTTPException(status_code=404, detail="Review not found")
 
     async with ChatProcessor(current_user.wb_api_token) as processor:
         res = await processor.answer_feedback(db_review.wb_review_id, request.text)
         if isinstance(res, dict) and res.get("error"):
-            raise HTTPException(status_code=400, detail=res.get("errorText", "Failed to reply to feedback on WB"))
+            raise HTTPException(
+                status_code=400,
+                detail=res.get("errorText", "Failed to reply to feedback on WB"),
+            )
 
     # Update in DB after success
     review = crud.update_review_status(

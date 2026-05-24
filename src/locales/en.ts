@@ -40,7 +40,7 @@ export const en = {
     stat2Desc: 'Avg. Seller Rating',
     stat3: '24/7',
     stat3Desc: 'Automated Support',
-    trustedBanner: 'Trusted by 500+ sellers on Wildberries',
+    trustedBanner: 'Trusted by 100+ sellers on Wildberries',
     testimonialsTitle: 'Loved by Sellers',
     testimonial1Text: '"reAnswer completely changed my daily routine. I used to spend 30 minutes a day replying to reviews. Now it takes me 0 minutes."',
     testimonial1Author: 'Alexey V.',

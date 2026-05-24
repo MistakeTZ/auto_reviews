@@ -40,7 +40,7 @@ export const ru = {
     stat2Desc: 'Средний рейтинг',
     stat3: '24/7',
     stat3Desc: 'Автоматизация',
-    trustedBanner: 'Нам доверяют более 500 продавцов на Wildberries',
+    trustedBanner: 'Нам доверяют более 100 продавцов на Wildberries',
     testimonialsTitle: 'Любим продавцами',
     testimonial1Text: '"reAnswer полностью изменил мою рутину. Я тратил 30 минут в день на ответы. Теперь это занимает 0 минут."',
     testimonial1Author: 'Алексей В.',

@@ -3,11 +3,13 @@ from typing import Dict, List
 import httpx
 from sqlalchemy.orm import Session
 
-from .. import crud
-from ..models import User
+import crud
+from models import User
 
 
-WB_PRICES_API_URL = "https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter"
+WB_PRICES_API_URL = (
+    "https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter"
+)
 
 
 def fetch_wb_products(api_token: str, limit: int = 1000) -> List[Dict]:

@@ -5,7 +5,10 @@ from datetime import timedelta
 from typing import Annotated
 from jose import JWTError, jwt
 
-from .. import crud, models, schemas, database, auth
+import crud
+import schemas
+import database
+import auth
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
