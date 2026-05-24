@@ -4,15 +4,15 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: autoreviews
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d autoreviews"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,7 +24,7 @@ services:
     ports:
       - "127.0.0.1:8002:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/autoreviews
+      - DATABASE_URL=${DB_URL}
     depends_on:
       db:
         condition: service_healthy
@@ -34,7 +34,7 @@ services:
       dockerfile: backend/Dockerfile
     command: ["python", "-m", "backend.run_controller"]
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/autoreviews
+      - DATABASE_URL=${DB_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       db:
@@ -46,7 +46,7 @@ services:
       dockerfile: backend/Dockerfile
     command: ["python", "backend/bot.py"]
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/autoreviews
+      - DATABASE_URL=${DB_URL}
       - TG_BOT_TOKEN=${TG_BOT_TOKEN}
       - MAX_BOT_TOKEN=${MAX_BOT_TOKEN}
     depends_on:
