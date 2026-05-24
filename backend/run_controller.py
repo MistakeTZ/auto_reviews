@@ -7,7 +7,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("controller_runner")
 
-from database import SessionLocal
+from database import SessionLocal, Base, engine
 from models import User
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
@@ -15,6 +15,9 @@ from processor.controller import build_controller
 
 
 async def run_controllers():
+    # Controller runs as a separate service, so ensure schema exists on startup.
+    Base.metadata.create_all(bind=engine)
+
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
         logger.warning(
