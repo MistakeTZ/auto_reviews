@@ -26,7 +26,7 @@ export default function SettingsPage() {
   const [showToken, setShowToken] = useState(false);
 
   // Notification states
-  const [newMethodType, setNewMethodType] = useState<'email' | 'telegram' | 'max'>('email');
+  const [newMethodType, setNewMethodType] = useState<'telegram' | 'email' | 'max'>('telegram');
   const [newMethodValue, setNewMethodValue] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [botsConfig, setBotsConfig] = useState({ tg_bot: 'autoreviews_bot', max_bot: 'max_notification_bot' });
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-800 text-sm">
-                          {isEmail ? 'Email адрес' : isTelegram ? 'Telegram канал' : 'Max Бот'}
+                          {isEmail ? 'Email адрес' : isTelegram ? 'Telegram бот' : 'Max Бот'}
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">
                           {t('settings.connected')}
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                     </div>
                     <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1.5 h-[38px]">
                       <Plus size={16} />
-                      <span>{t('settings.addMethod')}</span>
+                      {/* <span>{t('settings.addMethod')}</span> */}
                     </Button>
                   </form>
                 )}
