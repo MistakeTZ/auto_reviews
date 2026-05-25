@@ -7,11 +7,12 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
 import { formatDateTime } from '@/lib/formatDateTime';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RotateCw } from 'lucide-react';
 
 export default function ReviewsPage() {
   const fetchReviews = useAppStore(state => state.fetchReviews);
   const markAsAnswered = useAppStore(state => state.markReviewAsAnswered);
+  const syncReviews = useAppStore(state => state.syncReviews);
   const { t, language } = useTranslation();
   
   const [filter, setFilter] = useState<'all' | 'pending' | 'auto-answered'>('all');
@@ -21,6 +22,24 @@ export default function ReviewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncReviews();
+      setCurrentPage(1);
+      const res = await fetchReviews(1, 10, filter);
+      if (res) {
+        setPaginatedReviews(res.items || []);
+        setTotalPages(res.pages || 1);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -73,7 +92,22 @@ export default function ReviewsPage() {
     <SubscriptionGuard>
       <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('reviews.title')}</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('reviews.title')}</h1>
+            <Button
+              variant="outline"
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-sm font-bold text-indigo-600 border-slate-200 bg-white shadow-sm hover:bg-slate-50 transition-all animate-fade-in"
+            >
+              {isSyncing ? (
+                <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+              ) : (
+                <RotateCw className="h-4 w-4 text-indigo-600" />
+              )}
+              {isSyncing ? t('reviews.syncing') : t('reviews.syncReviews')}
+            </Button>
+          </div>
           <div className="flex w-full flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:w-auto sm:flex-nowrap">
             {(['all', 'pending', 'auto-answered'] as const).map(f => (
               <button

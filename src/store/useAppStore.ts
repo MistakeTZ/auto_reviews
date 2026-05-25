@@ -90,6 +90,7 @@ interface AppState {
   applyReferralCode: (code: string) => Promise<void>;
   buySubscription: () => Promise<void>;
   fetchReferralsList: () => Promise<any[]>;
+  syncReviews: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -558,6 +559,22 @@ export const useAppStore = create<AppState>()(
           console.error(e);
         }
         return [];
+      },
+
+      syncReviews: async () => {
+        const { jwtToken } = get();
+        if (!jwtToken) return;
+        try {
+          const res = await fetch(`${API_URL}/reviews/sync`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${jwtToken}` }
+          });
+          if (res.ok) {
+            await get().fetchReviews();
+          }
+        } catch (e) {
+          console.error(e);
+        }
       }
     }),
     {

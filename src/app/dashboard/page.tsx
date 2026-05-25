@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Activity, MessageCircle, CheckCircle, Clock } from 'lucide-react';
+import { Activity, MessageCircle, CheckCircle, Clock, RotateCw, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
 import { formatDateTime } from '@/lib/formatDateTime';
@@ -10,7 +12,21 @@ import { formatDateTime } from '@/lib/formatDateTime';
 export default function Dashboard() {
   const reviews = useAppStore(state => state.reviews);
   const rules = useAppStore(state => state.rules);
+  const syncReviews = useAppStore(state => state.syncReviews);
   const { t } = useTranslation();
+
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncReviews();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const totalReviews = reviews.length;
   const autoAnswered = reviews.filter(r => r.status === 'auto-answered').length;
@@ -74,8 +90,21 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
             <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
+            <Button
+              variant="outline"
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 h-8 px-3 py-1 rounded-lg text-xs font-bold text-indigo-600 border-indigo-100 hover:bg-indigo-50/50"
+            >
+              {isSyncing ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCw className="h-3.5 w-3.5" />
+              )}
+              {isSyncing ? t('dashboard.syncing') : t('dashboard.syncReviews')}
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -84,7 +113,7 @@ export default function Dashboard() {
                   <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${review.status === 'auto-answered' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-amber-500 shadow-amber-200'} shadow-sm`} />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-800">
-                      {review.userName ? `${review.userName} | ${review.productName}` : review.productName}
+                      {review.userName ? `${review.userName} • ${review.productName}` : review.productName}
                     </p>
                     
                     {/* Multi-line comment formatting matching screenshot */}
