@@ -31,7 +31,7 @@ function RegisterPageContent() {
     setError('');
     if (email && password && name) {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8082/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
         const pendingReferralCode = localStorage.getItem('pendingReferralCode')?.trim() || '';
         const payload = {
           email,
