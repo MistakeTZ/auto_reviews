@@ -234,7 +234,7 @@ export default function ReferralsPage() {
                     onClick={handleCopyLink}
                     variant="secondary"
                     className="gap-1.5 text-xs shrink-0 shadow-sm"
-                    style={{ padding: '6px 12px' }}
+                    style={{ padding: '12px 20px', marginTop: '0.375rem' }}
                   >
                     {copiedLink ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                     {copiedLink ? t('referrals.copied') : t('referrals.copyLink')}

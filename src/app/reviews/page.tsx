@@ -107,7 +107,7 @@ export default function ReviewsPage() {
                         <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${review.status === 'auto-answered' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-amber-500 shadow-amber-200'} shadow-sm`} />
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">
-                            {review.userName ? `${review.userName} | ${review.productName}` : review.productName}
+                            {review.userName ? `${review.userName} • ${review.productName}` : review.productName}
                           </h3>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/40 rounded-lg">
