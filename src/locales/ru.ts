@@ -233,6 +233,7 @@ export const ru = {
     trialPlan: 'Пробный тариф',
     expiredPlan: 'Срок действия истек',
     premiumPlan: 'Премиум тариф (1 месяц)',
+    premiumPlanShort: 'Премиум тариф',
     activeDaysLeft: 'Осталось дней: {{days}}',
     expiredDaysAgo: 'Закончился {{days}} дн. назад',
   },

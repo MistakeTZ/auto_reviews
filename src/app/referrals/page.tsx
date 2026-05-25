@@ -300,59 +300,59 @@ export default function ReferralsPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Invited Friends List */}
-      <Card className="border border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
-        <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
-          <CardTitle className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-            <Gift className="text-purple-600" size={20} />
-            {t('referrals.friendsTitle')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {referrals && referrals.length > 0 ? (
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                    <th className="px-6 py-4">{t('referrals.friendName')}</th>
-                    <th className="px-6 py-4">{t('referrals.friendEmail')}</th>
-                    <th className="px-6 py-4 text-right">{t('referrals.friendStatus')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {referrals.map((friend: any) => (
-                    <tr key={friend.id} className="text-sm font-semibold hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 text-slate-900">{friend.name}</td>
-                      <td className="px-6 py-4 text-slate-500 font-medium">{friend.email}</td>
-                      <td className="px-6 py-4 text-right">
-                        {friend.trial_activated ? (
-                          <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-lg text-xs font-bold">
-                            {t('referrals.friendTrialStarted')}
-                          </span>
-                        ) : (
-                          <span className="inline-block bg-slate-100 text-slate-500 border border-slate-200/60 px-2.5 py-1 rounded-lg text-xs font-bold">
-                            {t('referrals.friendNoTrial')}
-                          </span>
-                        )}
-                      </td>
+        {/* Invited Friends List */}
+        <Card className="border border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
+            <CardTitle className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              <Gift className="text-purple-600" size={20} />
+              {t('referrals.friendsTitle')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {referrals && referrals.length > 0 ? (
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                      <th className="px-6 py-4">{t('referrals.friendName')}</th>
+                      <th className="px-6 py-4">{t('referrals.friendEmail')}</th>
+                      <th className="px-6 py-4 text-right">{t('referrals.friendStatus')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-16 text-slate-500 font-medium">
-              <span className="text-4xl block mb-2">👋</span>
-              <p className="text-sm font-bold text-slate-700 mb-1">{t('referrals.noReferralsYet')}</p>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                {t('referrals.noFriendsYet')}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {referrals.map((friend: any) => (
+                      <tr key={friend.id} className="text-sm font-semibold hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4 text-slate-900">{friend.name}</td>
+                        <td className="px-6 py-4 text-slate-500 font-medium">{friend.email}</td>
+                        <td className="px-6 py-4 text-right">
+                          {friend.trial_activated ? (
+                            <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-lg text-xs font-bold">
+                              {t('referrals.friendTrialStarted')}
+                            </span>
+                          ) : (
+                            <span className="inline-block bg-slate-100 text-slate-500 border border-slate-200/60 px-2.5 py-1 rounded-lg text-xs font-bold">
+                              {t('referrals.friendNoTrial')}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-16 text-slate-500 font-medium">
+                <span className="text-4xl block mb-2">👋</span>
+                <p className="text-sm font-bold text-slate-700 mb-1">{t('referrals.noReferralsYet')}</p>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  {t('referrals.noFriendsYet')}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

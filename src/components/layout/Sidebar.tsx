@@ -15,9 +15,19 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const getPlanBadge = () => {
-    if (!hasActiveSubscription) return <span className="text-[10px] font-extrabold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200">Expired</span>;
-    if (tariffType === 'trial') return <span className="text-[10px] font-extrabold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200">Trial</span>;
-    return <span className="text-[10px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md border border-indigo-200">Pro Plan</span>;
+    const planName = !hasActiveSubscription
+      ? 'subscription.expiredPlan'
+      : tariffType === 'trial'
+        ? 'subscription.trialPlan'
+        : 'subscription.premiumPlanShort';
+
+    const badgeClass = !hasActiveSubscription
+      ? 'text-[10px] font-extrabold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200'
+      : tariffType === 'trial'
+        ? 'text-[10px] font-extrabold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200'
+        : 'text-[10px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md border border-indigo-200';
+
+    return <span className={badgeClass}>{t(planName)}</span>;
   };
 
   useEffect(() => {
@@ -173,7 +183,7 @@ export default function Sidebar() {
           <Link href="/referrals" className={linkClass('/referrals')}><Gift size={18} /><span>{t('referrals.title')}</span></Link>
         </nav>
 
-        <div className="p-4 m-4 mt-3 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
+        <div className="p-4 m-4 mt-auto bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-200">
               {(userName || t('common.sellerAccount'))[0].toUpperCase()}

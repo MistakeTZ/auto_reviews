@@ -233,6 +233,7 @@ export const en = {
     trialPlan: 'Trial Plan',
     expiredPlan: 'Expired Plan',
     premiumPlan: 'Premium Plan (1 Month)',
+    premiumPlanShort: 'Premium Plan',
     activeDaysLeft: '{{days}} days remaining',
     expiredDaysAgo: 'Expired {{days}} days ago',
   },
