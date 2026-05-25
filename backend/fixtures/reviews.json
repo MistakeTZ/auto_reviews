@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "wb_review_id": "wb-r-0001",
+    "nm_id": "100200300",
+    "product_name": "Беспроводные наушники X",
+    "rating": 5,
+    "text": "Отличный звук и быстрая доставка.",
+    "date": "2026-05-10T09:12:00Z",
+    "status": "auto-answered",
+    "auto_answer_text": "Спасибо за ваш отзыв. Мы рады, что вам понравился товар!",
+    "user_id": 1
+  },
+  {
+    "id": 2,
+    "wb_review_id": "wb-r-0002",
+    "nm_id": "100200301",
+    "product_name": "Противоударный чехол Armor",
+    "rating": 4,
+    "text": "Хорошее качество, но цвет чуть темнее, чем ожидалось.",
+    "date": "2026-05-10T11:45:00Z",
+    "status": "pending",
+    "auto_answer_text": null,
+    "user_id": 1
+  },
+  {
+    "id": 3,
+    "wb_review_id": "wb-r-0003",
+    "nm_id": "100200302",
+    "product_name": "Зарядное устройство USB-C 30W",
+    "rating": 2,
+    "text": "Перестало заряжать через два дня, возможно брак.",
+    "date": "2026-05-11T08:05:00Z",
+    "status": "manual-review",
+    "auto_answer_text": null,
+    "user_id": 1
+  },
+  {
+    "id": 4,
+    "wb_review_id": "wb-r-0004",
+    "nm_id": "100200303",
+    "product_name": "Подставка для ноутбука Pro",
+    "rating": 5,
+    "text": "Устойчивая, эргономичная, очень полезная.",
+    "date": "2026-05-11T13:20:00Z",
+    "status": "auto-answered",
+    "auto_answer_text": "Спасибо за ваш отзыв. Мы рады, что вам понравился товар!",
+    "user_id": 1
+  },
+  {
+    "id": 5,
+    "wb_review_id": "wb-r-0005",
+    "nm_id": "100200304",
+    "product_name": "Игровая мышь G5",
+    "rating": 3,
+    "text": "Работает нормально, но боковые кнопки слишком тугие.",
+    "date": "2026-05-12T07:58:00Z",
+    "status": "pending",
+    "auto_answer_text": null,
+    "user_id": 1
+  },
+  {
+    "id": 6,
+    "wb_review_id": "wb-r-0006",
+    "nm_id": "100200305",
+    "product_name": "Механическая клавиатура K87",
+    "rating": 1,
+    "text": "Пришла с бракованной клавишей, пользоваться невозможно.",
+    "date": "2026-05-12T19:33:00Z",
+    "status": "manual-review",
+    "auto_answer_text": null,
+    "user_id": 1
+  },
+  {
+    "id": 7,
+    "wb_review_id": "wb-r-0007",
+    "nm_id": "100200300",
+    "product_name": "Беспроводные наушники X",
+    "rating": 5,
+    "text": "Отличная автономность, спасибо!",
+    "date": "2026-05-13T10:41:00Z",
+    "status": "auto-answered",
+    "auto_answer_text": "Спасибо за ваш отзыв. Мы рады, что вам понравился товар!",
+    "user_id": 1
+  },
+  {
+    "id": 8,
+    "wb_review_id": "wb-r-0008",
+    "nm_id": "100200306",
+    "product_name": "Смарт-часы Lite",
+    "rating": 4,
+    "text": "Удобный ремешок, но настройка заняла больше времени, чем ожидалось.",
+    "date": "2026-05-14T06:22:00Z",
+    "status": "pending",
+    "auto_answer_text": null,
+    "user_id": 1
+  },
+  {
+    "id": 9,
+    "wb_review_id": "wb-r-0009",
+    "nm_id": "100200307",
+    "product_name": "Портативный SSD 1TB",
+    "rating": 5,
+    "text": "Высокая скорость передачи и компактный размер.",
+    "date": "2026-05-14T15:10:00Z",
+    "status": "auto-answered",
+    "auto_answer_text": "Спасибо за ваш отзыв. Мы рады, что вам понравился товар!",
+    "user_id": 1
+  },
+  {
+    "id": 10,
+    "wb_review_id": "wb-r-0010",
+    "nm_id": "100200308",
+    "product_name": "Bluetooth-колонка Mini",
+    "rating": 2,
+    "text": "Звук нормальный, но разъем для зарядки расшатан.",
+    "date": "2026-05-15T12:54:00Z",
+    "status": "manual-review",
+    "auto_answer_text": null,
+    "user_id": 1
+  }
+]

@@ -43,3 +43,4 @@ __pycache__/
 *.db
 *.sock
 example.css
+public/videos/
