@@ -23,7 +23,7 @@ export default function RegisterPage() {
     setError('');
     if (email && password && name) {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
         const regRes = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

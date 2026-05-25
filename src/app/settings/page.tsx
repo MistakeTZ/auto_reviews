@@ -7,7 +7,7 @@ import { AlertCircle, CheckCircle2, Eye, EyeOff, Mail, Send, Plus, Trash2, Exter
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
 
 export default function SettingsPage() {
   const apiToken = useAppStore(state => state.apiToken);
