@@ -34,14 +34,14 @@ export default function ReviewsPage() {
   return (
     <SubscriptionGuard>
       <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-8" style={{ gap: '5%' }}>
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('reviews.title')}</h1>
-        <div className="flex space-x-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex w-full flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:w-auto sm:flex-nowrap">
           {(['all', 'pending', 'auto-answered'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${filter === f
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-200 sm:px-4 sm:text-sm ${filter === f
                   ? 'bg-indigo-50 text-indigo-700 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                 }`}
@@ -77,7 +77,7 @@ export default function ReviewsPage() {
               </div>
 
               <p className="text-slate-700 mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100 font-medium">
-                "{review.text}"
+                &quot;{review.text}&quot;
               </p>
 
               {review.status === 'auto-answered' ? (
@@ -93,6 +93,7 @@ export default function ReviewsPage() {
                     onChange={(e) => setReplyText(prev => ({ ...prev, [review.id]: e.target.value }))}
                     placeholder={t('reviews.typeReply')}
                     className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow"
+                    style={{ maxWidth: "calc(100% - 130px)" }}
                   />
                   <Button onClick={() => handleReply(review.id)} disabled={!replyText[review.id]}>
                     {t('reviews.sendReply')}

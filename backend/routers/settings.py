@@ -108,7 +108,7 @@ def add_notification(
     if current_user.tariff_type == "trial" and len(existing) >= 1:
         raise HTTPException(
             status_code=400,
-            detail="Trial users are limited to 1 notification method. Upgrade to Pro for up to 5 methods."
+            detail="Trial users are limited to 1 notification method. Upgrade for up to 5 methods."
         )
     if len(existing) >= 5:
         raise HTTPException(

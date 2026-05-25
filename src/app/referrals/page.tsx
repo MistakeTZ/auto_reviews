@@ -317,7 +317,6 @@ export default function ReferralsPage() {
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
                       <th className="px-6 py-4">{t('referrals.friendName')}</th>
-                      <th className="px-6 py-4">{t('referrals.friendEmail')}</th>
                       <th className="px-6 py-4 text-right">{t('referrals.friendStatus')}</th>
                     </tr>
                   </thead>
@@ -325,7 +324,6 @@ export default function ReferralsPage() {
                     {referrals.map((friend: any) => (
                       <tr key={friend.id} className="text-sm font-semibold hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 text-slate-900">{friend.name}</td>
-                        <td className="px-6 py-4 text-slate-500 font-medium">{friend.email}</td>
                         <td className="px-6 py-4 text-right">
                           {friend.trial_activated ? (
                             <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-lg text-xs font-bold">

@@ -491,6 +491,7 @@ export default function RulesPage() {
                   type="button"
                   onClick={() => startEditing(rule)}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 text-sm"
+                  style={{ maxWidth: 'calc(100% - 130px)' }}
                 >
                   <Edit2 size={16} />
                   {t('rules.edit')}

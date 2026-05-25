@@ -29,7 +29,7 @@ def create_rule(
     if current_user.tariff_type == "trial" and current_user.rules_count >= 10:
         raise HTTPException(
             status_code=400,
-            detail="Trial users are limited to 10 rules. Upgrade to Pro for unlimited rules."
+            detail="Trial users are limited to 10 rules. Upgrade for unlimited rules."
         )
     return crud.create_rule(db=db, rule=rule, user_id=current_user.id)
 
