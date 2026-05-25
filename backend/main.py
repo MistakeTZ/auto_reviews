@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from admin import setup_admin
 from models import Base
 from database import engine
 from routers import auth, rules, reviews, settings, products
@@ -70,6 +71,8 @@ app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(rules.router, prefix="/api/rules", tags=["rules"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
+
+setup_admin(app)
 
 
 @app.on_event("startup")
