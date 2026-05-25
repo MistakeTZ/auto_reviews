@@ -208,6 +208,10 @@ class MainController:
         if not wb_review_id:
             return
 
+        user_name = (feedback.get("userName") or "").strip()
+        if user_name and user_name.startswith("Покупатель"):
+            user_name = None
+
         review_data = ReviewCreate(
             wb_review_id=wb_review_id,
             nm_id=str(feedback.get("nmId") or ""),
@@ -217,6 +221,11 @@ class MainController:
             date=str(feedback.get("createdDate") or ""),
             status=status,
             auto_answer_text=answer_text or None,
+            user_name=user_name,
+            pros=(feedback.get("pros") or "").strip() or None,
+            cons=(feedback.get("cons") or "").strip() or None,
+            photos_count=len(feedback.get("photoLinks") or []),
+            has_video=bool(feedback.get("video")),
         )
 
         try:

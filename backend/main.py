@@ -4,83 +4,95 @@ from admin import setup_admin
 from models import Base
 from database import engine
 from routers import auth, rules, reviews, settings, products
-import sqlite3
+from sqlalchemy import inspect, text
 import os
 from bot import configure_webhook, process_update
 
 
 def run_migrations():
     db_url = os.getenv("DATABASE_URL", "sqlite:///./autoreviews.db")
-    if db_url.startswith("sqlite:///"):
-        db_path = db_url.replace("sqlite:///", "")
+    if db_url.startswith("postgresql"):
         try:
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            # Migrations for rules table
-            for col, col_type in [
-                ("with_video", "BOOLEAN DEFAULT 0"),
-                ("with_photo", "BOOLEAN DEFAULT 0"),
-                ("with_name", "BOOLEAN DEFAULT 0"),
-                ("priority", "INTEGER DEFAULT 0"),
-                ("send_notification", "BOOLEAN DEFAULT 0"),
-                ("is_edited_feedback", "BOOLEAN DEFAULT 0"),
-            ]:
-                try:
-                    cursor.execute(f"ALTER TABLE rules ADD COLUMN {col} {col_type}")
-                except sqlite3.OperationalError:
-                    pass
+            inspector = inspect(engine)
+            with engine.connect() as conn:
+                # 1. Migrations for rules table
+                if inspector.has_table("rules"):
+                    existing_rules_cols = [c["name"] for c in inspector.get_columns("rules")]
+                    for col, col_type in [
+                        ("with_video", "BOOLEAN DEFAULT FALSE"),
+                        ("with_photo", "BOOLEAN DEFAULT FALSE"),
+                        ("with_name", "BOOLEAN DEFAULT FALSE"),
+                        ("priority", "INTEGER DEFAULT 0"),
+                        ("send_notification", "BOOLEAN DEFAULT FALSE"),
+                        ("is_edited_feedback", "BOOLEAN DEFAULT FALSE"),
+                    ]:
+                        if col not in existing_rules_cols:
+                            conn.execute(text(f"ALTER TABLE rules ADD COLUMN {col} {col_type}"))
+                            conn.commit()
 
-            # Migrations for users table
-            try:
-                cursor.execute("ALTER TABLE users ADD COLUMN uuid TEXT")
-            except sqlite3.OperationalError:
-                pass
+                # 2. Migrations for users table
+                if inspector.has_table("users"):
+                    existing_users_cols = [c["name"] for c in inspector.get_columns("users")]
+                    for col, col_type in [
+                        ("uuid", "VARCHAR(255)"),
+                        ("subscription_expires_at", "TIMESTAMP WITH TIME ZONE"),
+                        ("tariff_type", "VARCHAR(50) DEFAULT 'trial'"),
+                        ("trial_activated", "BOOLEAN DEFAULT FALSE"),
+                        ("referred_by_id", "INTEGER"),
+                        ("referral_code", "VARCHAR(50)"),
+                    ]:
+                        if col not in existing_users_cols:
+                            conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {col_type}"))
+                            conn.commit()
 
-            # Migrations for users table subscription & referral fields
-            for col, col_type in [
-                ("subscription_expires_at", "DATETIME"),
-                ("tariff_type", "TEXT DEFAULT 'trial'"),
-                ("trial_activated", "BOOLEAN DEFAULT 0"),
-                ("referred_by_id", "INTEGER"),
-                ("referral_code", "TEXT"),
-            ]:
-                try:
-                    cursor.execute(f"ALTER TABLE users ADD COLUMN {col} {col_type}")
-                except sqlite3.OperationalError:
-                    pass
+                # 3. Migrations for reviews table (new columns for pros, cons, photos count, has video, user name)
+                if inspector.has_table("reviews"):
+                    existing_reviews_cols = [c["name"] for c in inspector.get_columns("reviews")]
+                    for col, col_type in [
+                        ("user_name", "VARCHAR(255)"),
+                        ("pros", "TEXT"),
+                        ("cons", "TEXT"),
+                        ("photos_count", "INTEGER DEFAULT 0"),
+                        ("has_video", "BOOLEAN DEFAULT FALSE"),
+                    ]:
+                        if col not in existing_reviews_cols:
+                            conn.execute(text(f"ALTER TABLE reviews ADD COLUMN {col} {col_type}"))
+                            conn.commit()
 
-            # Backfill unique uuids for users that don't have one
-            try:
-                import uuid
+                # 4. Backfill unique uuids for users that don't have one
+                if inspector.has_table("users"):
+                    try:
+                        result = conn.execute(text("SELECT id FROM users WHERE uuid IS NULL")).fetchall()
+                        if result:
+                            import uuid
+                            for row in result:
+                                user_id = row[0]
+                                conn.execute(
+                                    text("UPDATE users SET uuid = :uuid WHERE id = :id"),
+                                    {"uuid": str(uuid.uuid4()), "id": user_id}
+                                )
+                            conn.commit()
+                    except Exception as users_err:
+                        print("Backfill users uuid warning:", users_err)
 
-                cursor.execute("SELECT id FROM users WHERE uuid IS NULL")
-                null_users = cursor.fetchall()
-                for (uid,) in null_users:
-                    cursor.execute(
-                        "UPDATE users SET uuid = ? WHERE id = ?",
-                        (str(uuid.uuid4()), uid),
-                    )
-            except Exception as users_err:
-                print("Backfill users uuid warning:", users_err)
+                # 5. Backfill unique referral codes for users that don't have one
+                if inspector.has_table("users"):
+                    try:
+                        result = conn.execute(text("SELECT id FROM users WHERE referral_code IS NULL")).fetchall()
+                        if result:
+                            import uuid
+                            for row in result:
+                                user_id = row[0]
+                                conn.execute(
+                                    text("UPDATE users SET referral_code = :code WHERE id = :id"),
+                                    {"code": str(uuid.uuid4())[:8], "id": user_id}
+                                )
+                            conn.commit()
+                    except Exception as ref_err:
+                        print("Backfill users referral_code warning:", ref_err)
 
-            # Backfill unique referral codes for users that don't have one
-            try:
-                import uuid
-
-                cursor.execute("SELECT id FROM users WHERE referral_code IS NULL")
-                null_ref_users = cursor.fetchall()
-                for (uid,) in null_ref_users:
-                    cursor.execute(
-                        "UPDATE users SET referral_code = ? WHERE id = ?",
-                        (str(uuid.uuid4())[:8], uid),
-                    )
-            except Exception as ref_err:
-                print("Backfill users referral_code warning:", ref_err)
-
-            conn.commit()
-            conn.close()
         except Exception as e:
-            print("Automatic SQLite migrations warning:", e)
+            print("Automatic PostgreSQL migrations warning:", e)
 
 
 run_migrations()

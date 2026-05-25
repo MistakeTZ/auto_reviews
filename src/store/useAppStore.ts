@@ -18,6 +18,11 @@ export interface Review {
   status: 'pending' | 'auto-answered' | 'manual-review';
   autoAnswerText?: string;
   wb_review_id: string;
+  userName?: string;
+  pros?: string;
+  cons?: string;
+  photosCount?: number;
+  hasVideo?: boolean;
 }
 
 export interface Rule {
@@ -73,7 +78,7 @@ interface AppState {
   fetchMe: () => Promise<void>;
   fetchProducts: (refresh?: boolean, replace?: boolean) => Promise<void>;
   fetchRules: () => Promise<void>;
-  fetchReviews: () => Promise<void>;
+  fetchReviews: (page?: number, pageSize?: number, status?: string) => Promise<any>;
   setToken: (token: string) => Promise<void>;
   addRule: (rule: Omit<Rule, 'id'>) => Promise<void>;
   updateRule: (id: string, rule: Partial<Rule>) => Promise<void>;
@@ -211,16 +216,49 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      fetchReviews: async () => {
+      fetchReviews: async (page?: number, pageSize?: number, status?: string) => {
         const { jwtToken } = get();
         if (!jwtToken) return;
         try {
-          const res = await fetch(`${API_URL}/reviews/`, {
+          let url = `${API_URL}/reviews/`;
+          const params = new URLSearchParams();
+          if (page !== undefined) params.append('page', String(page));
+          if (pageSize !== undefined) params.append('page_size', String(pageSize));
+          if (status !== undefined) params.append('status', status);
+          const qs = params.toString();
+          if (qs) url += `?${qs}`;
+
+          const res = await fetch(url, {
             headers: { Authorization: `Bearer ${jwtToken}` }
           });
           if (res.ok) {
             const data = await res.json();
-            set({ reviews: data.map((r: any) => ({ ...r, id: String(r.id), nmId: r.nm_id, productName: r.product_name, autoAnswerText: r.auto_answer_text })) });
+            const mapReview = (r: any) => ({
+              ...r,
+              id: String(r.id),
+              nmId: r.nm_id,
+              productName: r.product_name,
+              autoAnswerText: r.auto_answer_text,
+              userName: r.user_name,
+              pros: r.pros,
+              cons: r.cons,
+              photosCount: r.photos_count,
+              hasVideo: r.has_video
+            });
+
+            if (page !== undefined && pageSize !== undefined) {
+              return {
+                items: data.items.map(mapReview),
+                total: data.total,
+                page: data.page,
+                pageSize: data.page_size,
+                pages: data.pages
+              };
+            } else {
+              const items = data.map(mapReview);
+              set({ reviews: items });
+              return items;
+            }
           }
         } catch (e) {
           console.error(e);

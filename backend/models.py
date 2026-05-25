@@ -81,6 +81,13 @@ class Review(Base):
     )  # 'pending', 'auto-answered', 'manual-review'
     auto_answer_text = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    
+    # Premium Review Metadata fields
+    user_name = Column(String, nullable=True)
+    pros = Column(String, nullable=True)
+    cons = Column(String, nullable=True)
+    photos_count = Column(Integer, default=0, nullable=True)
+    has_video = Column(Boolean, default=False, nullable=True)
 
     owner = relationship("User", back_populates="reviews")
 

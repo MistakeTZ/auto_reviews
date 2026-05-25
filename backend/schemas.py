@@ -90,6 +90,11 @@ class ReviewBase(BaseModel):
     date: str
     status: str
     auto_answer_text: Optional[str] = None
+    user_name: Optional[str] = None
+    pros: Optional[str] = None
+    cons: Optional[str] = None
+    photos_count: Optional[int] = 0
+    has_video: Optional[bool] = False
 
 
 class ReviewCreate(ReviewBase):

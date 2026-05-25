@@ -175,8 +175,35 @@ def delete_rule(db: Session, rule_id: int, user_id: int):
     return False
 
 
-def get_reviews(db: Session, user_id: int):
-    return db.query(models.Review).filter(models.Review.user_id == user_id).all()
+def get_reviews(db: Session, user_id: int, status: str = None):
+    query = db.query(models.Review).filter(models.Review.user_id == user_id)
+    if status and status != 'all':
+        query = query.filter(models.Review.status == status)
+    return query.order_by(models.Review.id.desc()).all()
+
+
+def get_reviews_paginated(db: Session, user_id: int, page: int = 1, page_size: int = 10, status: str = None):
+    query = db.query(models.Review).filter(models.Review.user_id == user_id)
+    if status and status != 'all':
+        query = query.filter(models.Review.status == status)
+    
+    total = query.count()
+    pages = (total + page_size - 1) // page_size if total > 0 else 1
+    
+    items = (
+        query.order_by(models.Review.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pages": pages
+    }
 
 
 def create_review(db: Session, review: schemas.ReviewCreate, user_id: int):
@@ -203,6 +230,11 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
         db_review.status = review_data.status
         if review_data.auto_answer_text:
             db_review.auto_answer_text = review_data.auto_answer_text
+        db_review.user_name = review_data.user_name
+        db_review.pros = review_data.pros
+        db_review.cons = review_data.cons
+        db_review.photos_count = review_data.photos_count
+        db_review.has_video = review_data.has_video
     else:
         db_review = models.Review(**review_data.model_dump(), user_id=user_id)
         db.add(db_review)

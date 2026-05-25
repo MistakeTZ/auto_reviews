@@ -79,15 +79,52 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {reviews.slice(0, 5).map(review => (
+              {reviews.slice().sort((a, b) => Number(b.id) - Number(a.id)).slice(0, 5).map(review => (
                 <div key={review.id} className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0">
                   <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${review.status === 'auto-answered' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-amber-500 shadow-amber-200'} shadow-sm`} />
-                  <div>
-                    <p className="font-bold text-slate-800">{review.productName}</p>
-                    <p className="text-sm text-slate-500 line-clamp-1 mt-0.5">{review.text}</p>
-                    <div className="flex items-center mt-2">
-                      <span className="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded-md mr-2">⭐ {review.rating}</span>
-                      <span className="text-xs font-medium text-slate-400">{formatDateTime(review.date)}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-800">
+                      {review.userName ? `${review.userName} | ${review.productName}` : review.productName}
+                    </p>
+                    
+                    {/* Multi-line comment formatting matching screenshot */}
+                    {!review.text && !review.pros && !review.cons ? (
+                      <p className="text-sm text-slate-400 font-semibold mt-1">Без комментария</p>
+                    ) : (
+                      <div className="text-sm text-slate-500 space-y-0.5 mt-1">
+                        {review.text && (
+                          <p>
+                            <span className="font-bold text-slate-600">Комментарий:</span> {review.text}
+                          </p>
+                        )}
+                        {review.pros && (
+                          <p>
+                            <span className="font-bold text-slate-600">Плюсы:</span> {review.pros}
+                          </p>
+                        )}
+                        {review.cons && (
+                          <p>
+                            <span className="font-bold text-slate-600">Минусы:</span> {review.cons}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                      <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/40 rounded-lg">
+                        ⭐ {review.rating}
+                      </span>
+                      {review.photosCount !== undefined && review.photosCount > 0 && (
+                        <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/40 rounded-lg">
+                          📷 {review.photosCount}
+                        </span>
+                      )}
+                      {review.hasVideo && (
+                        <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200/40 rounded-lg">
+                          🎥 1
+                        </span>
+                      )}
+                      <span className="text-xs font-semibold text-slate-400 ml-1">{formatDateTime(review.date)}</span>
                     </div>
                   </div>
                 </div>

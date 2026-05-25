@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 import crud
 import schemas
@@ -16,13 +16,19 @@ class ReplyRequest(BaseModel):
     text: str
 
 
-@router.get("/", response_model=List[schemas.Review])
+@router.get("/")
 def read_reviews(
+    page: Optional[int] = None,
+    page_size: Optional[int] = None,
+    status: Optional[str] = None,
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
-    reviews = crud.get_reviews(db, user_id=current_user.id)
-    return reviews
+    if page is not None and page_size is not None:
+        return crud.get_reviews_paginated(
+            db, user_id=current_user.id, page=page, page_size=page_size, status=status
+        )
+    return crud.get_reviews(db, user_id=current_user.id, status=status)
 
 
 from processor.chat_processor import ChatProcessor
@@ -134,6 +140,11 @@ async def sync_reviews(
             date=created_date,
             status=status,
             auto_answer_text=auto_answer,
+            user_name=user_name,
+            pros=(fb.get("pros") or "").strip() or None,
+            cons=(fb.get("cons") or "").strip() or None,
+            photos_count=len(fb.get("photoLinks") or []),
+            has_video=bool(fb.get("video")),
         )
         saved_review = crud.upsert_review(db, review_data, current_user.id)
         synced_reviews.append(saved_review)
