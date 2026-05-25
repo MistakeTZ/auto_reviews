@@ -8,12 +8,18 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import './landing.css';
 
 export default function LandingPage() {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
   const { t, language, setLanguage } = useTranslation();
+  const searchParams = useSearchParams();
+  const referralCodeFromUrl = searchParams.get('ref')?.trim() || '';
+  const registerHref = referralCodeFromUrl
+    ? `/register?ref=${encodeURIComponent(referralCodeFromUrl)}`
+    : '/register';
   const pricingFeatureGroups = t('landing.pricingFeatureIncluded')
     .split('\n\n')
     .map((group) => group.split('\n').map((line) => line.trim()).filter(Boolean));
@@ -50,6 +56,13 @@ export default function LandingPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!referralCodeFromUrl) {
+      return;
+    }
+    localStorage.setItem('pendingReferralCode', referralCodeFromUrl);
+  }, [referralCodeFromUrl]);
+
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
   };
@@ -81,7 +94,7 @@ export default function LandingPage() {
                 <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors hidden sm:block">
                   {t('common.login')}
                 </Link>
-                <Link href="/register" className="btn-get-consultation flex items-center justify-center">
+                <Link href={registerHref} className="btn-get-consultation flex items-center justify-center">
                   {t('common.signUp')}
                 </Link>
               </>
@@ -109,7 +122,7 @@ export default function LandingPage() {
               </p>
 
               <div className="hero-buttons">
-                <Link href={isAuthenticated ? "/dashboard" : "/register"} className="btn-primary">
+                <Link href={isAuthenticated ? "/dashboard" : registerHref} className="btn-primary">
                   {isAuthenticated ? t('common.dashboard') : t('landing.getStarted')}
                   <ArrowRight size={18} className="ml-2" />
                 </Link>
@@ -248,7 +261,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={isAuthenticated ? "/dashboard" : "/register"} className={plan.isPopular ? "btn-primary is-filled" : "btn-secondary"}>
+                <Link href={isAuthenticated ? "/dashboard" : registerHref} className={plan.isPopular ? "btn-primary is-filled" : "btn-secondary"}>
                   {isAuthenticated ? t('common.dashboard') : t('landing.pricingBtn')}
                 </Link>
               </div>

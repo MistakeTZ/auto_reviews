@@ -20,11 +20,20 @@ def get_user_by_referral_code(db: Session, referral_code: str):
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password)
+    referred_by_id = None
+
+    if user.referral_code:
+        referrer = get_user_by_referral_code(db, user.referral_code.strip())
+        if not referrer:
+            raise ValueError("Invalid referral code")
+        referred_by_id = referrer.id
+
     db_user = models.User(
         email=user.email,
         hashed_password=hashed_password,
         name=user.name,
         referral_code=str(uuid.uuid4())[:8],
+        referred_by_id=referred_by_id,
     )
     db.add(db_user)
     db.commit()

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +12,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 export default function RegisterPage() {
   const login = useAppStore(state => state.login);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,19 +20,37 @@ export default function RegisterPage() {
 
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const refFromQuery = searchParams.get('ref')?.trim() || '';
+    if (refFromQuery) {
+      localStorage.setItem('pendingReferralCode', refFromQuery);
+      router.replace('/');
+    }
+  }, [router, searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (email && password && name) {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+        const pendingReferralCode = localStorage.getItem('pendingReferralCode')?.trim() || '';
+        const payload = {
+          email,
+          name,
+          password,
+          ...(pendingReferralCode ? { referral_code: pendingReferralCode } : {})
+        };
         const regRes = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name, password })
+          body: JSON.stringify(payload)
         });
 
         if (regRes.ok) {
+          if (pendingReferralCode) {
+            localStorage.removeItem('pendingReferralCode');
+          }
           const formData = new URLSearchParams();
           formData.append('username', email);
           formData.append('password', password);
