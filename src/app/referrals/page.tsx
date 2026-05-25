@@ -229,22 +229,12 @@ export default function ReferralsPage() {
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
                   {t('referrals.referralCode')}
                 </label>
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 flex items-center justify-between font-mono font-bold text-slate-700 text-sm shadow-inner">
-                    <span>{referralCode || '...'}</span>
-                    <button
-                      onClick={handleCopyCode}
-                      className="p-1 hover:bg-slate-200 rounded text-slate-500 hover:text-slate-800 transition-colors"
-                      title={t('referrals.copyReferralCodeTitle')}
-                    >
-                      {copiedCode ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
-                    </button>
-                  </div>
-                  
+                <div className="flex gap-2">                  
                   <Button
                     onClick={handleCopyLink}
                     variant="secondary"
                     className="gap-1.5 text-xs shrink-0 shadow-sm"
+                    style={{ padding: '6px 12px' }}
                   >
                     {copiedLink ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                     {copiedLink ? t('referrals.copied') : t('referrals.copyLink')}

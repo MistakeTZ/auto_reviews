@@ -194,7 +194,7 @@ class MainController:
 
         return None
 
-    def _upsert_review_in_db(
+    async def _upsert_review_in_db(
         self, feedback: Dict, answer_text: str, status: str
     ) -> None:
         """Persist/update a review record in the database."""
@@ -203,6 +203,7 @@ class MainController:
 
         from crud import upsert_review
         from schemas import ReviewCreate
+        from services.notifications import notify_review_processed
 
         wb_review_id = str(feedback.get("id") or "")
         if not wb_review_id:
@@ -230,12 +231,15 @@ class MainController:
 
         try:
             db = self.db_factory()
-            upsert_review(db, review_data, self.user_id)
-            db.close()
+            saved_review = upsert_review(db, review_data, self.user_id)
+            await notify_review_processed(db, self.user_id, saved_review)
         except Exception as exc:
             logger.exception(
                 "[feedbacks] failed to upsert review %s: %s", wb_review_id, exc
             )
+        finally:
+            if "db" in locals() and db:
+                db.close()
 
     async def _handle_feedbacks(self):
         # Load rules from DB once per poll cycle
@@ -300,7 +304,7 @@ class MainController:
                         "[feedbacks] empty answer for feedback_id=%s, skipping",
                         feedback_id,
                     )
-                    self._upsert_review_in_db(feedback, "", "manual-review")
+                    await self._upsert_review_in_db(feedback, "", "manual-review")
                     continue
 
                 response = await self.processor.answer_feedback(
@@ -312,12 +316,12 @@ class MainController:
                         feedback_id,
                         matched_rule.name if matched_rule else "none",
                     )
-                    self._upsert_review_in_db(feedback, text, answer_status)
+                    await self._upsert_review_in_db(feedback, text, answer_status)
                 else:
                     logger.warning(
                         "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
                     )
-                    self._upsert_review_in_db(feedback, text, "manual-review")
+                    await self._upsert_review_in_db(feedback, text, "manual-review")
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []

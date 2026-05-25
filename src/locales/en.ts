@@ -250,7 +250,7 @@ export const en = {
     trialLimitations: 'Trial period limitations: maximum 10 rules and 1 notification channel.',
     inviteFriends: 'Invite friends',
     copyReferralCodeTitle: 'Copy referral code',
-    referralCode: 'Your referral code',
+    referralCode: 'Your invitation link',
     copied: 'Copied!',
     copyLink: 'Copy link',
     enterCode: 'Enter referral code',
