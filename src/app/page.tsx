@@ -14,6 +14,9 @@ import './landing.css';
 export default function LandingPage() {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
   const { t, language, setLanguage } = useTranslation();
+  const pricingFeatureGroups = t('landing.pricingFeatureIncluded')
+    .split('\n\n')
+    .map((group) => group.split('\n').map((line) => line.trim()).filter(Boolean));
 
   const [isVisible, setIsVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -238,10 +241,10 @@ export default function LandingPage() {
                   <span className="pricing-period">{plan.period}</span>
                 </div>
                 <ul className="pricing-features">
-                  {[1, 2, 3].map((_, i) => (
+                  {(pricingFeatureGroups[idx] || []).map((feature, i) => (
                     <li key={i}>
                       <i><Check size={16} /></i>
-                      <span>{t('landing.pricingFeatureIncluded')}</span>
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>

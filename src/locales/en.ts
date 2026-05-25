@@ -77,7 +77,7 @@ export const en = {
     pricingMonth: '/mo',
     pricingHalfMonth: '/14 days',
     pricingWeek: '/7 days',
-    pricingFeatureIncluded: 'Feature point included',
+    pricingFeatureIncluded: 'Auto-replies using GPT or templates\n1 notification method\nUp to 10 reply rules\n\nFull access to all features\nUp to 5 notification methods\nUp to 100 reply rules\n\nAll features available with subscription\nNo limit on referred friends\nOptimize your routine together',
     pricingBtn: 'Start Free Trial',
     faqTitle: 'Frequently Asked Questions',
     faq1Q: 'Is it safe for my Wildberries account?',
