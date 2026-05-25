@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { useTranslation } from '@/hooks/useTranslation';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const login = useAppStore(state => state.login);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -127,5 +126,13 @@ export default function RegisterPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">Loading...</div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }
