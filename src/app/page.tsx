@@ -121,7 +121,7 @@ export default function LandingPage() {
 
             <div className="hero-visual" data-reveal="right">
               <div className="image-container">
-                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt={t('landing.heroImageAlt')} />
+                <img src="/dashboard.jpg" alt={t('landing.heroImageAlt')} />
               </div>
             </div>
           </div>
