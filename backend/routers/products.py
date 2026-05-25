@@ -11,12 +11,12 @@ from services.wb_products import sync_user_products
 router = APIRouter()
 
 
-class ProductMock(BaseModel):
+class Product(BaseModel):
     nmId: str
     name: str
 
 
-@router.get("/", response_model=List[ProductMock])
+@router.get("/", response_model=List[Product])
 def read_products(
     refresh: bool = False,
     replace: bool = False,

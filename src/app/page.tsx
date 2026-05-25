@@ -9,10 +9,10 @@ import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import './landing.css';
 
-export default function LandingPage() {
+function LandingPageContent() {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
   const { t, language, setLanguage } = useTranslation();
   const searchParams = useSearchParams();
@@ -283,5 +283,13 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <Suspense>
+      <LandingPageContent />
+    </Suspense>
   );
 }
