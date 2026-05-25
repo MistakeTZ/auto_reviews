@@ -10,8 +10,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 function RegisterPageContent() {
   const login = useAppStore(state => state.login);
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,16 +23,15 @@ function RegisterPageContent() {
     const refFromQuery = searchParams.get('ref')?.trim() || '';
     if (refFromQuery) {
       localStorage.setItem('pendingReferralCode', refFromQuery);
-      router.replace('/');
     }
-  }, [router, searchParams]);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (email && password && name) {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8082/api';
         const pendingReferralCode = localStorage.getItem('pendingReferralCode')?.trim() || '';
         const payload = {
           email,
@@ -70,7 +69,7 @@ function RegisterPageContent() {
         } else {
           setError('Registration failed (maybe email already in use?)');
         }
-      } catch (err) {
+      } catch {
         setError('Connection error');
       }
     }

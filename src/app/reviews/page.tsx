@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
+import { formatDateTime } from '@/lib/formatDateTime';
 
 export default function ReviewsPage() {
   const reviews = useAppStore(state => state.reviews);
@@ -62,7 +63,7 @@ export default function ReviewsPage() {
                     <span className="flex text-amber-400 text-lg leading-none">
                       {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                     </span>
-                    <span className="text-slate-500 font-medium">{review.date}</span>
+                    <span className="text-slate-500 font-medium">{formatDateTime(review.date)}</span>
                   </div>
                 </div>
                 <div>

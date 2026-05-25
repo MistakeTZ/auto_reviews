@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Activity, MessageCircle, CheckCircle, Clock } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
+import { formatDateTime } from '@/lib/formatDateTime';
 
 export default function Dashboard() {
   const reviews = useAppStore(state => state.reviews);
@@ -86,7 +87,7 @@ export default function Dashboard() {
                     <p className="text-sm text-slate-500 line-clamp-1 mt-0.5">{review.text}</p>
                     <div className="flex items-center mt-2">
                       <span className="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded-md mr-2">⭐ {review.rating}</span>
-                      <span className="text-xs font-medium text-slate-400">{review.date}</span>
+                      <span className="text-xs font-medium text-slate-400">{formatDateTime(review.date)}</span>
                     </div>
                   </div>
                 </div>

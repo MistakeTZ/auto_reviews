@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { useEffect, useState } from 'react';
 import { Gift, Copy, Check, Sparkles, AlertCircle, ArrowRight, UserPlus, ShieldAlert, CreditCard } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { formatDateTime } from '@/lib/formatDateTime';
 
 export default function ReferralsPage() {
   const {
@@ -169,7 +170,7 @@ export default function ReferralsPage() {
                         : t('subscription.expiredDaysAgo').replace('{{days}}', String(daysInfo.days))}
                     </span>
                     <span className="text-slate-400">
-                      {t('referrals.expiryLabel')}: {new Date(subscriptionExpiresAt).toLocaleDateString()}
+                      {t('referrals.expiryLabel')}: {formatDateTime(subscriptionExpiresAt)}
                     </span>
                   </div>
                   
