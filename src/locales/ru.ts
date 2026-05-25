@@ -113,8 +113,8 @@ export const ru = {
     exactly: 'ровно',
     lessThan: 'меньше',
     moreThan: 'больше',
-    syncReviews: 'Синхронизировать отзывы',
-    syncing: 'Синхронизация...',
+    syncReviews: 'Обновить',
+    syncing: 'Обновление...',
   },
   reviews: {
     title: 'Отзывы',
@@ -125,8 +125,8 @@ export const ru = {
     sendReply: 'Отправить ответ',
     automatedResponse: 'Автоматический ответ',
     noReviews: 'Отзывы не найдены.',
-    syncReviews: 'Синхронизировать отзывы',
-    syncing: 'Синхронизация...',
+    syncReviews: 'Обновить',
+    syncing: 'Обновление...',
   },
   rules: {
     title: 'Правила автоответов',

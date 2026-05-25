@@ -113,8 +113,8 @@ export const en = {
     exactly: 'exactly',
     lessThan: 'less than',
     moreThan: 'more than',
-    syncReviews: 'Sync Reviews',
-    syncing: 'Syncing...',
+    syncReviews: 'Update',
+    syncing: 'Updating...',
   },
   reviews: {
     title: 'Reviews',
@@ -125,8 +125,8 @@ export const en = {
     sendReply: 'Send Reply',
     automatedResponse: 'Automated Response',
     noReviews: 'No reviews found.',
-    syncReviews: 'Sync Reviews',
-    syncing: 'Syncing...',
+    syncReviews: 'Update',
+    syncing: 'Updating...',
   },
   rules: {
     title: 'Auto-Answer Rules',

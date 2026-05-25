@@ -1,10 +1,10 @@
 import bcrypt
 from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+from jose import jwt
 
 SECRET_KEY = "super-secret-key-change-in-production"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14
 
 def verify_password(plain_password, hashed_password):
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))

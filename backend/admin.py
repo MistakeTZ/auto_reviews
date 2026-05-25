@@ -1,13 +1,14 @@
 import os
+import logging
 
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
-from sqlalchemy import select
 from starlette.requests import Request
 
-from auth import verify_password
 from database import engine
 from models import NmIDs, NotificationMethod, Review, Rule, User
+
+logger = logging.getLogger(__name__)
 
 
 class AdminAuth(AuthenticationBackend):
@@ -25,6 +26,7 @@ class AdminAuth(AuthenticationBackend):
         admin_password = os.getenv("SQLADMIN_PASSWORD", "admin")
 
         if username == admin_login and password == admin_password:
+            logger.info(f"Admin logged in: {username}")
             request.session.update({"token": username})
             return True
         return False
@@ -99,16 +101,9 @@ class NotificationMethodAdmin(ModelView, model=NotificationMethod):
     name_plural = "Notification Methods"
 
 
-def _has_users() -> bool:
-    """Enable auth when at least one user exists in DB."""
-    with engine.connect() as conn:
-        row = conn.execute(select(User.id).limit(1)).first()
-        return row is not None
-
-
 def setup_admin(app):
     secret = os.getenv("SQLADMIN_SECRET_KEY", "change-me-sqladmin-secret")
-    authentication_backend = AdminAuth(secret_key=secret) if _has_users() else None
+    authentication_backend = AdminAuth(secret_key=secret)
 
     admin = Admin(
         app=app,
