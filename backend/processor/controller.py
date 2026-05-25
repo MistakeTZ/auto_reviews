@@ -1,4 +1,4 @@
-from aiohttp import web_urldispatcher
+from models import Rule
 import asyncio
 import json
 import logging
@@ -125,7 +125,7 @@ class MainController:
                     "[questions] failed question_id=%s: %s", question_id, response
                 )
 
-    def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Any]:
+    def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Rule]:
         """Return the first rule that matches this feedback, or None."""
         nm_id = str(feedback.get("nmId") or "").strip()
         rating = feedback.get("productValuation")
@@ -293,13 +293,17 @@ class MainController:
                     else:
                         text = text.replace(", [name]", "").replace("[name]", "")
                     answer_status = "auto-answered"
-                else:
-                    text = await self._build_feedback_answer(feedback)
+                elif matched_rule is not None:
+                    text = await self._build_feedback_answer(
+                        feedback, matched_rule.action_text
+                    )
                     answer_status = (
                         "auto-answered" if matched_rule is not None else "manual-review"
                     )
+                else:
+                    text = None
 
-                if not text.strip():
+                if not text or not text.strip():
                     logger.warning(
                         "[feedbacks] empty answer for feedback_id=%s, skipping",
                         feedback_id,
@@ -479,7 +483,7 @@ class MainController:
             "state": "wbRu" if global_answer else "none",
         }
 
-    async def _build_feedback_answer(self, feedback: Dict) -> str:
+    async def _build_feedback_answer(self, feedback: Dict, prompt: str) -> str:
         if not self.use_gpt_for_feedbacks:
             valuation = feedback.get("productValuation")
             user_name = (feedback.get("userName") or "").strip()
@@ -510,49 +514,23 @@ class MainController:
 
         parts: List[str] = []
         if user_name:
-            parts.append(f"Customer name: {user_name}")
+            parts.append(f"Клиент: {user_name}")
         if subject_name:
-            parts.append(f"Product: {subject_name}")
+            parts.append(f"Продукт: {subject_name}")
         if valuation is not None:
-            parts.append(f"Rating: {valuation}/5 stars")
+            parts.append(f"Рейтинг: {valuation}/5")
         if text:
-            parts.append(f"Review text: {text}")
+            parts.append(f"Текст отзыва: {text}")
         if pros:
-            parts.append(f"Pros: {pros}")
+            parts.append(f"Достоинства: {pros}")
         if cons:
-            parts.append(f"Cons: {cons}")
+            parts.append(f"Недостатки: {cons}")
         if has_video:
-            parts.append("Customer attached a video")
+            parts.append("Клиент прикрепил видео")
         if photo_count:
-            parts.append(f"Customer attached {photo_count} photo(s)")
+            parts.append(f"Клиент прикрепил {photo_count} фото")
 
         feedback_summary = "\n".join(parts)
-
-        examples_json = ""
-        if hasattr(self, "_feedback_examples") and self._feedback_examples:
-            examples = [
-                {"feedback": ex.get("text", ""), "answer": ex.get("answer", "")}
-                for ex in self._feedback_examples[:15]
-                if ex.get("answer")
-            ]
-            if examples:
-                examples_json = "\n\nExamples (learn tone and style):\n" + json.dumps(
-                    examples, ensure_ascii=False, indent=2
-                )
-
-        prompt = (
-            "You are a Wildberries seller support assistant. "
-            "Write a polite reply to the customer feedback below. "
-            "Address the customer by name if provided. "
-            "If the product name is mentioned, refer to it as a common noun (e.g. 'ирригатора'), never repeat the catalog title verbatim. "
-            "If cons or complaints are mentioned, acknowledge them and offer help. "
-            "If photos or video are attached, thank the customer for the media. "
-            "Keep the reply to 2-4 sentences maximum. "
-            'You are "VIRONIX" team manager. '
-            "If feedback is negative (1-2 stars) or has cons, offer to help resolve the issue. "
-            "Only RUSSIAN language. "
-            "Return answer only without additional text, no JSON." + examples_json
-        )
 
         raw = await self.gpt.chat_completion(
             messages=[

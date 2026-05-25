@@ -156,7 +156,7 @@ class ChatProcessor:
         text: str,
     ) -> Dict:
         logger.info(f"Answer feedback: {feedback_id}, text: {text}")
-        return True
+        # return True
         endpoints = [
             (
                 "https://feedbacks-api.wildberries.ru/api/v1/feedbacks/answer",
