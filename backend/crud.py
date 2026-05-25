@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from auth import get_password_hash
+import uuid
+from datetime import datetime, timezone, timedelta
 
 
 def get_user(db: Session, user_id: int):
@@ -12,10 +14,17 @@ def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
 
+def get_user_by_referral_code(db: Session, referral_code: str):
+    return db.query(models.User).filter(models.User.referral_code == referral_code).first()
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password)
     db_user = models.User(
-        email=user.email, hashed_password=hashed_password, name=user.name
+        email=user.email,
+        hashed_password=hashed_password,
+        name=user.name,
+        referral_code=str(uuid.uuid4())[:8],
     )
     db.add(db_user)
     db.commit()
@@ -27,8 +36,74 @@ def update_user_token(db: Session, user_id: int, token: str):
     db_user = get_user(db, user_id)
     if db_user:
         db_user.wb_api_token = token
+        
+        # Trial starts after token input
+        if not db_user.trial_activated:
+            db_user.trial_activated = True
+            now = datetime.now(timezone.utc)
+            db_user.subscription_expires_at = now + timedelta(days=14)
+            db_user.tariff_type = "trial"
+            
+            # If referred by someone, extend referrer's subscription by 7 days on full tariff
+            if db_user.referred_by_id:
+                referrer = get_user(db, db_user.referred_by_id)
+                if referrer:
+                    ref_now = datetime.now(timezone.utc)
+                    current_expiry = referrer.subscription_expires_at
+                    if current_expiry and current_expiry.tzinfo is None:
+                        current_expiry = current_expiry.replace(tzinfo=timezone.utc)
+                    
+                    if current_expiry and current_expiry > ref_now:
+                        referrer.subscription_expires_at = current_expiry + timedelta(days=7)
+                    else:
+                        referrer.subscription_expires_at = ref_now + timedelta(days=7)
+                    referrer.tariff_type = "full"
+                    db.add(referrer)
+
         db.commit()
         db.refresh(db_user)
+    return db_user
+
+
+def apply_referral_code(db: Session, user_id: int, code: str):
+    db_user = get_user(db, user_id)
+    if not db_user:
+        raise ValueError("User not found")
+    if db_user.referred_by_id:
+        raise ValueError("You have already applied a referral code")
+    if db_user.trial_activated:
+        raise ValueError("Cannot apply referral code after trial has started")
+        
+    referrer = get_user_by_referral_code(db, code)
+    if not referrer:
+        raise ValueError("Invalid referral code")
+    if referrer.id == db_user.id:
+        raise ValueError("You cannot refer yourself")
+        
+    db_user.referred_by_id = referrer.id
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def buy_full_subscription(db: Session, user_id: int):
+    db_user = get_user(db, user_id)
+    if not db_user:
+        raise ValueError("User not found")
+        
+    now = datetime.now(timezone.utc)
+    current_expiry = db_user.subscription_expires_at
+    if current_expiry and current_expiry.tzinfo is None:
+        current_expiry = current_expiry.replace(tzinfo=timezone.utc)
+        
+    if current_expiry and current_expiry > now:
+        db_user.subscription_expires_at = current_expiry + timedelta(days=30)
+    else:
+        db_user.subscription_expires_at = now + timedelta(days=30)
+        
+    db_user.tariff_type = "full"
+    db.commit()
+    db.refresh(db_user)
     return db_user
 
 

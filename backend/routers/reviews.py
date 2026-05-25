@@ -5,7 +5,7 @@ from typing import List
 import crud
 import schemas
 import database
-from routers.auth import get_current_user
+from routers.auth import get_current_user, check_active_subscription
 from models import User, Review
 from pydantic import BaseModel
 
@@ -19,7 +19,7 @@ class ReplyRequest(BaseModel):
 @router.get("/", response_model=List[schemas.Review])
 def read_reviews(
     db: Session = Depends(database.get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(check_active_subscription),
 ):
     reviews = crud.get_reviews(db, user_id=current_user.id)
     return reviews
@@ -31,7 +31,7 @@ from processor.chat_processor import ChatProcessor
 @router.post("/sync", response_model=List[schemas.Review])
 async def sync_reviews(
     db: Session = Depends(database.get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(check_active_subscription),
 ):
     if not current_user.wb_api_token:
         raise HTTPException(
@@ -146,7 +146,7 @@ async def reply_to_review(
     review_id: int,
     request: ReplyRequest,
     db: Session = Depends(database.get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(check_active_subscription),
 ):
     if not current_user.wb_api_token:
         raise HTTPException(

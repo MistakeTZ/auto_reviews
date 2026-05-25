@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+from datetime import datetime
 
 
 class UserBase(BaseModel):
@@ -15,6 +16,14 @@ class User(UserBase):
     id: int
     wb_api_token: Optional[str] = None
     uuid: str
+    subscription_expires_at: Optional[datetime] = None
+    tariff_type: Optional[str] = None
+    trial_activated: Optional[bool] = None
+    referral_code: Optional[str] = None
+    referred_by_id: Optional[int] = None
+    has_active_subscription: bool = False
+    rules_count: int = 0
+    notification_methods_count: int = 0
 
     class Config:
         from_attributes = True

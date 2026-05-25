@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -13,11 +13,34 @@ class User(Base):
     name = Column(String)
     wb_api_token = Column(String, nullable=True)
     uuid = Column(String, unique=True, default=lambda: str(uuid.uuid4()))
+    
+    # Subscription & Referral Fields
+    subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
+    tariff_type = Column(String, default="trial", nullable=True)
+    trial_activated = Column(Boolean, default=False, nullable=True)
+    referred_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    referral_code = Column(String, unique=True, index=True, nullable=True)
 
     rules = relationship("Rule", back_populates="owner")
     reviews = relationship("Review", back_populates="owner")
     nm_ids = relationship("NmIDs", back_populates="owner")
     notification_methods = relationship("NotificationMethod", back_populates="owner")
+
+    @property
+    def has_active_subscription(self) -> bool:
+        if not self.subscription_expires_at:
+            return False
+        import datetime
+        now = datetime.datetime.now(self.subscription_expires_at.tzinfo) if self.subscription_expires_at.tzinfo else datetime.datetime.now()
+        return self.subscription_expires_at > now
+
+    @property
+    def rules_count(self) -> int:
+        return len(self.rules)
+
+    @property
+    def notification_methods_count(self) -> int:
+        return len(self.notification_methods)
 
 
 class Rule(Base):

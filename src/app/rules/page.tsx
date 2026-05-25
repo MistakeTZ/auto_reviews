@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
 
 export default function RulesPage() {
   const rules = useAppStore(state => state.rules);
@@ -141,7 +142,8 @@ export default function RulesPage() {
   });
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-4xl mx-auto">
+    <SubscriptionGuard>
+      <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('rules.title')}</h1>
         <Button
@@ -514,5 +516,6 @@ export default function RulesPage() {
         )}
       </div>
     </div>
-  );
+  </SubscriptionGuard>
+);
 }

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
 
 export default function ReviewsPage() {
   const reviews = useAppStore(state => state.reviews);
@@ -30,7 +31,8 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
+    <SubscriptionGuard>
+      <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-8" style={{ gap: '5%' }}>
         <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('reviews.title')}</h1>
         <div className="flex space-x-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
@@ -106,5 +108,6 @@ export default function ReviewsPage() {
         )}
       </div>
     </div>
-  );
+  </SubscriptionGuard>
+);
 }

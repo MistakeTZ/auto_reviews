@@ -105,6 +105,11 @@ def add_notification(
     current_user: User = Depends(get_current_user),
 ):
     existing = crud.get_notification_methods(db, user_id=current_user.id)
+    if current_user.tariff_type == "trial" and len(existing) >= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Trial users are limited to 1 notification method. Upgrade to Pro for up to 5 methods."
+        )
     if len(existing) >= 5:
         raise HTTPException(
             status_code=400,
@@ -135,3 +140,56 @@ def get_bots_config():
         "tg_bot": os.getenv("TG_BOT", "autoreviews_bot"),
         "max_bot": os.getenv("MAX_BOT", "max_notification_bot"),
     }
+
+
+class ReferralCodeRequest(BaseModel):
+    code: str
+
+
+@router.post("/apply-referral")
+def apply_referral(
+    req: ReferralCodeRequest,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        crud.apply_referral_code(db, user_id=current_user.id, code=req.code)
+        return {"ok": True, "message": "Referral code applied successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/buy-subscription")
+def buy_subscription(
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        updated = crud.buy_full_subscription(db, user_id=current_user.id)
+        return {
+            "ok": True,
+            "message": "Subscription purchased successfully",
+            "subscription_expires_at": updated.subscription_expires_at,
+            "tariff_type": updated.tariff_type,
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/referrals-list")
+def referrals_list(
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from models import User as DbUser
+    referrals = db.query(DbUser).filter(DbUser.referred_by_id == current_user.id).all()
+    return [
+        {
+            "id": ref.id,
+            "name": ref.name,
+            "email": ref.email,
+            "trial_activated": ref.trial_activated,
+            "tariff_type": ref.tariff_type,
+        }
+        for ref in referrals
+    ]

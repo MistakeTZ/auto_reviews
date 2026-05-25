@@ -66,3 +66,12 @@ def login_for_access_token(
 @router.get("/me", response_model=schemas.User)
 def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
+
+
+def check_active_subscription(current_user: schemas.User = Depends(get_current_user)):
+    if not current_user.has_active_subscription:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Active subscription required. Please activate trial or buy a subscription."
+        )
+    return current_user

@@ -36,6 +36,19 @@ def run_migrations():
             except sqlite3.OperationalError:
                 pass
 
+            # Migrations for users table subscription & referral fields
+            for col, col_type in [
+                ("subscription_expires_at", "DATETIME"),
+                ("tariff_type", "TEXT DEFAULT 'trial'"),
+                ("trial_activated", "BOOLEAN DEFAULT 0"),
+                ("referred_by_id", "INTEGER"),
+                ("referral_code", "TEXT"),
+            ]:
+                try:
+                    cursor.execute(f"ALTER TABLE users ADD COLUMN {col} {col_type}")
+                except sqlite3.OperationalError:
+                    pass
+
             # Backfill unique uuids for users that don't have one
             try:
                 import uuid
@@ -49,6 +62,20 @@ def run_migrations():
                     )
             except Exception as users_err:
                 print("Backfill users uuid warning:", users_err)
+
+            # Backfill unique referral codes for users that don't have one
+            try:
+                import uuid
+
+                cursor.execute("SELECT id FROM users WHERE referral_code IS NULL")
+                null_ref_users = cursor.fetchall()
+                for (uid,) in null_ref_users:
+                    cursor.execute(
+                        "UPDATE users SET referral_code = ? WHERE id = ?",
+                        (str(uuid.uuid4())[:8], uid),
+                    )
+            except Exception as ref_err:
+                print("Backfill users referral_code warning:", ref_err)
 
             conn.commit()
             conn.close()

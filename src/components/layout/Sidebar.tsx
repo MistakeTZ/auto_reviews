@@ -2,17 +2,23 @@
 
 import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
-import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Menu, X, Gift } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useEffect, useState } from 'react';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
 
 export default function Sidebar() {
-  const { isAuthenticated, jwtToken, logout, fetchMe, fetchProducts, fetchRules, fetchReviews, userName } = useAppStore();
+  const { isAuthenticated, jwtToken, logout, fetchMe, fetchProducts, fetchRules, fetchReviews, userName, tariffType, hasActiveSubscription } = useAppStore();
   const { t, language, setLanguage } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
+
+  const getPlanBadge = () => {
+    if (!hasActiveSubscription) return <span className="text-[10px] font-extrabold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200">Expired</span>;
+    if (tariffType === 'trial') return <span className="text-[10px] font-extrabold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200">Trial</span>;
+    return <span className="text-[10px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md border border-indigo-200">Pro Plan</span>;
+  };
 
   useEffect(() => {
     if (isAuthenticated && jwtToken) {
@@ -112,6 +118,10 @@ export default function Sidebar() {
             <Settings size={18} />
             <span>{t('common.settings')}</span>
           </Link>
+          <Link href="/referrals" onClick={() => setIsOpen(false)} className={linkClass('/referrals')}>
+            <Gift size={18} />
+            <span>{t('referrals.title')}</span>
+          </Link>
         </nav>
 
         <div className="p-4 m-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -121,7 +131,7 @@ export default function Sidebar() {
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-bold text-slate-800 truncate">{userName || t('common.sellerAccount')}</p>
-              <p className="text-xs text-slate-500 truncate">Active Plan</p>
+              <div className="mt-1">{getPlanBadge()}</div>
             </div>
           </div>
           <button
@@ -160,6 +170,7 @@ export default function Sidebar() {
           <Link href="/reviews" className={linkClass('/reviews')}><MessageSquare size={18} /><span>{t('common.reviewsInbox')}</span></Link>
           <Link href="/rules" className={linkClass('/rules')}><ShieldAlert size={18} /><span>{t('common.autoAnswerRules')}</span></Link>
           <Link href="/settings" className={linkClass('/settings')}><Settings size={18} /><span>{t('common.settings')}</span></Link>
+          <Link href="/referrals" className={linkClass('/referrals')}><Gift size={18} /><span>{t('referrals.title')}</span></Link>
         </nav>
 
         <div className="p-4 m-4 mt-3 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
@@ -169,7 +180,7 @@ export default function Sidebar() {
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-bold text-slate-800 truncate">{userName || t('common.sellerAccount')}</p>
-              <p className="text-xs text-slate-500 truncate">{t('common.activePlan')}</p>
+              <div className="mt-1">{getPlanBadge()}</div>
             </div>
           </div>
           <button onClick={handleLogout} className="flex items-center justify-center space-x-2 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors w-full px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100">

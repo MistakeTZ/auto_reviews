@@ -4,6 +4,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Activity, MessageCircle, CheckCircle, Clock } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
 
 export default function Dashboard() {
   const reviews = useAppStore(state => state.reviews);
@@ -16,8 +17,9 @@ export default function Dashboard() {
   const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviews || 1);
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8">
-      <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-8">{t('dashboard.overview')}</h1>
+    <SubscriptionGuard>
+      <div className="pt-24 px-4 pb-8 md:p-8">
+        <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-8">{t('dashboard.overview')}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
@@ -119,5 +121,6 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
-  );
+  </SubscriptionGuard>
+);
 }

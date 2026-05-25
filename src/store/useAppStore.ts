@@ -57,6 +57,16 @@ interface AppState {
   rules: Rule[];
   products: Product[];
   notificationMethods: NotificationMethod[];
+  
+  // Subscription & Referral Fields
+  subscriptionExpiresAt: string | null;
+  tariffType: 'trial' | 'full' | null;
+  trialActivated: boolean;
+  hasActiveSubscription: boolean;
+  referralCode: string | null;
+  referredById: number | null;
+  referrals: any[];
+
   login: (token: string) => void;
   logout: () => void;
   setLanguage: (lang: 'en' | 'ru') => void;
@@ -72,6 +82,9 @@ interface AppState {
   fetchNotificationMethods: () => Promise<void>;
   addNotificationMethod: (method: Omit<NotificationMethod, 'id' | 'userId'>) => Promise<void>;
   deleteNotificationMethod: (id: number) => Promise<void>;
+  applyReferralCode: (code: string) => Promise<void>;
+  buySubscription: () => Promise<void>;
+  fetchReferralsList: () => Promise<any[]>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -87,10 +100,34 @@ export const useAppStore = create<AppState>()(
       reviews: [],
       rules: [],
       notificationMethods: [],
+      subscriptionExpiresAt: null,
+      tariffType: null,
+      trialActivated: false,
+      hasActiveSubscription: false,
+      referralCode: null,
+      referredById: null,
+      referrals: [],
 
       login: (token: string) => set({ isAuthenticated: true, jwtToken: token }),
 
-      logout: () => set({ isAuthenticated: false, jwtToken: null, apiToken: null, userName: null, userUuid: null, reviews: [], rules: [], products: [], notificationMethods: [] }),
+      logout: () => set({
+        isAuthenticated: false,
+        jwtToken: null,
+        apiToken: null,
+        userName: null,
+        userUuid: null,
+        reviews: [],
+        rules: [],
+        products: [],
+        notificationMethods: [],
+        subscriptionExpiresAt: null,
+        tariffType: null,
+        trialActivated: false,
+        hasActiveSubscription: false,
+        referralCode: null,
+        referredById: null,
+        referrals: [],
+      }),
 
       setLanguage: (lang) => set({ language: lang }),
 
@@ -103,7 +140,17 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
-            set({ apiToken: data.wb_api_token, userName: data.name, userUuid: data.uuid });
+            set({
+              apiToken: data.wb_api_token,
+              userName: data.name,
+              userUuid: data.uuid,
+              subscriptionExpiresAt: data.subscription_expires_at,
+              tariffType: data.tariff_type,
+              trialActivated: data.trial_activated,
+              hasActiveSubscription: data.has_active_subscription,
+              referralCode: data.referral_code,
+              referredById: data.referred_by_id,
+            });
           } else if (res.status === 401) {
             get().logout();
           }
@@ -419,6 +466,60 @@ export const useAppStore = create<AppState>()(
         } catch (e) {
           console.error(e);
         }
+      },
+
+      applyReferralCode: async (code: string) => {
+        const { jwtToken } = get();
+        if (!jwtToken) return;
+        const res = await fetch(`${API_URL}/settings/apply-referral`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ code })
+        });
+        if (res.ok) {
+          await get().fetchMe();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || data.message || 'Failed to apply referral code');
+        }
+      },
+
+      buySubscription: async () => {
+        const { jwtToken } = get();
+        if (!jwtToken) return;
+        const res = await fetch(`${API_URL}/settings/buy-subscription`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${jwtToken}`
+          }
+        });
+        if (res.ok) {
+          await get().fetchMe();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || data.message || 'Failed to buy subscription');
+        }
+      },
+
+      fetchReferralsList: async () => {
+        const { jwtToken } = get();
+        if (!jwtToken) return [];
+        try {
+          const res = await fetch(`${API_URL}/settings/referrals-list`, {
+            headers: { Authorization: `Bearer ${jwtToken}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            set({ referrals: data });
+            return data;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        return [];
       }
     }),
     {

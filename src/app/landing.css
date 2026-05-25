@@ -356,7 +356,7 @@ html[lang='ru'] {
 .btn-primary:hover {
   background-color: var(--navy-half-light);
   /* background-color: var(--navy-light); */
-  border-color: var(--navy-light);
+  border-color: var(--navy-half-light);
   transform: translateY(-2px);
   box-shadow: var(--btn-shadow-hover);
 }

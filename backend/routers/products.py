@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import crud
 import database
-from routers.auth import get_current_user
+from routers.auth import get_current_user, check_active_subscription
 from models import User
 from pydantic import BaseModel
 from services.wb_products import sync_user_products
@@ -21,7 +21,7 @@ def read_products(
     refresh: bool = False,
     replace: bool = False,
     db: Session = Depends(database.get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(check_active_subscription),
 ):
     if refresh:
         return sync_user_products(db=db, user=current_user, replace_existing=replace)
