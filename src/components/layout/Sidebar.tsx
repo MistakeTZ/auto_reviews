@@ -52,10 +52,10 @@ export default function Sidebar() {
         >
           <Menu size={22} />
         </button>
-        <div className="text-center">
+        <a href="/" className="text-center">
           <h1 className="text-xl font-black text-indigo-600 tracking-tight leading-none">reAnswer</h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Wildberries</p>
-        </div>
+        </a>
         
         {/* Mobile Language Toggle */}
         <button 
@@ -82,10 +82,10 @@ export default function Sidebar() {
         }`}
       >
         <div className="p-6 flex justify-between items-center border-b border-slate-100">
-          <div>
+          <a href="/" className="text-center">
             <h1 className="text-2xl font-black text-indigo-600 tracking-tight">reAnswer</h1>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Wildberries</p>
-          </div>
+          </a>
           <button
             onClick={() => setIsOpen(false)}
             className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 hover:text-rose-600 text-slate-500 transition-colors"
@@ -140,10 +140,10 @@ export default function Sidebar() {
       {/* Desktop Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen max-h-screen sticky top-0 overflow-hidden shadow-sm z-10">
         <div className="p-6 flex justify-between items-center">
-          <div>
+          <a href="/" className="text-center">
             <h1 className="text-2xl font-black text-indigo-600 tracking-tight">reAnswer</h1>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Wildberries</p>
-          </div>
+          </a>
           
           {/* Desktop Language Toggle */}
           <button 

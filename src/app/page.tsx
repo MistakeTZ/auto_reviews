@@ -6,7 +6,6 @@ import {
   ArrowRight, Settings, Check
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
 import { useEffect, useState } from 'react';
@@ -14,7 +13,6 @@ import './landing.css';
 
 export default function LandingPage() {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
-  const router = useRouter();
   const { t, language, setLanguage } = useTranslation();
 
   const [isVisible, setIsVisible] = useState(false);
@@ -63,12 +61,12 @@ export default function LandingPage() {
               <MessageCircle size={20} className="text-white" />
             </div>
             <h1 className="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
-              reAnswer
+              {t('landing.brandName')}
             </h1>
           </div>
           
           <div className="header-cta">
-            <button onClick={toggleLanguage} className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center" title="Toggle Language">
+            <button onClick={toggleLanguage} className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center" title={t('landing.toggleLanguage')}>
               <FlagSwitcher />
             </button>
             {isAuthenticated ? (
@@ -96,11 +94,11 @@ export default function LandingPage() {
             <div className="hero-content" data-reveal="left">
               <span className="eyebrow">{t('landing.trustedBanner')}</span>
               <h2 className="hero-headline">
-                {t('landing.title').split('Wildberries')[0]}
+                {t('landing.titlePrefix')}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 relative inline-block">
-                  Wildberries
+                  {t('landing.titleHighlight')}
                 </span>
-                {t('landing.title').split('Wildberries')[1]}
+                {t('landing.titleSuffix')}
               </h2>
 
               <p className="hero-subheadline">
@@ -120,7 +118,7 @@ export default function LandingPage() {
 
             <div className="hero-visual" data-reveal="right">
               <div className="image-container">
-                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt="reAnswer Dashboard illustration" />
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt={t('landing.heroImageAlt')} />
               </div>
             </div>
           </div>
@@ -149,8 +147,8 @@ export default function LandingPage() {
         {/* Features Section */}
         <section className="services-section">
           <div className="services-header" data-reveal="zoom">
-            <span className="services-eyebrow">capabilities</span>
-            <h2 className="services-title">{t('landing.feature1Title') ? 'Our Powerful Features' : 'Features'}</h2>
+            <span className="services-eyebrow">{t('landing.capabilities')}</span>
+            <h2 className="services-title">{t('landing.feature1Title') ? t('landing.ourPowerfulFeatures') : t('landing.features')}</h2>
           </div>
           <div className="services-grid">
             {[
@@ -172,7 +170,7 @@ export default function LandingPage() {
         {/* How it Works Section */}
         <section className="why-choose-section">
           <div className="why-choose-container">
-            <span className="why-choose-eyebrow" data-reveal="zoom">process</span>
+            <span className="why-choose-eyebrow" data-reveal="zoom">{t('landing.process')}</span>
             <h2 className="why-choose-title" data-reveal="zoom">{t('landing.howItWorks')}</h2>
             <div className="why-choose-grid">
               {[
@@ -195,7 +193,7 @@ export default function LandingPage() {
         {/* Testimonials Section */}
         <section className="about-us-section">
           <div className="about-us-intro">
-            <span className="about-us-eyebrow" data-reveal="zoom">reviews</span>
+            <span className="about-us-eyebrow" data-reveal="zoom">{t('landing.reviews')}</span>
             <h2 className="about-us-headline" data-reveal="zoom">{t('landing.testimonialsTitle')}</h2>
           </div>
           <div className="about-us-pillars">
@@ -223,7 +221,7 @@ export default function LandingPage() {
         {/* Pricing Section */}
         <section className="pricing-section">
           <div className="pricing-header" data-reveal="zoom">
-            <span className="why-choose-eyebrow">pricing</span>
+            <span className="why-choose-eyebrow">{t('landing.pricing')}</span>
             <h2 className="why-choose-title">{t('landing.pricingTitle')}</h2>
           </div>
           <div className="pricing-grid">
@@ -243,7 +241,7 @@ export default function LandingPage() {
                   {[1, 2, 3].map((_, i) => (
                     <li key={i}>
                       <i><Check size={16} /></i>
-                      <span>Feature point included</span>
+                      <span>{t('landing.pricingFeatureIncluded')}</span>
                     </li>
                   ))}
                 </ul>
@@ -263,7 +261,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
               <MessageCircle size={16} className="text-slate-900" />
             </div>
-            <span className="font-bold text-white tracking-tight">reAnswer</span>
+            <span className="font-bold text-white tracking-tight">{t('landing.brandName')}</span>
           </div>
           <p className="site-footer-copy">{t('landing.footerRights')}</p>
         </div>
