@@ -1,5 +1,6 @@
 import os
 import logging
+import secrets
 
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
@@ -18,6 +19,13 @@ class AdminAuth(AuthenticationBackend):
         super().__init__(secret_key=secret_key)
 
     async def login(self, request: Request) -> bool:
+        logger.warning(
+            "SQLAdmin login attempt: method=%s path=%s content_type=%s",
+            request.method,
+            request.url.path,
+            request.headers.get("content-type", ""),
+        )
+
         form = await request.form()
         username = str(form.get("username") or "")
         password = str(form.get("password") or "")
@@ -25,10 +33,15 @@ class AdminAuth(AuthenticationBackend):
         admin_login = os.getenv("SQLADMIN_USERNAME", "admin")
         admin_password = os.getenv("SQLADMIN_PASSWORD", "admin")
 
-        if username == admin_login and password == admin_password:
-            logger.info(f"Admin logged in: {username}")
+        is_login_ok = secrets.compare_digest(username, admin_login)
+        is_password_ok = secrets.compare_digest(password, admin_password)
+
+        if is_login_ok and is_password_ok:
+            logger.warning("SQLAdmin login success for username=%s", username)
             request.session.update({"token": username})
             return True
+
+        logger.warning("SQLAdmin login failed for username=%s", username)
         return False
 
     async def logout(self, request: Request) -> bool:
