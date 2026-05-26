@@ -54,10 +54,28 @@ def run_migrations():
                         ("cons", "TEXT"),
                         ("photos_count", "INTEGER DEFAULT 0"),
                         ("has_video", "BOOLEAN DEFAULT FALSE"),
+                        ("editable", "BOOLEAN DEFAULT TRUE"),
                     ]:
                         if col not in existing_reviews_cols:
                             conn.execute(text(f"ALTER TABLE reviews ADD COLUMN {col} {col_type}"))
                             conn.commit()
+
+                    # Normalize legacy statuses to the new enum-like set.
+                    conn.execute(
+                        text(
+                            """
+                            UPDATE reviews
+                            SET status = CASE
+                                WHEN status = 'auto-answered' THEN 'auto'
+                                WHEN status = 'manual-review' THEN 'manually'
+                                WHEN status = 'pending' THEN 'manually'
+                                ELSE status
+                            END
+                            WHERE status IN ('auto-answered', 'manual-review', 'pending')
+                            """
+                        )
+                    )
+                    conn.commit()
 
                 # 4. Backfill unique uuids for users that don't have one
                 if inspector.has_table("users"):

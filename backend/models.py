@@ -77,9 +77,10 @@ class Review(Base):
     text = Column(String)
     date = Column(String)
     status = Column(
-        String, default="pending"
-    )  # 'pending', 'auto-answered', 'manual-review'
+        String, default="manually"
+    )  # 'manually', 'auto', 'fetched'
     auto_answer_text = Column(String, nullable=True)
+    editable = Column(Boolean, default=True, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     
     # Premium Review Metadata fields

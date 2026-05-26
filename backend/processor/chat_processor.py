@@ -154,9 +154,9 @@ class ChatProcessor:
         self,
         feedback_id: str,
         text: str,
+        only_post: bool = False,
     ) -> Dict:
         logger.info(f"Answer feedback: {feedback_id}, text: {text}")
-        # return True
         endpoints = [
             (
                 "https://feedbacks-api.wildberries.ru/api/v1/feedbacks/answer",
@@ -170,7 +170,15 @@ class ChatProcessor:
 
         last_response = {}
         for url, payload in endpoints:
-            for request in (self._post, self._patch):
+            methods = (
+                [self._post]
+                if only_post
+                else [
+                    self._post,
+                    self._patch,
+                ]
+            )
+            for request in methods:
                 try:
                     res = await request(url, json_data=payload)
                 except Exception:

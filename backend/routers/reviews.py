@@ -66,7 +66,7 @@ async def sync_reviews(
 
         # Check rules
         auto_answer = None
-        status = "pending"
+        status = "manually"
         matched_rule = None
         for rule in rules:
             if rule.target == "specific_nm":
@@ -118,7 +118,7 @@ async def sync_reviews(
                 break
 
         if matched_rule:
-            status = "manual-review"  # Default to manual review for safety
+            status = "manually"  # Default to manual review for safety
             if getattr(matched_rule, "action_type", "template") == "template":
                 auto_answer = matched_rule.action_text
                 if user_name:
@@ -140,6 +140,7 @@ async def sync_reviews(
             date=created_date,
             status=status,
             auto_answer_text=auto_answer,
+            editable=True,
             user_name=user_name,
             pros=(fb.get("pros") or "").strip() or None,
             cons=(fb.get("cons") or "").strip() or None,
@@ -189,7 +190,8 @@ async def reply_to_review(
         db,
         review_id=review_id,
         user_id=current_user.id,
-        status="auto-answered",
+        status="auto",
         auto_answer_text=request.text,
+        editable=True,
     )
     return review

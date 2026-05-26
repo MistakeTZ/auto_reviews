@@ -182,6 +182,17 @@ def get_reviews(db: Session, user_id: int, status: str = None):
     return query.order_by(models.Review.id.desc()).all()
 
 
+def get_review_by_wb_review_id(db: Session, user_id: int, wb_review_id: str):
+    return (
+        db.query(models.Review)
+        .filter(
+            models.Review.user_id == user_id,
+            models.Review.wb_review_id == wb_review_id,
+        )
+        .first()
+    )
+
+
 def get_reviews_paginated(db: Session, user_id: int, page: int = 1, page_size: int = 10, status: str = None):
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
     if status and status != 'all':
@@ -228,8 +239,8 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
         db_review.text = review_data.text
         db_review.rating = review_data.rating
         db_review.status = review_data.status
-        if review_data.auto_answer_text:
-            db_review.auto_answer_text = review_data.auto_answer_text
+        db_review.auto_answer_text = review_data.auto_answer_text
+        db_review.editable = review_data.editable
         db_review.user_name = review_data.user_name
         db_review.pros = review_data.pros
         db_review.cons = review_data.cons
@@ -245,7 +256,7 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
 
 
 def update_review_status(
-    db: Session, review_id: int, user_id: int, status: str, auto_answer_text: str = None
+    db: Session, review_id: int, user_id: int, status: str, auto_answer_text: str = None, editable: bool = True
 ):
     db_review = (
         db.query(models.Review)
@@ -254,8 +265,8 @@ def update_review_status(
     )
     if db_review:
         db_review.status = status
-        if auto_answer_text:
-            db_review.auto_answer_text = auto_answer_text
+        db_review.auto_answer_text = auto_answer_text
+        db_review.editable = editable
         db.commit()
         db.refresh(db_review)
     return db_review
