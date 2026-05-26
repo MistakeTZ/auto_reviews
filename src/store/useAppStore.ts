@@ -15,7 +15,7 @@ export interface Review {
   rating: number;
   text: string;
   date: string;
-  status: 'pending' | 'auto-answered' | 'manual-review';
+  status: 'pending' | 'fetched' | 'auto' | 'manually' | 'auto-answered' | 'manual-review';
   autoAnswerText?: string;
   wb_review_id: string;
   userName?: string;
@@ -23,6 +23,7 @@ export interface Review {
   cons?: string;
   photosCount?: number;
   hasVideo?: boolean;
+  editable?: boolean;
 }
 
 export interface Rule {
@@ -244,7 +245,8 @@ export const useAppStore = create<AppState>()(
               pros: r.pros,
               cons: r.cons,
               photosCount: r.photos_count,
-              hasVideo: r.has_video
+              hasVideo: r.has_video,
+              editable: r.editable,
             });
 
             if (page !== undefined && pageSize !== undefined) {

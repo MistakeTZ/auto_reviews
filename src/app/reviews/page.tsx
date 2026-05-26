@@ -15,8 +15,11 @@ export default function ReviewsPage() {
   const syncReviews = useAppStore(state => state.syncReviews);
   const { t, language } = useTranslation();
   
-  const [filter, setFilter] = useState<'all' | 'pending' | 'auto-answered'>('all');
+  type ReviewFilter = 'all' | 'pending' | 'fetched' | 'auto' | 'manually';
+  
+  const [filter, setFilter] = useState<ReviewFilter>('all');
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
+  const [expandedAnswers, setExpandedAnswers] = useState<{ [key: string]: boolean }>({});
   
   const [paginatedReviews, setPaginatedReviews] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,7 +66,7 @@ export default function ReviewsPage() {
     };
   }, [currentPage, filter, fetchReviews]);
 
-  const handleFilterChange = (f: 'all' | 'pending' | 'auto-answered') => {
+  const handleFilterChange = (f: ReviewFilter) => {
     setFilter(f);
     setCurrentPage(1);
   };
@@ -81,11 +84,32 @@ export default function ReviewsPage() {
     }
   };
 
-  const getFilterText = (f: string) => {
+  const toggleAnswer = (id: string) => {
+    setExpandedAnswers(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const getFilterText = (f: ReviewFilter) => {
     if (f === 'all') return t('reviews.all');
     if (f === 'pending') return t('reviews.pending');
-    if (f === 'auto-answered') return t('reviews.autoAnswered');
+    if (f === 'fetched') return t('common.fetched');
+    if (f === 'auto') return t('reviews.autoAnswered');
+    if (f === 'manually') return t('common.manualy');
     return f;
+  };
+
+  const getNormalizedStatus = (status?: string) => {
+    if (status === 'auto-answered') return 'auto';
+    if (status === 'manual-review') return 'manually';
+    return status || 'pending';
+  };
+
+  const getStatusLabel = (status?: string) => {
+    const normalized = getNormalizedStatus(status);
+
+    if (normalized === 'fetched') return t('common.fetched');
+    if (normalized === 'auto') return 'auto-answered';
+    if (normalized === 'manually') return t('common.manualy');
+    return t('common.pending');
   };
 
   return (
@@ -109,7 +133,7 @@ export default function ReviewsPage() {
             </Button>
           </div>
           <div className="flex w-full flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:w-auto sm:flex-nowrap">
-            {(['all', 'pending', 'auto-answered'] as const).map(f => (
+            {(['all', 'pending', 'fetched', 'auto', 'manually'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => handleFilterChange(f)}
@@ -132,13 +156,16 @@ export default function ReviewsPage() {
         ) : (
           <>
             <div className="space-y-5">
-              {paginatedReviews.map(review => (
-                <Card key={review.id} className={review.status === 'pending' ? 'border-amber-200' : ''}>
+              {paginatedReviews.map(review => {
+                const isReviewEditable = review.editable !== false;
+
+                return (
+                <Card key={review.id} className={getNormalizedStatus(review.status) === 'pending' ? 'border-amber-200' : ''}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-start">
                         {/* Orange/emerald status dot matching recent actions */}
-                        <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${review.status === 'auto-answered' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-amber-500 shadow-amber-200'} shadow-sm`} />
+                        <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getNormalizedStatus(review.status) === 'auto' ? 'bg-emerald-500 shadow-emerald-200' : 'bg-amber-500 shadow-amber-200'} shadow-sm`} />
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">
                             {review.userName ? `${review.userName} • ${review.productName}` : review.productName}
@@ -162,11 +189,11 @@ export default function ReviewsPage() {
                         </div>
                       </div>
                       <div>
-                        <span className={`px-3 py-1.5 text-xs font-bold rounded-lg ${review.status === 'auto-answered'
+                        <span className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getNormalizedStatus(review.status) === 'auto'
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-amber-50 text-amber-700'
                           }`}>
-                          {review.status === 'auto-answered' ? t('common.answered') : t('common.pending')}
+                          {getStatusLabel(review.status)}
                         </span>
                       </div>
                     </div>
@@ -196,29 +223,46 @@ export default function ReviewsPage() {
                       )}
                     </div>
 
-                    {review.status === 'auto-answered' ? (
-                      <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
-                        <p className="text-xs font-bold text-indigo-600 mb-1.5 uppercase tracking-wide">{t('reviews.automatedResponse')}</p>
-                        <p className="text-sm text-slate-800 font-medium">{review.autoAnswerText}</p>
+                    {review.autoAnswerText && (
+                      <div className="mt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => toggleAnswer(review.id)}
+                          className="h-8 px-3 rounded-lg text-xs font-bold"
+                        >
+                          {expandedAnswers[review.id]
+                            ? (language === 'ru' ? 'Скрыть ответ' : 'Hide answer')
+                            : (language === 'ru' ? 'Показать ответ' : 'Show answer')}
+                        </Button>
+                        {expandedAnswers[review.id] && (
+                          <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl mt-3">
+                            <p className="text-xs font-bold text-indigo-600 mb-1.5 uppercase tracking-wide">{t('reviews.automatedResponse')}</p>
+                            <p className="text-sm text-slate-800 font-medium">{review.autoAnswerText}</p>
+                          </div>
+                        )}
                       </div>
-                    ) : (
+                    )}
+
+                    {getNormalizedStatus(review.status) !== 'auto' && !review.autoAnswerText && (
                       <div className="flex gap-3 mt-4">
                         <input
                           type="text"
                           value={replyText[review.id] || ''}
                           onChange={(e) => setReplyText(prev => ({ ...prev, [review.id]: e.target.value }))}
-                          placeholder={t('reviews.typeReply')}
+                          placeholder={isReviewEditable ? t('reviews.typeReply') : 'Изменение ответа недоступно'}
                           className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow"
                           style={{ maxWidth: "calc(100% - 130px)" }}
+                          disabled={!isReviewEditable}
                         />
-                        <Button onClick={() => handleReply(review.id)} disabled={!replyText[review.id]}>
+                        <Button onClick={() => handleReply(review.id)} disabled={!replyText[review.id] || !isReviewEditable}>
                           {t('reviews.sendReply')}
                         </Button>
                       </div>
                     )}
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
               {paginatedReviews.length === 0 && (
                 <div className="text-center py-16 text-slate-500 font-medium bg-white rounded-2xl border border-dashed border-slate-300">
                   {t('reviews.noReviews')}
