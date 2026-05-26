@@ -157,6 +157,11 @@ export default function ReviewsPage() {
                                 🎥 1
                               </span>
                             )}
+                            {review.isEditedFeedback && (
+                              <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/40 rounded-lg">
+                                {t('rules.editedFeedback')}
+                              </span>
+                            )}
                             <span className="text-xs font-semibold text-slate-400 ml-1">{formatDateTime(review.date)}</span>
                           </div>
                         </div>

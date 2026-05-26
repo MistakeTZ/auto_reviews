@@ -89,6 +89,7 @@ class Review(Base):
     cons = Column(String, nullable=True)
     photos_count = Column(Integer, default=0, nullable=True)
     has_video = Column(Boolean, default=False, nullable=True)
+    is_edited_feedback = Column(Boolean, default=False, nullable=True)
 
     owner = relationship("User", back_populates="reviews")
 

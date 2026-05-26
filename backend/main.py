@@ -55,6 +55,7 @@ def run_migrations():
                         ("photos_count", "INTEGER DEFAULT 0"),
                         ("has_video", "BOOLEAN DEFAULT FALSE"),
                         ("editable", "BOOLEAN DEFAULT TRUE"),
+                        ("is_edited_feedback", "BOOLEAN DEFAULT FALSE"),
                     ]:
                         if col not in existing_reviews_cols:
                             conn.execute(text(f"ALTER TABLE reviews ADD COLUMN {col} {col_type}"))

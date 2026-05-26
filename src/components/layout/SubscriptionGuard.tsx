@@ -12,12 +12,16 @@ interface SubscriptionGuardProps {
 }
 
 export default function SubscriptionGuard({ children }: SubscriptionGuardProps) {
-  const { hasActiveSubscription, trialActivated, tariffType, isAuthenticated } = useAppStore();
+  const { hasActiveSubscription, trialActivated, tariffType, isAuthenticated, hasLoadedProfile } = useAppStore();
   const { t } = useTranslation();
   const router = useRouter();
 
   if (!isAuthenticated) {
     return <>{children}</>;
+  }
+
+  if (!hasLoadedProfile) {
+    return null;
   }
 
   if (hasActiveSubscription) {

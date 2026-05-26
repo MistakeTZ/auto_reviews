@@ -23,6 +23,7 @@ export interface Review {
   cons?: string;
   photosCount?: number;
   hasVideo?: boolean;
+  isEditedFeedback?: boolean;
 }
 
 export interface Rule {
@@ -53,6 +54,7 @@ export interface NotificationMethod {
 
 interface AppState {
   isAuthenticated: boolean;
+  hasLoadedProfile: boolean;
   jwtToken: string | null;
   apiToken: string | null;
   userName: string | null;
@@ -97,6 +99,7 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       isAuthenticated: false,
+      hasLoadedProfile: false,
       jwtToken: null,
       apiToken: null,
       userName: null,
@@ -114,10 +117,11 @@ export const useAppStore = create<AppState>()(
       referredById: null,
       referrals: [],
 
-      login: (token: string) => set({ isAuthenticated: true, jwtToken: token }),
+      login: (token: string) => set({ isAuthenticated: true, hasLoadedProfile: false, jwtToken: token }),
 
       logout: () => set({
         isAuthenticated: false,
+        hasLoadedProfile: false,
         jwtToken: null,
         apiToken: null,
         userName: null,
@@ -156,6 +160,7 @@ export const useAppStore = create<AppState>()(
               hasActiveSubscription: data.has_active_subscription,
               referralCode: data.referral_code,
               referredById: data.referred_by_id,
+              hasLoadedProfile: true,
             });
           } else if (res.status === 401) {
             get().logout();
@@ -244,7 +249,8 @@ export const useAppStore = create<AppState>()(
               pros: r.pros,
               cons: r.cons,
               photosCount: r.photos_count,
-              hasVideo: r.has_video
+              hasVideo: r.has_video,
+              isEditedFeedback: r.is_edited_feedback,
             });
 
             if (page !== undefined && pageSize !== undefined) {

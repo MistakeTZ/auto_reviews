@@ -26,7 +26,11 @@ def read_reviews(
 ):
     if page is not None and page_size is not None:
         return crud.get_reviews_paginated(
-            db, user_id=current_user.id, page=page, page_size=page_size, status=status
+            db,
+            user_id=current_user.id,
+            page=page,
+            page_size=page_size,
+            status=status,
         )
     return crud.get_reviews(db, user_id=current_user.id, status=status)
 
@@ -146,6 +150,7 @@ async def sync_reviews(
             cons=(fb.get("cons") or "").strip() or None,
             photos_count=len(fb.get("photoLinks") or []),
             has_video=bool(fb.get("video")),
+            is_edited_feedback=bool(fb.get("parentFeedbackId")),
         )
         saved_review = crud.upsert_review(db, review_data, current_user.id)
         synced_reviews.append(saved_review)

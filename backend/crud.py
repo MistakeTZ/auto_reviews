@@ -15,7 +15,9 @@ def get_user_by_email(db: Session, email: str):
 
 
 def get_user_by_referral_code(db: Session, referral_code: str):
-    return db.query(models.User).filter(models.User.referral_code == referral_code).first()
+    return (
+        db.query(models.User).filter(models.User.referral_code == referral_code).first()
+    )
 
 
 def create_user(db: Session, user: schemas.UserCreate):
@@ -45,14 +47,14 @@ def update_user_token(db: Session, user_id: int, token: str):
     db_user = get_user(db, user_id)
     if db_user:
         db_user.wb_api_token = token
-        
+
         # Trial starts after token input
         if not db_user.trial_activated:
             db_user.trial_activated = True
             now = datetime.now(timezone.utc)
             db_user.subscription_expires_at = now + timedelta(days=14)
             db_user.tariff_type = "trial"
-            
+
             # If referred by someone, extend referrer's subscription by 7 days on full tariff
             if db_user.referred_by_id:
                 referrer = get_user(db, db_user.referred_by_id)
@@ -61,9 +63,11 @@ def update_user_token(db: Session, user_id: int, token: str):
                     current_expiry = referrer.subscription_expires_at
                     if current_expiry and current_expiry.tzinfo is None:
                         current_expiry = current_expiry.replace(tzinfo=timezone.utc)
-                    
+
                     if current_expiry and current_expiry > ref_now:
-                        referrer.subscription_expires_at = current_expiry + timedelta(days=7)
+                        referrer.subscription_expires_at = current_expiry + timedelta(
+                            days=7
+                        )
                     else:
                         referrer.subscription_expires_at = ref_now + timedelta(days=7)
                     referrer.tariff_type = "full"
@@ -82,13 +86,13 @@ def apply_referral_code(db: Session, user_id: int, code: str):
         raise ValueError("You have already applied a referral code")
     if db_user.trial_activated:
         raise ValueError("Cannot apply referral code after trial has started")
-        
+
     referrer = get_user_by_referral_code(db, code)
     if not referrer:
         raise ValueError("Invalid referral code")
     if referrer.id == db_user.id:
         raise ValueError("You cannot refer yourself")
-        
+
     db_user.referred_by_id = referrer.id
     db.commit()
     db.refresh(db_user)
@@ -99,17 +103,17 @@ def buy_full_subscription(db: Session, user_id: int):
     db_user = get_user(db, user_id)
     if not db_user:
         raise ValueError("User not found")
-        
+
     now = datetime.now(timezone.utc)
     current_expiry = db_user.subscription_expires_at
     if current_expiry and current_expiry.tzinfo is None:
         current_expiry = current_expiry.replace(tzinfo=timezone.utc)
-        
+
     if current_expiry and current_expiry > now:
         db_user.subscription_expires_at = current_expiry + timedelta(days=30)
     else:
         db_user.subscription_expires_at = now + timedelta(days=30)
-        
+
     db_user.tariff_type = "full"
     db.commit()
     db.refresh(db_user)
@@ -177,7 +181,7 @@ def delete_rule(db: Session, rule_id: int, user_id: int):
 
 def get_reviews(db: Session, user_id: int, status: str = None):
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
-    if status and status != 'all':
+    if status and status != "all":
         query = query.filter(models.Review.status == status)
     return query.order_by(models.Review.id.desc()).all()
 
@@ -193,27 +197,33 @@ def get_review_by_wb_review_id(db: Session, user_id: int, wb_review_id: str):
     )
 
 
-def get_reviews_paginated(db: Session, user_id: int, page: int = 1, page_size: int = 10, status: str = None):
+def get_reviews_paginated(
+    db: Session,
+    user_id: int,
+    page: int = 1,
+    page_size: int = 10,
+    status: str = None,
+):
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
-    if status and status != 'all':
+    if status and status != "all":
         query = query.filter(models.Review.status == status)
-    
+
     total = query.count()
     pages = (total + page_size - 1) // page_size if total > 0 else 1
-    
+
     items = (
-        query.order_by(models.Review.id.desc())
+        query.order_by(models.Review.date.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
     )
-    
+
     return {
         "items": items,
         "total": total,
         "page": page,
         "page_size": page_size,
-        "pages": pages
+        "pages": pages,
     }
 
 
@@ -246,6 +256,7 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
         db_review.cons = review_data.cons
         db_review.photos_count = review_data.photos_count
         db_review.has_video = review_data.has_video
+        db_review.is_edited_feedback = review_data.is_edited_feedback
     else:
         db_review = models.Review(**review_data.model_dump(), user_id=user_id)
         db.add(db_review)
@@ -256,7 +267,12 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
 
 
 def update_review_status(
-    db: Session, review_id: int, user_id: int, status: str, auto_answer_text: str = None, editable: bool = True
+    db: Session,
+    review_id: int,
+    user_id: int,
+    status: str,
+    auto_answer_text: str = None,
+    editable: bool = True,
 ):
     db_review = (
         db.query(models.Review)

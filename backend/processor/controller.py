@@ -341,6 +341,9 @@ class MainController:
                 else:
                     text = text.replace(", [name]", "").replace("[name]", "")
                 answer_status = "auto"
+                text = text.strip(", ")
+                text = text[0].upper() + text[1:] if text else text
+
             elif matched_rule is not None:
                 text = await self._build_feedback_answer(
                     feedback, matched_rule.action_text

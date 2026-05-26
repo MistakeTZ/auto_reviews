@@ -96,6 +96,7 @@ class ReviewBase(BaseModel):
     cons: Optional[str] = None
     photos_count: Optional[int] = 0
     has_video: Optional[bool] = False
+    is_edited_feedback: Optional[bool] = False
 
 
 class ReviewCreate(ReviewBase):
