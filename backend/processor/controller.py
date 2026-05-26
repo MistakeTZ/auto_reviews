@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
+from crud import get_reviews, get_rules, upsert_review
+from schemas import ReviewCreate
 
 
 class MainController:
@@ -247,9 +249,6 @@ class MainController:
         rules: List[Any] = []
         existing_reviews_by_wb_id: Dict[str, Any] = {}
         if self.db_factory and self.user_id:
-            from crud import get_reviews, get_rules, upsert_review
-            from schemas import ReviewCreate
-
             try:
                 db = self.db_factory()
                 rules = get_rules(db, self.user_id)
@@ -265,130 +264,116 @@ class MainController:
             logger.warning("[feedbacks] no rules found; will only sync fetched answers")
 
         count = await self.processor.get_count_unanswered_feedbacks()
-        answered_feedbacks = await self.processor.get_feedbacks(
-            is_answered=True, take=50
-        )
+        feedbacks = await self.processor.get_feedbacks(is_answered=True, take=3)
+        if count > 0:
+            new_feedbacks = await self.processor.get_feedbacks(
+                is_answered=False, take=50
+            )
+            feedbacks.extend(new_feedbacks)
 
-        if count == 0 and len(answered_feedbacks) == 0:
-            logger.debug("[feedbacks] no unanswered feedbacks, skipping answer step")
-        else:
-            logger.info("[feedbacks] %d unanswered feedback(s) found", count)
-            feedbacks = []
-            if count:
-                feedbacks = await self.processor.get_feedbacks(
-                    is_answered=False, take=50
+        for feedback in feedbacks:
+            feedback_id = str(feedback.get("id", ""))
+            if not feedback_id:
+                continue
+
+            api_answer = feedback.get("answer") or {}
+            api_answer_text = str(api_answer.get("text") or "").strip()
+            api_editable = api_answer.get("editable")
+            api_editable_bool = True if api_editable is None else bool(api_editable)
+
+            if api_answer_text:
+                user_name = (feedback.get("userName") or "").strip()
+                if user_name and user_name.startswith("Покупатель"):
+                    user_name = None
+
+                existing = existing_reviews_by_wb_id.get(feedback_id)
+                should_sync = (
+                    existing is None
+                    or (existing.auto_answer_text or "").strip() != api_answer_text
+                    or bool(existing.editable) != api_editable_bool
                 )
-            all_feedbacks = {str(f.get("id", "")): f for f in feedbacks if f.get("id")}
-            for fb in answered_feedbacks:
-                fb_id = str(fb.get("id", ""))
-                if fb_id:
-                    all_feedbacks[fb_id] = fb
 
-            feedbacks = list(all_feedbacks.values())
-
-            for feedback in feedbacks:
-                feedback_id = str(feedback.get("id", ""))
-                if not feedback_id:
+                if not should_sync:
                     continue
 
-                api_answer = feedback.get("answer") or {}
-                api_answer_text = str(api_answer.get("text") or "").strip()
-                api_editable = api_answer.get("editable")
-                api_editable_bool = True if api_editable is None else bool(api_editable)
-
-                if api_answer_text:
-                    user_name = (feedback.get("userName") or "").strip()
-                    if user_name and user_name.startswith("Покупатель"):
-                        user_name = None
-
-                    existing = existing_reviews_by_wb_id.get(feedback_id)
-                    should_sync = (
-                        existing is None
-                        or (existing.auto_answer_text or "").strip() != api_answer_text
-                        or bool(existing.editable) != api_editable_bool
+                db = None
+                try:
+                    db = self.db_factory()
+                    review_data = ReviewCreate(
+                        wb_review_id=feedback_id,
+                        nm_id=str(feedback.get("nmId") or ""),
+                        product_name=str(feedback.get("subjectName") or ""),
+                        rating=int(feedback.get("productValuation") or 0),
+                        text=str(feedback.get("text") or ""),
+                        date=str(feedback.get("createdDate") or ""),
+                        status="fetched",
+                        auto_answer_text=api_answer_text,
+                        editable=api_editable_bool,
+                        user_name=user_name,
+                        pros=(feedback.get("pros") or "").strip() or None,
+                        cons=(feedback.get("cons") or "").strip() or None,
+                        photos_count=len(feedback.get("photoLinks") or []),
+                        has_video=bool(feedback.get("video")),
                     )
-
-                    if not should_sync:
-                        continue
-
-                    db = None
-                    try:
-                        db = self.db_factory()
-                        review_data = ReviewCreate(
-                            wb_review_id=feedback_id,
-                            nm_id=str(feedback.get("nmId") or ""),
-                            product_name=str(feedback.get("subjectName") or ""),
-                            rating=int(feedback.get("productValuation") or 0),
-                            text=str(feedback.get("text") or ""),
-                            date=str(feedback.get("createdDate") or ""),
-                            status="fetched",
-                            auto_answer_text=api_answer_text,
-                            editable=api_editable_bool,
-                            user_name=user_name,
-                            pros=(feedback.get("pros") or "").strip() or None,
-                            cons=(feedback.get("cons") or "").strip() or None,
-                            photos_count=len(feedback.get("photoLinks") or []),
-                            has_video=bool(feedback.get("video")),
-                        )
-                        saved = upsert_review(db, review_data, self.user_id)
-                        existing_reviews_by_wb_id[feedback_id] = saved
-                    except Exception as exc:
-                        logger.exception(
-                            "[feedbacks] failed to sync fetched answer feedback_id=%s: %s",
-                            feedback_id,
-                            exc,
-                        )
-                    finally:
-                        if "db" in locals() and db:
-                            db.close()
-                    continue
-
-                if not has_rules:
-                    continue
-
-                matched_rule = self._match_rule(rules, feedback)
-
-                if matched_rule is not None and matched_rule.action_type == "template":
-                    text = matched_rule.action_text
-                    user_name = (feedback.get("userName") or "").strip()
-                    if user_name and not user_name.startswith("Покупатель"):
-                        text = text.replace("[name]", user_name)
-                    else:
-                        text = text.replace(", [name]", "").replace("[name]", "")
-                    answer_status = "auto"
-                elif matched_rule is not None:
-                    text = await self._build_feedback_answer(
-                        feedback, matched_rule.action_text
-                    )
-                    answer_status = "auto" if matched_rule is not None else "manually"
-                else:
-                    text = None
-
-                if not text or not text.strip():
-                    logger.warning(
-                        "[feedbacks] empty answer for feedback_id=%s, skipping",
+                    saved = upsert_review(db, review_data, self.user_id)
+                    existing_reviews_by_wb_id[feedback_id] = saved
+                except Exception as exc:
+                    logger.exception(
+                        "[feedbacks] failed to sync fetched answer feedback_id=%s: %s",
                         feedback_id,
+                        exc,
                     )
-                    await self._upsert_review_in_db(feedback, "", "manually")
-                    continue
+                finally:
+                    if "db" in locals() and db:
+                        db.close()
+                continue
 
-                response = await self.processor.answer_feedback(
-                    feedback_id=feedback_id,
-                    text=text,
-                    only_post=True,
+            if not has_rules:
+                continue
+
+            matched_rule = self._match_rule(rules, feedback)
+
+            if matched_rule is not None and matched_rule.action_type == "template":
+                text = matched_rule.action_text
+                user_name = (feedback.get("userName") or "").strip()
+                if user_name and not user_name.startswith("Покупатель"):
+                    text = text.replace("[name]", user_name)
+                else:
+                    text = text.replace(", [name]", "").replace("[name]", "")
+                answer_status = "auto"
+            elif matched_rule is not None:
+                text = await self._build_feedback_answer(
+                    feedback, matched_rule.action_text
                 )
-                if response is True:
-                    logger.info(
-                        "[feedbacks] answered feedback_id=%s (rule=%s)",
-                        feedback_id,
-                        matched_rule.name if matched_rule else "none",
-                    )
-                    await self._upsert_review_in_db(feedback, text, answer_status)
-                else:
-                    logger.warning(
-                        "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
-                    )
-                    await self._upsert_review_in_db(feedback, text, "manually")
+                answer_status = "auto" if matched_rule is not None else "manually"
+            else:
+                text = None
+
+            if not text or not text.strip():
+                logger.warning(
+                    "[feedbacks] empty answer for feedback_id=%s, skipping",
+                    feedback_id,
+                )
+                await self._upsert_review_in_db(feedback, "", "manually")
+                continue
+
+            response = await self.processor.answer_feedback(
+                feedback_id=feedback_id,
+                text=text,
+                only_post=True,
+            )
+            if response is True:
+                logger.info(
+                    "[feedbacks] answered feedback_id=%s (rule=%s)",
+                    feedback_id,
+                    matched_rule.name if matched_rule else "none",
+                )
+                await self._upsert_review_in_db(feedback, text, answer_status)
+            else:
+                logger.warning(
+                    "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
+                )
+                await self._upsert_review_in_db(feedback, text, "manually")
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []
