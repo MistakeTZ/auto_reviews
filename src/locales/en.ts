@@ -15,8 +15,6 @@ export const en = {
     active: 'Active',
     pending: 'Pending',
     answered: 'Answered',
-    fetched: 'Fetched',
-    manualy: 'Manually',
   },
   landing: {
     brandName: 'reAnswer',

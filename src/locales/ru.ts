@@ -15,8 +15,6 @@ export const ru = {
     active: 'Активно',
     pending: 'Ожидает',
     answered: 'С ответом',
-    fetched: 'Получен',
-    manualy: 'Вручную',
   },
   landing: {
     brandName: 'reAnswer',

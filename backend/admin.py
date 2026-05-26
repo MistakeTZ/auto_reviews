@@ -1,6 +1,7 @@
 import os
 import logging
 import secrets
+from datetime import datetime, timezone
 
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
@@ -9,7 +10,13 @@ from starlette.requests import Request
 from database import engine
 from models import NmIDs, NotificationMethod, Review, Rule, User
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uvicorn.error")
+
+
+def _auth_trace(message: str) -> None:
+    # Emit both logger and stdout so traces are visible even with strict logger configs.
+    logger.warning(message)
+    print(message, flush=True)
 
 
 class AdminAuth(AuthenticationBackend):
@@ -19,11 +26,11 @@ class AdminAuth(AuthenticationBackend):
         super().__init__(secret_key=secret_key)
 
     async def login(self, request: Request) -> bool:
-        logger.warning(
-            "SQLAdmin login attempt: method=%s path=%s content_type=%s",
-            request.method,
-            request.url.path,
-            request.headers.get("content-type", ""),
+        _auth_trace(
+            "[SQLADMIN AUTH] "
+            f"{datetime.now(timezone.utc).isoformat()} "
+            f"login() called method={request.method} path={request.url.path} "
+            f"content_type={request.headers.get('content-type', '')}"
         )
 
         form = await request.form()
@@ -37,11 +44,19 @@ class AdminAuth(AuthenticationBackend):
         is_password_ok = secrets.compare_digest(password, admin_password)
 
         if is_login_ok and is_password_ok:
-            logger.warning("SQLAdmin login success for username=%s", username)
+            _auth_trace(
+                "[SQLADMIN AUTH] "
+                f"{datetime.now(timezone.utc).isoformat()} "
+                f"login success username={username}"
+            )
             request.session.update({"token": username})
             return True
 
-        logger.warning("SQLAdmin login failed for username=%s", username)
+        _auth_trace(
+            "[SQLADMIN AUTH] "
+            f"{datetime.now(timezone.utc).isoformat()} "
+            f"login failed username={username}"
+        )
         return False
 
     async def logout(self, request: Request) -> bool:
