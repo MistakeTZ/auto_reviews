@@ -614,6 +614,7 @@ class MainController:
         raw = await self.gpt.chat_completion(
             messages=[
                 {"role": "system", "content": prompt},
+                {"role": "system", "content": "Напиши ответ на отзыв:"},
                 {"role": "user", "content": feedback_summary},
             ],
             model="gpt-4",
