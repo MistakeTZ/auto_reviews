@@ -266,8 +266,9 @@ async def generate_reply_for_review(
                 ),
             },
             {"role": "user", "content": review_summary},
+            
         ],
-        model="gpt-4",
+        model="gpt-4o-mini",
         temperature=0.4,
         max_tokens=260,
     )
