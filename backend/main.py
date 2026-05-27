@@ -125,19 +125,35 @@ class XForwardedProtoMiddleware:
     async def __call__(self, scope, receive, send):
         if scope["type"] in ("http", "websocket"):
             headers = dict(scope.get("headers", []))
+            
+            # Determine host
+            host_val = b""
+            if b"x-forwarded-host" in headers:
+                host_val = headers[b"x-forwarded-host"].split(b",")[0].strip()
+            elif b"host" in headers:
+                host_val = headers[b"host"].split(b",")[0].strip()
+                
+            host_str = host_val.decode("latin1").lower()
+            
+            # Determine proto
+            proto = ""
             if b"x-forwarded-proto" in headers:
                 proto = headers[b"x-forwarded-proto"].decode("latin1").split(",")[0].strip().lower()
-                if proto in ("http", "https"):
-                    scope["scheme"] = proto
+            
+            # If the request comes from production domain (reanswer.ru) or has https proxy proto, force https
+            if proto == "https" or "reanswer.ru" in host_str:
+                scope["scheme"] = "https"
+                
+            # Keep host header aligned with X-Forwarded-Host if provided
             if b"x-forwarded-host" in headers:
-                host_val = headers[b"x-forwarded-host"].decode("latin1").split(",")[0].strip()
                 new_headers = []
                 for k, v in scope.get("headers", []):
                     if k == b"host":
-                        new_headers.append((b"host", host_val.encode("latin1")))
+                        new_headers.append((b"host", host_val))
                     else:
                         new_headers.append((k, v))
                 scope["headers"] = new_headers
+                
         await self.app(scope, receive, send)
 
 
