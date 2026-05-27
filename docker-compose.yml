@@ -61,6 +61,10 @@ services:
       - TG_BOT_TOKEN=${TG_BOT_TOKEN}
       - MAX_BOT_TOKEN=${MAX_BOT_TOKEN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
     depends_on:
       db:
         condition: service_healthy

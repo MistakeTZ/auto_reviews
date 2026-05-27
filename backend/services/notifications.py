@@ -91,12 +91,48 @@ def build_feedback_notification_text(review: models.Review) -> str:
     else:
         body.append("💬 Без комментария")
 
-    body.extend([
-        "",
-        f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>" if auto_answer else "",
-    ])
+    body.extend(
+        [
+            "",
+            f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>" if auto_answer else "",
+        ]
+    )
 
     return "\n".join(body).strip("\n")
+
+
+async def _send_email(email: str, text: str) -> None:
+    from email.mime.text import MIMEText
+    import aiosmtplib
+
+    smtp_host = os.getenv("SMTP_HOST", "localhost")
+    smtp_port = int(os.getenv("SMTP_PORT", "25"))
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_pass = os.getenv("SMTP_PASS")
+
+    if not smtp_user or not smtp_pass:
+        logger.warning(
+            "[notify] SMTP_USER or SMTP_PASS is empty, email notification skipped"
+        )
+        return
+
+    message = MIMEText(text, "plain", "utf-8")
+    message["From"] = smtp_user
+    message["To"] = email
+    message["Subject"] = "Новый отзыв на Wildberries"
+
+    try:
+        await aiosmtplib.send(
+            message,
+            hostname=smtp_host,
+            port=smtp_port,
+            username=smtp_user,
+            password=smtp_pass,
+            start_tls=True,
+        )
+    except Exception as exc:
+        logger.error("[notify] Failed to send email to %s: %s", email, exc)
+        raise RuntimeError(f"Failed to send email: {exc}") from exc
 
 
 async def _send_telegram_message(chat_id: str, text: str) -> None:
@@ -153,12 +189,15 @@ async def notify_review_processed(
                     exc,
                 )
         elif method_type == "email":
-            logger.info(
-                "[notify-mock][email] user_id=%s email=%s payload=%s",
-                user_id,
-                destination,
-                message_text,
-            )
+            try:
+                await _send_email(destination, message_text)
+            except Exception as exc:
+                logger.exception(
+                    "[notify] email send failed user_id=%s email=%s: %s",
+                    user_id,
+                    destination,
+                    exc,
+                )
         elif method_type == "max":
             logger.info(
                 "[notify-mock][max] user_id=%s max_id=%s payload=%s",
