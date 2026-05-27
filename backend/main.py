@@ -133,7 +133,11 @@ app.add_middleware(
 async def handle_x_forwarded_proto(request: Request, call_next):
     proto = request.headers.get("x-forwarded-proto")
     if proto:
-        request.scope["scheme"] = proto
+        # Some proxy chains send a comma-separated list like "https,http".
+        # Use the first valid value so URL generation stays stable.
+        normalized_proto = proto.split(",", 1)[0].strip().lower()
+        if normalized_proto in {"http", "https"}:
+            request.scope["scheme"] = normalized_proto
     return await call_next(request)
 
 
