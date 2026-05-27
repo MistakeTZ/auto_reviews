@@ -69,47 +69,29 @@ def build_feedback_notification_text(review: models.Review) -> str:
     )
 
     body = [
-        f"Отзыв {stars}".rstrip(),
-        f"Предмет: {product_name}",
-        f"Пользователь: {user_name}",
+        f"<b>Отзыв</b> {stars}".rstrip(),
+        f"<b>Предмет:</b> {product_name}",
+        f"<b>Пользователь:</b> {user_name}",
         "",
         media_line,
     ]
 
     if comment_text or cons_text or pros_text:
         if comment_text:
-            body.append(f"Комментарий: {comment_text}")
+            body.append(f"<b>Комментарий:</b> {comment_text}")
         if cons_text:
-            body.append(f"Минусы: {cons_text}")
+            body.append(f"<b>Минусы:</b> {cons_text}")
         if pros_text:
-            body.append(f"Плюсы: {pros_text}")
+            body.append(f"<b>Плюсы:</b> {pros_text}")
     else:
         body.append("Комментарий: Без комментария")
 
     body.extend([
         "",
-        f"Автоответ: *{auto_answer}*",
+        f"Автоответ: <i>{auto_answer}</i>" if auto_answer else "",
     ])
 
-    # MarkdownV2 is strict; escape dynamic fields while keeping template symbols.
-    escaped_lines = []
-    for line in body:
-        if not line:
-            escaped_lines.append("")
-            continue
-        if line.startswith("Автоответ: *"):
-            prefix = "Автоответ: "
-            answer_raw = line[len(prefix) + 1 : -1]  # keep star wrappers
-            escaped_lines.append(prefix + "*" + _escape_markdown_v2(answer_raw) + "*")
-            continue
-
-        if ": " in line:
-            prefix, value = line.split(": ", 1)
-            escaped_lines.append(f"{prefix}: {_escape_markdown_v2(value)}")
-        else:
-            escaped_lines.append(_escape_markdown_v2(line))
-
-    return "\n".join(escaped_lines)
+    return "\n".join(body).strip("\n")
 
 
 async def _send_telegram_message(chat_id: str, text: str) -> None:
@@ -122,7 +104,7 @@ async def _send_telegram_message(chat_id: str, text: str) -> None:
     payload = {
         "chat_id": int(chat_id),
         "text": text,
-        "parse_mode": "MarkdownV2",
+        "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
     async with httpx.AsyncClient(timeout=20.0) as client:
