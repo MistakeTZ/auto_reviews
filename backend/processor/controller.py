@@ -199,7 +199,7 @@ class MainController:
 
     async def _upsert_review_in_db(
         self, feedback: Dict, answer_text: str, status: str
-    ) -> None:
+    ) -> ReviewCreate | None:
         """Persist/update a review record in the database."""
         if not self.db_factory or not self.user_id:
             return
@@ -231,8 +231,7 @@ class MainController:
 
         try:
             db = self.db_factory()
-            saved_review = upsert_review(db, review_data, self.user_id)
-            await notify_review_processed(db, self.user_id, saved_review)
+            upsert_review(db, review_data, self.user_id)
         except Exception as exc:
             logger.exception(
                 "[feedbacks] failed to upsert review %s: %s", wb_review_id, exc
@@ -240,6 +239,8 @@ class MainController:
         finally:
             if "db" in locals() and db:
                 db.close()
+
+        return review_data
 
     async def _handle_feedbacks(self):
         # Load rules from DB once per poll cycle
@@ -292,17 +293,15 @@ class MainController:
 
                 if not should_sync:
                     continue
-                
+
                 if existing:
-                    logger.info(
-                        f"""
+                    logger.info(f"""
                         Syncing existing review with new answer text for feedback_id={feedback_id}
                         Old answer: {existing.auto_answer_text}
                         New answer: {api_answer_text}
                         Old editable: {existing.editable}
                         New editable: {api_editable_bool}
-                        """
-                    )
+                        """)
 
                 db = None
                 try:
@@ -379,7 +378,28 @@ class MainController:
                     feedback_id,
                     matched_rule.name if matched_rule else "none",
                 )
-                await self._upsert_review_in_db(feedback, text, answer_status)
+                review_create = await self._upsert_review_in_db(
+                    feedback, text, answer_status
+                )
+
+                if matched_rule.send_notification and review_create:
+                    try:
+                        db = self.db_factory()
+                        await notify_review_processed(
+                            db,
+                            self.user_id,
+                            review_create,
+                        )
+                    except Exception as exc:
+                        logger.exception(
+                            "[feedbacks] failed to send notification for feedback_id=%s: %s",
+                            feedback_id,
+                            exc,
+                        )
+                    finally:
+                        if "db" in locals() and db:
+                            db.close()
+
             else:
                 logger.warning(
                     "[feedbacks] failed feedback_id=%s: %s", feedback_id, response

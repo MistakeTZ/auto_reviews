@@ -35,7 +35,7 @@ def _build_media_line(has_video: bool, photos_count: int) -> str:
         icons.append("🎥")
     if photos_count > 0:
         icons.extend(["🖼️"] * photos_count)
-    return " ".join(icons) if icons else "-"
+    return " ".join(icons) if icons else ""
 
 
 def _trim_text(value: Optional[str]) -> str:
@@ -67,28 +67,33 @@ def build_feedback_notification_text(review: models.Review) -> str:
     media_line = _build_media_line(
         bool(review.has_video), int(review.photos_count or 0)
     )
+    nm_id = review.nm_id
 
     body = [
-        f"<b>Отзыв</b> {stars}".rstrip(),
-        f"<b>Предмет:</b> {product_name}",
-        f"<b>Пользователь:</b> {user_name}",
+        "<b>НОВЫЙ ОТЗЫВ</b>",
+        stars,
+        f"<b>Предмет:</b> <a href='https://www.wildberries.ru/catalog/{nm_id}/detail.aspx'>{product_name}</a>",
+        f"🆔 <code>{nm_id}</code>",
+        f"👤 <b>Пользователь:</b> {user_name}",
         "",
-        media_line,
     ]
+
+    if media_line:
+        body.append(media_line)
 
     if comment_text or cons_text or pros_text:
         if comment_text:
-            body.append(f"<b>Комментарий:</b> {comment_text}")
+            body.append(f"💬 {comment_text}")
         if cons_text:
-            body.append(f"<b>Минусы:</b> {cons_text}")
+            body.append(f"👎 {cons_text}")
         if pros_text:
-            body.append(f"<b>Плюсы:</b> {pros_text}")
+            body.append(f"👍 {pros_text}")
     else:
-        body.append("Комментарий: Без комментария")
+        body.append("💬 Без комментария")
 
     body.extend([
         "",
-        f"Автоответ: <i>{auto_answer}</i>" if auto_answer else "",
+        f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>" if auto_answer else "",
     ])
 
     return "\n".join(body).strip("\n")
