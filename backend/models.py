@@ -77,8 +77,8 @@ class Review(Base):
     text = Column(String)
     date = Column(String)
     status = Column(
-        String, default="manually"
-    )  # 'manually', 'auto', 'fetched'
+        String, default="none"
+    )  # 'none', 'auto', 'manually', 'fetched'
     auto_answer_text = Column(String, nullable=True)
     editable = Column(Boolean, default=True, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))

@@ -17,7 +17,7 @@ export default function ReviewsPage() {
   const { t, language } = useTranslation();
   const PAGE_SIZE = 10;
 
-  type ReviewFilter = "all" | "pending" | "fetched" | "auto" | "manually";
+  type ReviewFilter = "all" | "none" | "fetched" | "auto" | "manually";
   type TriFilter = "all" | "yes" | "no";
 
   const [statusFilter, setStatusFilter] = useState<ReviewFilter>("all");
@@ -49,6 +49,7 @@ export default function ReviewsPage() {
   const getNormalizedStatus = (status?: string) => {
     if (status === "auto-answered") return "auto";
     if (status === "manual-review") return "manually";
+    if (status === "none") return "none";
     return status || "pending";
   };
 
@@ -119,7 +120,7 @@ export default function ReviewsPage() {
 
   const getFilterText = (f: ReviewFilter) => {
     if (f === "all") return t("reviews.all");
-    if (f === "pending") return t("reviews.pending");
+    if (f === "none") return t("reviews.none");
     if (f === "fetched") return t("reviews.fetched");
     if (f === "auto") return t("reviews.autoAnswered");
     if (f === "manually") return t("reviews.manually");
@@ -129,6 +130,7 @@ export default function ReviewsPage() {
   const getStatusLabel = (status?: string) => {
     const normalized = getNormalizedStatus(status);
 
+    if (normalized === "none") return t("reviews.none");
     if (normalized === "fetched") return t("reviews.fetched");
     if (normalized === "auto") return t("reviews.autoAnswered");
     if (normalized === "manually") return t("reviews.manually");
@@ -137,6 +139,7 @@ export default function ReviewsPage() {
 
   const getStatusDotClass = (status?: string) => {
     const normalized = getNormalizedStatus(status);
+    if (normalized === "none") return "bg-gray-500 shadow-gray-200";
     if (normalized === "auto") return "bg-emerald-500 shadow-emerald-200";
     if (normalized === "fetched") return "bg-sky-500 shadow-sky-200";
     if (normalized === "manually") return "bg-violet-500 shadow-violet-200";
@@ -309,7 +312,7 @@ export default function ReviewsPage() {
                       {(
                         [
                           "all",
-                          "pending",
+                          "none",
                           "fetched",
                           "auto",
                           "manually",

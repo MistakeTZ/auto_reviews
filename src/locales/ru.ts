@@ -138,6 +138,7 @@ export const ru = {
     pending: 'Ожидают',
     fetched: 'Получен',
     manually: 'Ручной',
+    none: 'Без ответа',
     autoAnswered: 'Автоответы',
     typeReply: 'Введите ответ вручную...',
     generateReply: 'Сгенерировать с GPT',

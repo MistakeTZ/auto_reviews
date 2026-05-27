@@ -356,7 +356,7 @@ class MainController:
                 text = await self._build_feedback_answer(
                     feedback, matched_rule.action_text
                 )
-                answer_status = "auto" if matched_rule is not None else "manually"
+                answer_status = "auto"
             else:
                 text = None
 

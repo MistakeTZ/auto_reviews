@@ -128,7 +128,7 @@ async def sync_reviews(
                 break
 
         if matched_rule:
-            status = "manually"  # Default to manual review for safety
+            status = "auto"
             if getattr(matched_rule, "action_type", "template") == "template":
                 auto_answer = matched_rule.action_text
                 if user_name:
@@ -201,7 +201,7 @@ async def reply_to_review(
         db,
         review_id=review_id,
         user_id=current_user.id,
-        status="auto",
+        status="manually",
         auto_answer_text=request.text,
         editable=True,
     )

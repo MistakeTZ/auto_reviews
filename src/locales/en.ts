@@ -138,6 +138,7 @@ export const en = {
     pending: 'Pending',
     fetched: 'Fetched',
     manually: 'Manual',
+    none: 'No answer',
     autoAnswered: 'Auto-Answered',
     typeReply: 'Type a manual reply...',
     generateReply: 'Generate with GPT',
