@@ -32,9 +32,6 @@ export default function ReviewsPage() {
   const [dateTo, setDateTo] = useState("");
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
-  const [expandedAnswers, setExpandedAnswers] = useState<{
-    [key: string]: boolean;
-  }>({});
 
   const [allReviews, setAllReviews] = useState<any[]>([]);
   const [paginatedReviews, setPaginatedReviews] = useState<any[]>([]);
@@ -112,10 +109,6 @@ export default function ReviewsPage() {
     } finally {
       setIsGeneratingReply((prev) => ({ ...prev, [id]: false }));
     }
-  };
-
-  const toggleAnswer = (id: string) => {
-    setExpandedAnswers((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const getFilterText = (f: ReviewFilter) => {
@@ -650,26 +643,15 @@ export default function ReviewsPage() {
                       </div>
 
                       {review.autoAnswerText && (
-                        <div className="mt-4">
-                          <Button
-                            variant="outline"
-                            onClick={() => toggleAnswer(review.id)}
-                            className="h-8 px-3 rounded-lg text-xs font-bold"
-                          >
-                            {expandedAnswers[review.id]
-                              ? t("reviews.hideAnswer")
-                              : t("reviews.showAnswer")}
-                          </Button>
-                          {expandedAnswers[review.id] && (
-                            <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl mt-3">
-                              <p className="text-xs font-bold text-indigo-600 mb-1.5 uppercase tracking-wide">
-                                {t("reviews.automatedResponse")}
-                              </p>
-                              <p className="text-sm text-slate-800 font-medium">
-                                {review.autoAnswerText}
-                              </p>
-                            </div>
-                          )}
+                        <div className="mt-5 border-t border-slate-200 pt-4">
+                          <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+                            <p className="text-xs font-bold text-indigo-600 mb-1.5 uppercase tracking-wide">
+                              {t("reviews.automatedResponse")}
+                            </p>
+                            <p className="text-sm text-slate-800 font-medium">
+                              {review.autoAnswerText}
+                            </p>
+                          </div>
                         </div>
                       )}
 

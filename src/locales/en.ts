@@ -145,7 +145,7 @@ export const en = {
     generatingReply: 'Generating...',
     replyUnavailable: 'Reply editing is unavailable',
     sendReply: 'Send Reply',
-    automatedResponse: 'Automated Response',
+    automatedResponse: 'Response',
     showAnswer: 'Show answer',
     hideAnswer: 'Hide answer',
     noComment: 'No comment',

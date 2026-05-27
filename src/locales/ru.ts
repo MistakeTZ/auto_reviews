@@ -145,7 +145,7 @@ export const ru = {
     generatingReply: 'Генерация...',
     replyUnavailable: 'Изменение ответа недоступно',
     sendReply: 'Отправить ответ',
-    automatedResponse: 'Автоматический ответ',
+    automatedResponse: 'Ответ',
     showAnswer: 'Показать ответ',
     hideAnswer: 'Скрыть ответ',
     noComment: 'Без комментария',
