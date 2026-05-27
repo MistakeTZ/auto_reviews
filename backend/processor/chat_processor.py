@@ -58,6 +58,20 @@ class ChatProcessor:
         )
         return res.get("data", {}).get("feedbacks", []) if isinstance(res, dict) else []
 
+    async def get_feedback(self, feedback_id: str) -> Dict:
+        url = "https://feedbacks-api.wildberries.ru/api/v1/feedback"
+        res = await self._get(url, params={"id": feedback_id})
+        if not isinstance(res, dict):
+            return {}
+
+        data = res.get("data")
+        if isinstance(data, dict):
+            feedback = data.get("feedback")
+            if isinstance(feedback, dict):
+                return feedback
+            return data
+        return {}
+
     async def send_message(self, reply_sign: str, text: str):
         url = "https://buyer-chat-api.wildberries.ru/api/v1/seller/message"
         return await self._post(

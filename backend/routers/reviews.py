@@ -44,6 +44,55 @@ def read_reviews(
 from processor.chat_processor import ChatProcessor
 
 
+def _normalize_user_name(raw_name: Optional[str]) -> Optional[str]:
+    user_name = (raw_name or "").strip()
+    if user_name and user_name.startswith("Покупатель"):
+        return None
+    return user_name or None
+
+
+def _extract_feedback_payload(feedback: dict, fallback_review: Review) -> schemas.ReviewCreate:
+    product_details = feedback.get("productDetails") or {}
+    rating = feedback.get("productValuation", fallback_review.rating)
+    feedback_text = feedback.get("text", fallback_review.text or "")
+    created_date = feedback.get("createdDate", fallback_review.date or "")
+    user_name = _normalize_user_name(feedback.get("userName"))
+    if user_name is None:
+        user_name = fallback_review.user_name
+
+    editable = feedback.get("editable")
+    if editable is None:
+        editable = fallback_review.editable
+
+    return schemas.ReviewCreate(
+        wb_review_id=str(feedback.get("id") or fallback_review.wb_review_id),
+        nm_id=str(product_details.get("nmId") or fallback_review.nm_id),
+        product_name=str(
+            product_details.get("productName")
+            or fallback_review.product_name
+            or "Unknown Product"
+        ),
+        rating=int(rating or 0),
+        text=feedback_text,
+        date=created_date,
+        status="manually",
+        auto_answer_text=fallback_review.auto_answer_text,
+        editable=bool(editable),
+        user_name=user_name,
+        pros=(feedback.get("pros") or "").strip() or fallback_review.pros,
+        cons=(feedback.get("cons") or "").strip() or fallback_review.cons,
+        photos_count=len(feedback.get("photoLinks") or [])
+        if "photoLinks" in feedback
+        else (fallback_review.photos_count or 0),
+        has_video=bool(feedback.get("video"))
+        if "video" in feedback
+        else bool(fallback_review.has_video),
+        is_edited_feedback=bool(feedback.get("parentFeedbackId"))
+        if "parentFeedbackId" in feedback
+        else bool(fallback_review.is_edited_feedback),
+    )
+
+
 @router.post("/sync", response_model=List[schemas.Review])
 async def sync_reviews(
     db: Session = Depends(database.get_db),
@@ -196,15 +245,25 @@ async def reply_to_review(
                 detail=res.get("detail", "Failed to reply to feedback on WB"),
             )
 
+        refreshed_feedback = await processor.get_feedback(db_review.wb_review_id)
+
     # Update in DB after success
-    review = crud.update_review_status(
-        db,
-        review_id=review_id,
-        user_id=current_user.id,
-        status="manually",
-        auto_answer_text=request.text,
-        editable=True,
-    )
+    db_review.auto_answer_text = request.text
+
+    if refreshed_feedback:
+        review_data = _extract_feedback_payload(refreshed_feedback, db_review)
+        review_data.auto_answer_text = request.text
+        review = crud.upsert_review(db, review_data, current_user.id)
+    else:
+        review = crud.update_review_status(
+            db,
+            review_id=review_id,
+            user_id=current_user.id,
+            status="manually",
+            auto_answer_text=request.text,
+            editable=True,
+        )
+
     return review
 
 

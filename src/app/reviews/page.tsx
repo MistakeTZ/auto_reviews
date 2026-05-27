@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { formatDateTime } from "@/lib/formatDateTime";
-import { Loader2, RotateCw } from "lucide-react";
+import { Loader2, Pencil, RotateCw } from "lucide-react";
 
 export default function ReviewsPage() {
   const fetchReviews = useAppStore((state) => state.fetchReviews);
@@ -40,6 +40,9 @@ export default function ReviewsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isGeneratingReply, setIsGeneratingReply] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [isEditingAnswer, setIsEditingAnswer] = useState<{
     [key: string]: boolean;
   }>({});
 
@@ -93,8 +96,14 @@ export default function ReviewsPage() {
     if (replyText[id]) {
       await markAsAnswered(id, replyText[id]);
       setReplyText((prev) => ({ ...prev, [id]: "" }));
+      setIsEditingAnswer((prev) => ({ ...prev, [id]: false }));
       await loadAllReviews();
     }
+  };
+
+  const handleEditAnswer = (id: string, answerText: string) => {
+    setReplyText((prev) => ({ ...prev, [id]: answerText || "" }));
+    setIsEditingAnswer((prev) => ({ ...prev, [id]: true }));
   };
 
   const handleGenerateReply = async (id: string) => {
@@ -646,9 +655,27 @@ export default function ReviewsPage() {
                       {review.autoAnswerText && (
                         <div className="mt-5 border-t border-slate-200 pt-4">
                           <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
-                            <p className="text-xs font-bold text-indigo-600 mb-1.5 uppercase tracking-wide">
-                              {t("reviews.automatedResponse")}
-                            </p>
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">
+                                {t("reviews.automatedResponse")}
+                              </p>
+                              {isReviewEditable && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleEditAnswer(
+                                      review.id,
+                                      String(review.autoAnswerText || ""),
+                                    )
+                                  }
+                                  className="inline-flex items-center justify-center h-7 w-7 rounded-lg border border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50 transition-colors"
+                                  aria-label="Edit answer"
+                                  title="Edit answer"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
                             <p className="text-sm text-slate-800 font-medium">
                               {review.autoAnswerText}
                             </p>
@@ -656,8 +683,9 @@ export default function ReviewsPage() {
                         </div>
                       )}
 
-                      {getNormalizedStatus(review.status) !== "auto" &&
-                        !review.autoAnswerText && (
+                      {((getNormalizedStatus(review.status) !== "auto" &&
+                        !review.autoAnswerText) ||
+                        isEditingAnswer[review.id]) && (
                           <div className="flex gap-3 mt-4">
                             <input
                               type="text"
@@ -694,6 +722,19 @@ export default function ReviewsPage() {
                             >
                               {t("reviews.sendReply")}
                             </Button>
+                            {isEditingAnswer[review.id] && (
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setIsEditingAnswer((prev) => ({
+                                    ...prev,
+                                    [review.id]: false,
+                                  }))
+                                }
+                              >
+                                {t("common.cancel")}
+                              </Button>
+                            )}
                           </div>
                         )}
                     </CardContent>
