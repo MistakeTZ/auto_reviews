@@ -1,7 +1,9 @@
 import logging
 import os
 from typing import Optional
+from email.mime.text import MIMEText
 
+import aiosmtplib
 import httpx
 from sqlalchemy.orm import Session
 
@@ -102,17 +104,13 @@ def build_feedback_notification_text(review: models.Review) -> str:
 
 
 async def _send_email(email: str, text: str) -> None:
-    from email.mime.text import MIMEText
-    import aiosmtplib
-
     smtp_host = os.getenv("SMTP_HOST", "localhost")
     smtp_port = int(os.getenv("SMTP_PORT", "25"))
     smtp_user = os.getenv("SMTP_USER")
-    smtp_pass = os.getenv("SMTP_PASS")
 
-    if not smtp_user or not smtp_pass:
+    if not smtp_user:
         logger.warning(
-            "[notify] SMTP_USER or SMTP_PASS is empty, email notification skipped"
+            "[notify] SMTP_USER is empty, email notification skipped"
         )
         return
 
@@ -127,7 +125,6 @@ async def _send_email(email: str, text: str) -> None:
             hostname=smtp_host,
             port=smtp_port,
             username=smtp_user,
-            password=smtp_pass,
             start_tls=True,
         )
     except Exception as exc:
