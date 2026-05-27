@@ -10,6 +10,7 @@ from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
 from crud import get_reviews, get_rules, upsert_review
 from schemas import ReviewCreate
+from services.notifications import notify_review_processed
 
 
 class MainController:
@@ -203,10 +204,6 @@ class MainController:
         if not self.db_factory or not self.user_id:
             return
 
-        from crud import upsert_review
-        from schemas import ReviewCreate
-        from services.notifications import notify_review_processed
-
         wb_review_id = str(feedback.get("id") or "")
         if not wb_review_id:
             return
@@ -280,13 +277,13 @@ class MainController:
             api_answer_text = str(api_answer.get("text") or "").strip()
             api_editable = api_answer.get("editable")
             api_editable_bool = True if api_editable is None else bool(api_editable)
+            existing = existing_reviews_by_wb_id.get(feedback_id)
 
             if api_answer_text:
                 user_name = (feedback.get("userName") or "").strip()
                 if user_name and user_name.startswith("Покупатель"):
                     user_name = None
 
-                existing = existing_reviews_by_wb_id.get(feedback_id)
                 should_sync = (
                     existing is None
                     or (existing.auto_answer_text or "").strip() != api_answer_text
@@ -339,7 +336,7 @@ class MainController:
                         db.close()
                 continue
 
-            if not has_rules:
+            if not has_rules or existing:
                 continue
 
             matched_rule = self._match_rule(rules, feedback)
@@ -368,7 +365,7 @@ class MainController:
                     "[feedbacks] empty answer for feedback_id=%s, skipping",
                     feedback_id,
                 )
-                await self._upsert_review_in_db(feedback, "", "manually")
+                await self._upsert_review_in_db(feedback, "", "none")
                 continue
 
             response = await self.processor.answer_feedback(
@@ -387,7 +384,7 @@ class MainController:
                 logger.warning(
                     "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
                 )
-                await self._upsert_review_in_db(feedback, text, "manually")
+                await self._upsert_review_in_db(feedback, text, "none")
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []
