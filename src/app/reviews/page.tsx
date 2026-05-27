@@ -141,6 +141,7 @@ export default function ReviewsPage() {
 
   const getStatusBadgeClass = (status?: string) => {
     const normalized = getNormalizedStatus(status);
+    if (normalized === "none") return "bg-gray-100 text-gray-700";
     if (normalized === "auto") return "bg-emerald-50 text-emerald-700";
     if (normalized === "fetched") return "bg-sky-50 text-sky-700";
     if (normalized === "manually") return "bg-violet-50 text-violet-700";

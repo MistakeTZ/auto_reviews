@@ -50,7 +50,16 @@ def upsert_fixtures(db, payload):
         db.merge(Rule(**rule))
 
     for review in reviews:
-        db.merge(Review(**review))
+        normalized = dict(review)
+        status = normalized.get("status")
+        if status == "auto-answered":
+            normalized["status"] = "auto"
+        elif status == "manual-review":
+            normalized["status"] = "manually"
+        elif status == "pending":
+            normalized["status"] = "none"
+
+        db.merge(Review(**normalized))
 
     db.commit()
     return len(users), len(rules), len(reviews)

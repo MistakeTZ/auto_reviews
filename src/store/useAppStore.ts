@@ -15,7 +15,14 @@ export interface Review {
   rating: number;
   text: string;
   date: string;
-  status: 'pending' | 'auto-answered' | 'manual-review';
+  status:
+    | 'pending'
+    | 'auto-answered'
+    | 'manual-review'
+    | 'none'
+    | 'auto'
+    | 'manually'
+    | 'fetched';
   autoAnswerText?: string;
   wb_review_id: string;
   userName?: string;

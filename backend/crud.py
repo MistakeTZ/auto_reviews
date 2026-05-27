@@ -180,9 +180,18 @@ def delete_rule(db: Session, rule_id: int, user_id: int):
 
 
 def get_reviews(db: Session, user_id: int, status: str = None):
+    def normalize_review_status(value: str | None):
+        if value == "auto-answered":
+            return "auto"
+        if value == "manual-review":
+            return "manually"
+        if value == "pending":
+            return "none"
+        return value
+
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
     if status and status != "all":
-        query = query.filter(models.Review.status == status)
+        query = query.filter(models.Review.status == normalize_review_status(status))
     return query.order_by(models.Review.id.desc()).all()
 
 
@@ -204,9 +213,18 @@ def get_reviews_paginated(
     page_size: int = 10,
     status: str = None,
 ):
+    def normalize_review_status(value: str | None):
+        if value == "auto-answered":
+            return "auto"
+        if value == "manual-review":
+            return "manually"
+        if value == "pending":
+            return "none"
+        return value
+
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
     if status and status != "all":
-        query = query.filter(models.Review.status == status)
+        query = query.filter(models.Review.status == normalize_review_status(status))
 
     total = query.count()
     pages = (total + page_size - 1) // page_size if total > 0 else 1
@@ -228,7 +246,15 @@ def get_reviews_paginated(
 
 
 def create_review(db: Session, review: schemas.ReviewCreate, user_id: int):
-    db_review = models.Review(**review.model_dump(), user_id=user_id)
+    payload = review.model_dump()
+    if payload.get("status") == "auto-answered":
+        payload["status"] = "auto"
+    elif payload.get("status") == "manual-review":
+        payload["status"] = "manually"
+    elif payload.get("status") == "pending":
+        payload["status"] = "none"
+
+    db_review = models.Review(**payload, user_id=user_id)
     db.add(db_review)
     db.commit()
     db.refresh(db_review)
@@ -248,7 +274,14 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
     if db_review:
         db_review.text = review_data.text
         db_review.rating = review_data.rating
-        db_review.status = review_data.status
+        if review_data.status == "auto-answered":
+            db_review.status = "auto"
+        elif review_data.status == "manual-review":
+            db_review.status = "manually"
+        elif review_data.status == "pending":
+            db_review.status = "none"
+        else:
+            db_review.status = review_data.status
         db_review.auto_answer_text = review_data.auto_answer_text
         db_review.editable = review_data.editable
         db_review.user_name = review_data.user_name
@@ -258,7 +291,15 @@ def upsert_review(db: Session, review_data: schemas.ReviewCreate, user_id: int):
         db_review.has_video = review_data.has_video
         db_review.is_edited_feedback = review_data.is_edited_feedback
     else:
-        db_review = models.Review(**review_data.model_dump(), user_id=user_id)
+        payload = review_data.model_dump()
+        if payload.get("status") == "auto-answered":
+            payload["status"] = "auto"
+        elif payload.get("status") == "manual-review":
+            payload["status"] = "manually"
+        elif payload.get("status") == "pending":
+            payload["status"] = "none"
+
+        db_review = models.Review(**payload, user_id=user_id)
         db.add(db_review)
 
     db.commit()
@@ -280,7 +321,14 @@ def update_review_status(
         .first()
     )
     if db_review:
-        db_review.status = status
+        if status == "auto-answered":
+            db_review.status = "auto"
+        elif status == "manual-review":
+            db_review.status = "manually"
+        elif status == "pending":
+            db_review.status = "none"
+        else:
+            db_review.status = status
         db_review.auto_answer_text = auto_answer_text
         db_review.editable = editable
         db.commit()

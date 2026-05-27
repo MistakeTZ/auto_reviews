@@ -24,6 +24,13 @@ export default function Dashboard() {
 
   const [isSyncing, setIsSyncing] = useState(false);
 
+  const getNormalizedStatus = (status?: string) => {
+    if (status === "auto-answered") return "auto";
+    if (status === "manual-review") return "manually";
+    if (status === "pending") return "none";
+    return status || "none";
+  };
+
   const handleSync = async () => {
     setIsSyncing(true);
     try {
@@ -37,9 +44,9 @@ export default function Dashboard() {
 
   const totalReviews = reviews.length;
   const autoAnswered = reviews.filter(
-    (r) => r.status === "auto-answered",
+    (r) => getNormalizedStatus(r.status) === "auto",
   ).length;
-  const pending = reviews.filter((r) => r.status === "pending").length;
+  const pending = reviews.filter((r) => getNormalizedStatus(r.status) === "none").length;
   const averageRating =
     reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviews || 1);
 
@@ -146,7 +153,7 @@ export default function Dashboard() {
                       className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
                     >
                       <div
-                        className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${review.status === "auto-answered" ? "bg-emerald-500 shadow-emerald-200" : "bg-amber-500 shadow-amber-200"} shadow-sm`}
+                        className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${getNormalizedStatus(review.status) === "auto" ? "bg-emerald-500 shadow-emerald-200" : "bg-amber-500 shadow-amber-200"} shadow-sm`}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-800">
