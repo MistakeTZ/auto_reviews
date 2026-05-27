@@ -234,6 +234,7 @@ async def reply_to_review(
     if not db_review:
         raise HTTPException(status_code=404, detail="Review not found")
 
+    refreshed_feedback = None
     async with ChatProcessor(current_user.wb_api_token) as processor:
         res = await processor.answer_feedback(
             db_review.wb_review_id,
