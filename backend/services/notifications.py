@@ -106,8 +106,6 @@ def build_feedback_notification_text(review: models.Review) -> str:
         if ": " in line:
             prefix, value = line.split(": ", 1)
             escaped_lines.append(f"{prefix}: {_escape_markdown_v2(value)}")
-        elif line == "-":
-            escaped_lines.append(line)
         else:
             escaped_lines.append(_escape_markdown_v2(line))
 
