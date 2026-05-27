@@ -295,6 +295,17 @@ class MainController:
 
                 if not should_sync:
                     continue
+                
+                if existing:
+                    logger.info(
+                        f"""
+                        Syncing existing review with new answer text for feedback_id={feedback_id}
+                        Old answer: {existing.auto_answer_text}
+                        New answer: {api_answer_text}
+                        Old editable: {existing.editable}
+                        New editable: {api_editable_bool}
+                        """
+                    )
 
                 db = None
                 try:

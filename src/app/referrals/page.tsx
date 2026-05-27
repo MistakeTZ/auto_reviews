@@ -309,7 +309,7 @@ export default function ReferralsPage() {
             <Button
               onClick={handleBuySubscription}
               disabled={purchasing}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-xl shadow-indigo-600/20 transition-all active:scale-95 text-sm mt-2"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-xl shadow-indigo-600/20 transition-all active:scale-95 text-sm mt-3"
             >
               <CreditCard size={18} />
               {purchasing ? t("referrals.processing") : t("referrals.buyBtn")}

@@ -102,19 +102,35 @@ export default function ReviewsPage() {
   const getFilterText = (f: ReviewFilter) => {
     if (f === "all") return t("reviews.all");
     if (f === "pending") return t("reviews.pending");
-    if (f === "fetched") return t("common.fetched");
+    if (f === "fetched") return t("reviews.fetched");
     if (f === "auto") return t("reviews.autoAnswered");
-    if (f === "manually") return t("common.manualy");
+    if (f === "manually") return t("reviews.manually");
     return f;
   };
 
   const getStatusLabel = (status?: string) => {
     const normalized = getNormalizedStatus(status);
 
-    if (normalized === "fetched") return t("common.fetched");
-    if (normalized === "auto") return "auto-answered";
-    if (normalized === "manually") return t("common.manualy");
-    return t("common.pending");
+    if (normalized === "fetched") return t("reviews.fetched");
+    if (normalized === "auto") return t("reviews.autoAnswered");
+    if (normalized === "manually") return t("reviews.manually");
+    return t("reviews.pending");
+  };
+
+  const getStatusDotClass = (status?: string) => {
+    const normalized = getNormalizedStatus(status);
+    if (normalized === "auto") return "bg-emerald-500 shadow-emerald-200";
+    if (normalized === "fetched") return "bg-sky-500 shadow-sky-200";
+    if (normalized === "manually") return "bg-violet-500 shadow-violet-200";
+    return "bg-amber-500 shadow-amber-200";
+  };
+
+  const getStatusBadgeClass = (status?: string) => {
+    const normalized = getNormalizedStatus(status);
+    if (normalized === "auto") return "bg-emerald-50 text-emerald-700";
+    if (normalized === "fetched") return "bg-sky-50 text-sky-700";
+    if (normalized === "manually") return "bg-violet-50 text-violet-700";
+    return "bg-amber-50 text-amber-700";
   };
 
   const matchesTriFilter = (value: boolean, filterValue: TriFilter) => {
@@ -255,7 +271,7 @@ export default function ReviewsPage() {
               onClick={() => setIsFilterMenuOpen((prev) => !prev)}
               className="h-9 px-3.5 rounded-xl text-sm font-bold"
             >
-              {language === "ru" ? "Фильтры" : "Filters"}
+              {t("reviews.filters")}
             </Button>
 
             {isFilterMenuOpen && (
@@ -263,7 +279,7 @@ export default function ReviewsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "Статус" : "Status"}
+                      {t("reviews.filterStatus")}
                     </label>
                     <select
                       value={statusFilter}
@@ -290,7 +306,7 @@ export default function ReviewsPage() {
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "Оценка" : "Stars"}
+                      {t("reviews.filterStars")}
                     </label>
                     <select
                       value={starsFilter}
@@ -301,7 +317,7 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       {starsOptions.map((star) => (
                         <option key={star} value={String(star)}>
@@ -313,7 +329,7 @@ export default function ReviewsPage() {
 
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "Товар" : "Product"}
+                      {t("reviews.filterProduct")}
                     </label>
                     <select
                       value={productFilter}
@@ -324,7 +340,7 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       {productOptions.map((product) => (
                         <option key={product} value={product}>
@@ -336,7 +352,7 @@ export default function ReviewsPage() {
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "С комментарием" : "With comment"}
+                      {t("reviews.filterWithComment")}
                     </label>
                     <select
                       value={withCommentFilter}
@@ -347,20 +363,20 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       <option value="yes">
-                        {language === "ru" ? "Да" : "Yes"}
+                        {t("reviews.yes")}
                       </option>
                       <option value="no">
-                        {language === "ru" ? "Нет" : "No"}
+                        {t("reviews.no")}
                       </option>
                     </select>
                   </div>
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "С ответом" : "With answer"}
+                      {t("reviews.filterWithAnswer")}
                     </label>
                     <select
                       value={withAnswerFilter}
@@ -371,20 +387,20 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       <option value="yes">
-                        {language === "ru" ? "Да" : "Yes"}
+                        {t("reviews.yes")}
                       </option>
                       <option value="no">
-                        {language === "ru" ? "Нет" : "No"}
+                        {t("reviews.no")}
                       </option>
                     </select>
                   </div>
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "С фото" : "With photo"}
+                      {t("reviews.filterWithPhoto")}
                     </label>
                     <select
                       value={withPhotoFilter}
@@ -395,20 +411,20 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       <option value="yes">
-                        {language === "ru" ? "Да" : "Yes"}
+                        {t("reviews.yes")}
                       </option>
                       <option value="no">
-                        {language === "ru" ? "Нет" : "No"}
+                        {t("reviews.no")}
                       </option>
                     </select>
                   </div>
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "С видео" : "With video"}
+                      {t("reviews.filterWithVideo")}
                     </label>
                     <select
                       value={withVideoFilter}
@@ -419,20 +435,20 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       <option value="yes">
-                        {language === "ru" ? "Да" : "Yes"}
+                        {t("reviews.yes")}
                       </option>
                       <option value="no">
-                        {language === "ru" ? "Нет" : "No"}
+                        {t("reviews.no")}
                       </option>
                     </select>
                   </div>
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "Редактируемый" : "Editable"}
+                      {t("reviews.filterEditable")}
                     </label>
                     <select
                       value={editableFilter}
@@ -443,20 +459,20 @@ export default function ReviewsPage() {
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     >
                       <option value="all">
-                        {language === "ru" ? "Все" : "All"}
+                        {t("reviews.all")}
                       </option>
                       <option value="yes">
-                        {language === "ru" ? "Да" : "Yes"}
+                        {t("reviews.yes")}
                       </option>
                       <option value="no">
-                        {language === "ru" ? "Нет" : "No"}
+                        {t("reviews.no")}
                       </option>
                     </select>
                   </div>
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "Дата с" : "Date from"}
+                      {t("reviews.filterDateFrom")}
                     </label>
                     <input
                       type="date"
@@ -471,7 +487,7 @@ export default function ReviewsPage() {
 
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {language === "ru" ? "Дата по" : "Date to"}
+                      {t("reviews.filterDateTo")}
                     </label>
                     <input
                       type="date"
@@ -491,14 +507,14 @@ export default function ReviewsPage() {
                     onClick={resetFilters}
                     className="h-8 px-3 text-xs font-bold"
                   >
-                    {language === "ru" ? "Сбросить" : "Reset"}
+                    {t("reviews.resetFilters")}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setIsFilterMenuOpen(false)}
                     className="h-8 px-3 text-xs font-bold"
                   >
-                    {language === "ru" ? "Закрыть" : "Close"}
+                    {t("reviews.closeFilters")}
                   </Button>
                 </div>
               </div>
@@ -510,7 +526,7 @@ export default function ReviewsPage() {
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-2" />
             <p className="text-sm font-semibold">
-              {language === "ru" ? "Загрузка отзывов..." : "Loading reviews..."}
+              {t("reviews.loading")}
             </p>
           </div>
         ) : (
@@ -533,7 +549,7 @@ export default function ReviewsPage() {
                         <div className="flex items-start">
                           {/* Orange/emerald status dot matching recent actions */}
                           <div
-                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getNormalizedStatus(review.status) === "auto" ? "bg-emerald-500 shadow-emerald-200" : "bg-amber-500 shadow-amber-200"} shadow-sm`}
+                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status)} shadow-sm`}
                           />
                           <div>
                             <h3 className="font-bold text-lg text-slate-900">
@@ -558,7 +574,7 @@ export default function ReviewsPage() {
                               )}
                               {review.isEditedFeedback && (
                                 <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/40 rounded-lg">
-                                  {t('rules.editedFeedback')}
+                                  {t("reviews.editedFeedback")}
                                 </span>
                               )}
                               <span className="text-xs font-semibold text-slate-400 ml-1">
@@ -569,11 +585,7 @@ export default function ReviewsPage() {
                         </div>
                         <div>
                           <span
-                            className={`px-3 py-1.5 text-xs font-bold rounded-lg ${
-                              getNormalizedStatus(review.status) === "auto"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-amber-50 text-amber-700"
-                            }`}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getStatusBadgeClass(review.status)}`}
                           >
                             {getStatusLabel(review.status)}
                           </span>
@@ -584,14 +596,14 @@ export default function ReviewsPage() {
                       <div className="text-slate-700 mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100 font-medium">
                         {!review.text && !review.pros && !review.cons ? (
                           <p className="text-slate-400 italic">
-                            Без комментария
+                            {t("reviews.noComment")}
                           </p>
                         ) : (
                           <div className="space-y-1">
                             {review.text && (
                               <p>
                                 <span className="font-bold text-slate-800">
-                                  Комментарий:
+                                  {t("reviews.commentLabel")}
                                 </span>{" "}
                                 {review.text}
                               </p>
@@ -599,7 +611,7 @@ export default function ReviewsPage() {
                             {review.pros && (
                               <p>
                                 <span className="font-bold text-slate-800">
-                                  Плюсы:
+                                  {t("reviews.prosLabel")}
                                 </span>{" "}
                                 {review.pros}
                               </p>
@@ -607,7 +619,7 @@ export default function ReviewsPage() {
                             {review.cons && (
                               <p>
                                 <span className="font-bold text-slate-800">
-                                  Минусы:
+                                  {t("reviews.consLabel")}
                                 </span>{" "}
                                 {review.cons}
                               </p>
@@ -624,12 +636,8 @@ export default function ReviewsPage() {
                             className="h-8 px-3 rounded-lg text-xs font-bold"
                           >
                             {expandedAnswers[review.id]
-                              ? language === "ru"
-                                ? "Скрыть ответ"
-                                : "Hide answer"
-                              : language === "ru"
-                                ? "Показать ответ"
-                                : "Show answer"}
+                              ? t("reviews.hideAnswer")
+                              : t("reviews.showAnswer")}
                           </Button>
                           {expandedAnswers[review.id] && (
                             <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl mt-3">
@@ -659,7 +667,7 @@ export default function ReviewsPage() {
                               placeholder={
                                 isReviewEditable
                                   ? t("reviews.typeReply")
-                                  : "Изменение ответа недоступно"
+                                  : t("reviews.replyUnavailable")
                               }
                               className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow"
                               style={{ maxWidth: "calc(100% - 130px)" }}
@@ -696,7 +704,7 @@ export default function ReviewsPage() {
                   disabled={currentPage === 1}
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-slate-500 transition-all font-bold text-sm shadow-sm"
                 >
-                  ← {language === "ru" ? "Назад" : "Back"}
+                  ← {t("reviews.back")}
                 </button>
 
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(
@@ -722,7 +730,7 @@ export default function ReviewsPage() {
                   disabled={currentPage === totalPages}
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-slate-500 transition-all font-bold text-sm shadow-sm"
                 >
-                  {language === "ru" ? "Вперед" : "Next"} →
+                  {t("reviews.next")} →
                 </button>
               </div>
             )}
