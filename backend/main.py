@@ -118,8 +118,32 @@ run_migrations()
 
 Base.metadata.create_all(bind=engine)
 
+class XForwardedProtoMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] in ("http", "websocket"):
+            headers = dict(scope.get("headers", []))
+            if b"x-forwarded-proto" in headers:
+                proto = headers[b"x-forwarded-proto"].decode("latin1").split(",")[0].strip().lower()
+                if proto in ("http", "https"):
+                    scope["scheme"] = proto
+            if b"x-forwarded-host" in headers:
+                host_val = headers[b"x-forwarded-host"].decode("latin1").split(",")[0].strip()
+                new_headers = []
+                for k, v in scope.get("headers", []):
+                    if k == b"host":
+                        new_headers.append((b"host", host_val.encode("latin1")))
+                    else:
+                        new_headers.append((k, v))
+                scope["headers"] = new_headers
+        await self.app(scope, receive, send)
+
+
 app = FastAPI(title="Wildberries reAnswer API")
 
+app.add_middleware(XForwardedProtoMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=".*",
@@ -127,18 +151,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.middleware("http")
-async def handle_x_forwarded_proto(request: Request, call_next):
-    proto = request.headers.get("x-forwarded-proto")
-    if proto:
-        # Some proxy chains send a comma-separated list like "https,http".
-        # Use the first valid value so URL generation stays stable.
-        normalized_proto = proto.split(",", 1)[0].strip().lower()
-        if normalized_proto in {"http", "https"}:
-            request.scope["scheme"] = normalized_proto
-    return await call_next(request)
 
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
