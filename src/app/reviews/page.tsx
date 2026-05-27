@@ -12,6 +12,7 @@ import { Loader2, RotateCw } from "lucide-react";
 export default function ReviewsPage() {
   const fetchReviews = useAppStore((state) => state.fetchReviews);
   const markAsAnswered = useAppStore((state) => state.markReviewAsAnswered);
+  const generateReviewReply = useAppStore((state) => state.generateReviewReply);
   const syncReviews = useAppStore((state) => state.syncReviews);
   const { t, language } = useTranslation();
   const PAGE_SIZE = 10;
@@ -41,6 +42,9 @@ export default function ReviewsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isGeneratingReply, setIsGeneratingReply] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const getNormalizedStatus = (status?: string) => {
     if (status === "auto-answered") return "auto";
@@ -92,6 +96,20 @@ export default function ReviewsPage() {
       await markAsAnswered(id, replyText[id]);
       setReplyText((prev) => ({ ...prev, [id]: "" }));
       await loadAllReviews();
+    }
+  };
+
+  const handleGenerateReply = async (id: string) => {
+    setIsGeneratingReply((prev) => ({ ...prev, [id]: true }));
+    try {
+      const generated = await generateReviewReply(id);
+      if (generated) {
+        setReplyText((prev) => ({ ...prev, [id]: generated }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsGeneratingReply((prev) => ({ ...prev, [id]: false }));
     }
   };
 
@@ -673,6 +691,15 @@ export default function ReviewsPage() {
                               style={{ maxWidth: "calc(100% - 130px)" }}
                               disabled={!isReviewEditable}
                             />
+                            <Button
+                              variant="outline"
+                              onClick={() => handleGenerateReply(review.id)}
+                              disabled={!isReviewEditable || isGeneratingReply[review.id]}
+                            >
+                              {isGeneratingReply[review.id]
+                                ? t("reviews.generatingReply")
+                                : t("reviews.generateReply")}
+                            </Button>
                             <Button
                               onClick={() => handleReply(review.id)}
                               disabled={

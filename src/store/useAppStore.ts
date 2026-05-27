@@ -86,6 +86,7 @@ interface AppState {
   updateRule: (id: string, rule: Partial<Rule>) => Promise<void>;
   deleteRule: (id: string) => Promise<void>;
   markReviewAsAnswered: (id: string, text: string) => Promise<void>;
+  generateReviewReply: (id: string) => Promise<string>;
   fetchNotificationMethods: () => Promise<void>;
   addNotificationMethod: (method: Omit<NotificationMethod, 'id' | 'userId'>) => Promise<void>;
   deleteNotificationMethod: (id: number) => Promise<void>;
@@ -437,6 +438,26 @@ export const useAppStore = create<AppState>()(
         } catch (e) {
           console.error(e);
         }
+      },
+
+      generateReviewReply: async (id: string) => {
+        const { jwtToken } = get();
+        if (!jwtToken) throw new Error('Not authenticated');
+
+        const res = await fetch(`${API_URL}/reviews/${id}/generate`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${jwtToken}`
+          }
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || data.message || 'Failed to generate reply');
+        }
+
+        const data = await res.json();
+        return String(data.text || '').trim();
       },
 
       fetchNotificationMethods: async () => {

@@ -122,16 +122,16 @@ async def _send_telegram_message(chat_id: str, text: str) -> None:
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
-        "chat_id": chat_id,
+        "chat_id": int(chat_id),
         "text": text,
         "parse_mode": "MarkdownV2",
         "disable_web_page_preview": True,
     }
     async with httpx.AsyncClient(timeout=20.0) as client:
         response = await client.post(url, json=payload)
-        response.raise_for_status()
         data = response.json()
         if not data.get("ok"):
+            logger.error("[notify] Telegram API error: %s", data)
             raise RuntimeError(f"Telegram API error: {data}")
 
 

@@ -140,6 +140,8 @@ export const en = {
     manually: 'Manual',
     autoAnswered: 'Auto-Answered',
     typeReply: 'Type a manual reply...',
+    generateReply: 'Generate with GPT',
+    generatingReply: 'Generating...',
     replyUnavailable: 'Reply editing is unavailable',
     sendReply: 'Send Reply',
     automatedResponse: 'Automated Response',

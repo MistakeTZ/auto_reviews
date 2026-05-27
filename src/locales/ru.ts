@@ -140,6 +140,8 @@ export const ru = {
     manually: 'Ручной',
     autoAnswered: 'Автоответы',
     typeReply: 'Введите ответ вручную...',
+    generateReply: 'Сгенерировать с GPT',
+    generatingReply: 'Генерация...',
     replyUnavailable: 'Изменение ответа недоступно',
     sendReply: 'Отправить ответ',
     automatedResponse: 'Автоматический ответ',

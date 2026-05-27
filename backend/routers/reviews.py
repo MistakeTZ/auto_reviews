@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import os
 
 import crud
 import schemas
@@ -8,11 +9,16 @@ import database
 from routers.auth import get_current_user, check_active_subscription
 from models import User, Review
 from pydantic import BaseModel
+from processor.gpt import AsyncOpenAIClient
 
 router = APIRouter()
 
 
 class ReplyRequest(BaseModel):
+    text: str
+
+
+class GenerateReplyResponse(BaseModel):
     text: str
 
 
@@ -200,3 +206,74 @@ async def reply_to_review(
         editable=True,
     )
     return review
+
+
+@router.post("/{review_id}/generate", response_model=GenerateReplyResponse)
+async def generate_reply_for_review(
+    review_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(check_active_subscription),
+):
+    db_review = (
+        db.query(Review)
+        .filter(Review.id == review_id, Review.user_id == current_user.id)
+        .first()
+    )
+
+    if not db_review:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(status_code=503, detail="GPT service is not configured")
+
+    user_name = (db_review.user_name or "").strip()
+    if user_name and user_name.startswith("Покупатель"):
+        user_name = ""
+
+    parts = []
+    if user_name:
+        parts.append(f"Customer name: {user_name}")
+    if db_review.product_name:
+        parts.append(f"Product: {db_review.product_name}")
+    if db_review.rating is not None:
+        parts.append(f"Rating: {db_review.rating}/5")
+    if db_review.text:
+        parts.append(f"Review text: {db_review.text}")
+    if db_review.pros:
+        parts.append(f"Pros: {db_review.pros}")
+    if db_review.cons:
+        parts.append(f"Cons: {db_review.cons}")
+    if db_review.photos_count:
+        parts.append(f"Photos: {db_review.photos_count}")
+    if db_review.has_video:
+        parts.append("Has video: yes")
+    if getattr(db_review, "is_edited_feedback", False):
+        parts.append("Edited feedback: yes")
+
+    review_summary = "\n".join(parts)
+
+    client = AsyncOpenAIClient(api_key=api_key)
+    generated = await client.chat_completion(
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a customer support assistant for a Wildberries seller. "
+                    "Generate a short, polite, and useful response to this review. "
+                    "Return only the reply text without quotes, markdown, labels, or explanations. "
+                    "Use the same language as the review."
+                ),
+            },
+            {"role": "user", "content": review_summary},
+        ],
+        model="gpt-4",
+        temperature=0.4,
+        max_tokens=260,
+    )
+
+    reply_text = str(generated or "").strip()
+    if not reply_text:
+        raise HTTPException(status_code=502, detail="Failed to generate reply")
+
+    return {"text": reply_text}
