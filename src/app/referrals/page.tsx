@@ -212,7 +212,7 @@ function ReferralsPageContent() {
             <h3 className="font-extrabold text-slate-900 text-lg">
               Checking payment status...
             </h3>
-            <p className="text-slate-500 text-xs font-semibold">
+            <p className="text-slate-500 text-sm font-semibold">
               Please wait while we verify your payment with YooKassa. This takes a few seconds.
             </p>
           </div>
@@ -228,7 +228,7 @@ function ReferralsPageContent() {
             <h3 className="font-extrabold text-slate-900 text-lg">
               Payment Successful!
             </h3>
-            <p className="text-slate-500 text-xs font-semibold">
+            <p className="text-slate-500 text-sm font-semibold">
               Your premium subscription has been successfully activated. Enjoy full access!
             </p>
           </div>
@@ -244,7 +244,7 @@ function ReferralsPageContent() {
             <h3 className="font-extrabold text-slate-900 text-lg">
               Payment verification delayed or failed
             </h3>
-            <p className="text-slate-500 text-xs font-semibold">
+            <p className="text-slate-500 text-sm font-semibold">
               We couldn't verify your payment automatically. If you've been charged, please refresh the page in a few moments or contact support.
             </p>
           </div>
@@ -334,7 +334,7 @@ function ReferralsPageContent() {
               ) : (
                 <div className="p-4 bg-slate-50 border border-slate-200/60 rounded-2xl flex items-center gap-3">
                   <AlertCircle className="text-amber-500 shrink-0" size={20} />
-                  <p className="text-xs font-medium text-slate-600">
+                  <p className="text-sm font-medium text-slate-600">
                     {t("referrals.noActivePlanHint")}
                   </p>
                 </div>
@@ -344,7 +344,7 @@ function ReferralsPageContent() {
             {tariffType === "trial" && hasActiveSubscription && (
               <div className="p-3.5 bg-amber-50/60 border border-amber-100 rounded-2xl flex items-center gap-2">
                 <ShieldAlert className="text-amber-600 shrink-0" size={16} />
-                <p className="text-xs font-semibold text-amber-800">
+                <p className="text-sm font-semibold text-amber-800">
                   {t("referrals.trialLimitations")}
                 </p>
               </div>
@@ -362,7 +362,7 @@ function ReferralsPageContent() {
           </CardHeader>
           <CardContent className="p-6 space-y-6 h-72 flex flex-col justify-between">
             <div>
-              <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+              <p className="text-slate-500 text-sm font-semibold leading-relaxed">
                 {t("referrals.rewardsDesc")}
               </p>
             </div>
@@ -412,7 +412,7 @@ function ReferralsPageContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
-            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+            <p className="text-sm text-slate-500 font-semibold leading-relaxed">
               {t("referrals.buyDesc")}
             </p>
 
@@ -436,7 +436,7 @@ function ReferralsPageContent() {
             </Button>
 
             {purchaseSuccessMsg && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-semibold flex items-center gap-2">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold flex items-center gap-2">
                 <Check size={16} />
                 {purchaseSuccessMsg}
               </div>
@@ -495,7 +495,7 @@ function ReferralsPageContent() {
                 <p className="text-sm font-bold text-slate-700 mb-1">
                   {t("referrals.noReferralsYet")}
                 </p>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <p className="text-sm text-slate-400 max-w-sm mx-auto">
                   {t("referrals.noFriendsYet")}
                 </p>
               </div>
