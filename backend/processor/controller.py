@@ -313,7 +313,13 @@ class MainController:
                         rating=int(feedback.get("productValuation") or 0),
                         text=str(feedback.get("text") or ""),
                         date=str(feedback.get("createdDate") or ""),
-                        status="fetched",
+                        status=(
+                            "fetched"
+                            if not existing
+                            or (existing.auto_answer_text or "").strip()
+                            != api_answer_text
+                            else existing.status
+                        ),
                         auto_answer_text=api_answer_text,
                         editable=api_editable_bool,
                         user_name=user_name,
@@ -594,10 +600,8 @@ class MainController:
         parts: List[str] = []
         if user_name:
             parts.append(f"Клиент: {user_name}")
-        if subject_name:
-            parts.append(f"Продукт: {subject_name}")
-        if valuation is not None:
-            parts.append(f"Рейтинг: {valuation}/5")
+        parts.append(f"Продукт: {subject_name}")
+        parts.append(f"Рейтинг: {valuation}/5")
         if text:
             parts.append(f"Текст отзыва: {text}")
         if pros:
@@ -610,18 +614,21 @@ class MainController:
             parts.append(f"Клиент прикрепил {photo_count} фото")
 
         feedback_summary = "\n".join(parts)
+        prompt = (
+            prompt or ""
+        ).strip() + "\n\nНапиши ответ на этот отзыв в том виде, в котором он будет отправлен покупателю. Верни только текст самого отзыва"
 
         raw = await self.gpt.chat_completion(
             messages=[
                 {"role": "system", "content": prompt},
-                {"role": "system", "content": "Напиши ответ на отзыв:"},
                 {"role": "user", "content": feedback_summary},
             ],
             model="gpt-4",
             temperature=0.3,
             max_tokens=260,
         )
-        return str(raw).strip()
+        answer = str(raw).strip()
+        return answer.replace("\\n", "\n").replace('\\"', '"')
 
     def _safe_parse_json_response(self, raw: str) -> Dict:
         text = str(raw).strip()

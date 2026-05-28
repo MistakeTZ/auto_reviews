@@ -197,10 +197,10 @@ class ChatProcessor:
                     res = await request(url, json_data=payload)
                 except Exception:
                     continue
-                if res.status == 204:
+                if not res:
                     return True
 
-                last_response = res
+                last_response = last_response or res
 
         return last_response
 

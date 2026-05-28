@@ -435,7 +435,7 @@ export const useAppStore = create<AppState>()(
               'Content-Type': 'application/json',
               Authorization: `Bearer ${jwtToken}`
             },
-            body: JSON.stringify({ text })
+            body: JSON.stringify({ answer_feedback: text })
           });
           if (res.ok) {
             set({

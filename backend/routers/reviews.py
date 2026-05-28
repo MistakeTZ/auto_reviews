@@ -15,7 +15,8 @@ router = APIRouter()
 
 
 class ReplyRequest(BaseModel):
-    text: str
+    text: Optional[str] = None
+    answer_feedback: Optional[str] = None
 
 
 class GenerateReplyResponse(BaseModel):
@@ -234,11 +235,20 @@ async def reply_to_review(
     if not db_review:
         raise HTTPException(status_code=404, detail="Review not found")
 
+    reply_text = request.answer_feedback
+    if reply_text is None:
+        reply_text = request.text
+    if reply_text is None:
+        raise HTTPException(status_code=422, detail="Reply text is required")
+
+    # Accept both real line breaks and escaped \n sequences from the UI.
+    reply_text = reply_text.replace("\\n", "\n")
+
     refreshed_feedback = None
     async with ChatProcessor(current_user.wb_api_token) as processor:
         res = await processor.answer_feedback(
             db_review.wb_review_id,
-            request.text,
+            reply_text,
         )
         if res is not True:
             raise HTTPException(
@@ -249,11 +259,11 @@ async def reply_to_review(
         refreshed_feedback = await processor.get_feedback(db_review.wb_review_id)
 
     # Update in DB after success
-    db_review.auto_answer_text = request.text
+    db_review.auto_answer_text = reply_text
 
     if refreshed_feedback:
         review_data = _extract_feedback_payload(refreshed_feedback, db_review)
-        review_data.auto_answer_text = request.text
+        review_data.auto_answer_text = reply_text
         review = crud.upsert_review(db, review_data, current_user.id)
     else:
         review = crud.update_review_status(
@@ -261,7 +271,7 @@ async def reply_to_review(
             review_id=review_id,
             user_id=current_user.id,
             status="manually",
-            auto_answer_text=request.text,
+            auto_answer_text=reply_text,
             editable=True,
         )
 

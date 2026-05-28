@@ -3,7 +3,7 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { formatDateTime } from "@/lib/formatDateTime";
@@ -45,6 +45,18 @@ export default function ReviewsPage() {
   const [isEditingAnswer, setIsEditingAnswer] = useState<{
     [key: string]: boolean;
   }>({});
+  const replyTextareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
+
+  const resizeReplyTextarea = useCallback((id: string) => {
+    const el = replyTextareaRefs.current[id];
+    if (!el) return;
+
+    el.style.height = "auto";
+    const maxHeight = 240;
+    const nextHeight = Math.min(el.scrollHeight, maxHeight);
+    el.style.height = `${nextHeight}px`;
+    el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
+  }, []);
 
   const getNormalizedStatus = (status?: string) => {
     if (status === "auto-answered") return "auto";
@@ -687,21 +699,30 @@ export default function ReviewsPage() {
                         !review.autoAnswerText) ||
                         isEditingAnswer[review.id]) && (
                           <div className="flex gap-3 mt-4">
-                            <input
-                              type="text"
+                            <textarea
+                              rows={1}
+                              ref={(el) => {
+                                replyTextareaRefs.current[review.id] = el;
+                                if (el) {
+                                  resizeReplyTextarea(review.id);
+                                }
+                              }}
                               value={replyText[review.id] || ""}
-                              onChange={(e) =>
+                              onChange={(e) => {
                                 setReplyText((prev) => ({
                                   ...prev,
                                   [review.id]: e.target.value,
-                                }))
-                              }
+                                }));
+                                requestAnimationFrame(() =>
+                                  resizeReplyTextarea(review.id),
+                                );
+                              }}
                               placeholder={
                                 isReviewEditable
                                   ? t("reviews.typeReply")
                                   : t("reviews.replyUnavailable")
                               }
-                              className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow"
+                              className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                               style={{ maxWidth: "calc(100% - 130px)" }}
                               disabled={!isReviewEditable}
                             />
