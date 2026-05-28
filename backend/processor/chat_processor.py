@@ -174,7 +174,6 @@ class ChatProcessor:
             text.replace("\\n", "\n")
             .replace("\\r", "\r")
             .replace("\\", "")
-            .replace("\n", "\\n")
         )
         logger.info(f"Answer feedback: {feedback_id}, text: {text}")
 
