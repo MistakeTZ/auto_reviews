@@ -47,15 +47,17 @@ async def create_yookassa_payment(
         "confirmation": {"type": "redirect", "return_url": return_url},
         "description": "Подписка на 30 дней - reAnswer",
         "metadata": {"user_id": str(user_id)},
-        "receipt": {"customer": {"email": email}},
-        "items": [
-            {
-                "description": "Подписка на 30 дней - reAnswer",
-                "quantity": 1,
-                "amount": {"value": amount_val, "currency": "RUB"},
-                "vat_code": 1,
-            },
-        ],
+        "receipt": {
+            "customer": {"email": email},
+            "items": [
+                {
+                    "description": "Подписка на 30 дней - reAnswer",
+                    "quantity": "1",
+                    "amount": {"value": amount_val, "currency": "RUB"},
+                    "vat_code": "1",
+                },
+            ],
+        },
     }
 
     headers = {"Idempotence-Key": idempotency_key, "Content-Type": "application/json"}
