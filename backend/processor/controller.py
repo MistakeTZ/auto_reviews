@@ -18,7 +18,7 @@ class MainController:
         self,
         processor: ChatProcessor,
         gpt_client: AsyncOpenAIClient,
-        poll_interval: int = 30,
+        poll_interval: int = 45,
         use_gpt_for_feedbacks: bool = True,
         user_id: Optional[int] = None,
         db_factory: Optional[Callable] = None,
@@ -709,7 +709,7 @@ class MainController:
 def build_controller(
     processor: ChatProcessor,
     gpt_client: AsyncOpenAIClient,
-    poll_interval: int = 30,
+    poll_interval: int = 45,
     use_gpt_for_feedbacks: bool = True,
     user_id: Optional[int] = None,
     db_factory: Optional[Callable] = None,

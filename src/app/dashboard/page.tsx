@@ -42,6 +42,15 @@ export default function Dashboard() {
     }
   };
 
+  const getStatusDotClass = (status?: string) => {
+    const normalized = getNormalizedStatus(status);
+    if (normalized === "none") return "bg-gray-500 shadow-gray-200";
+    if (normalized === "auto") return "bg-emerald-500 shadow-emerald-200";
+    if (normalized === "fetched") return "bg-sky-500 shadow-sky-200";
+    if (normalized === "manually") return "bg-violet-500 shadow-violet-200";
+    return "bg-amber-500 shadow-amber-200";
+  };
+
   const totalReviews = reviews.length;
   const autoAnswered = reviews.filter(
     (r) => getNormalizedStatus(r.status) === "auto",
@@ -152,9 +161,7 @@ export default function Dashboard() {
                       key={review.id}
                       className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
                     >
-                      <div
-                        className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${getNormalizedStatus(review.status) === "auto" ? "bg-emerald-500 shadow-emerald-200" : "bg-amber-500 shadow-amber-200"} shadow-sm`}
-                      />
+                      <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${getStatusDotClass(review.status)}`} />
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-800">
                           {review.userName

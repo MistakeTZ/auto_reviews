@@ -49,7 +49,6 @@ async def run_controllers():
                     controllers[user.id] = build_controller(
                         processor=processor,
                         gpt_client=gpt_client,
-                        poll_interval=0,
                         use_gpt_for_feedbacks=True,
                         user_id=user.id,
                         db_factory=SessionLocal,
