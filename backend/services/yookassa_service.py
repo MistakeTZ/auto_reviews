@@ -51,9 +51,9 @@ async def create_yookassa_payment(
         "items": [
             {
                 "description": "Подписка на 30 дней - reAnswer",
-                "quantity": "1",
+                "quantity": 1,
                 "amount": {"value": amount_val, "currency": "RUB"},
-                "vat_code": "1",
+                "vat_code": 1,
             },
         ],
     }
