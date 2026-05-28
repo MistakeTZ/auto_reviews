@@ -215,9 +215,9 @@ class MainController:
         review_data = ReviewCreate(
             wb_review_id=wb_review_id,
             nm_id=str(feedback.get("productDetails", {}).get("nmId") or ""),
-            product_name=str(
-                feedback.get("productDetails", {}).get("productName") or ""
-            ),
+            product_name=str(feedback.get("subjectName") or "")
+            + " "
+            + feedback.get("color", ""),
             rating=int(feedback.get("productValuation") or 0),
             text=str(feedback.get("text") or ""),
             date=str(feedback.get("createdDate") or ""),
