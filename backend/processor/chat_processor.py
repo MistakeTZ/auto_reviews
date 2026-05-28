@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 from typing import Dict, List, Optional
 
@@ -21,20 +22,52 @@ class ChatProcessor:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return True
 
+    async def _parse_response(self, response: aiohttp.ClientResponse, method: str, url: str):
+        try:
+            return await response.json()
+        except aiohttp.ContentTypeError:
+            text = await response.text()
+            if not text.strip():
+                # WB often returns empty body on success for write endpoints.
+                return {}
+            logger.warning(
+                "[wb] non-json %s response status=%s url=%s body=%s",
+                method,
+                response.status,
+                url,
+                text[:500],
+            )
+            return {
+                "status": response.status,
+                "raw": text,
+            }
+        except Exception as exc:
+            logger.warning(
+                "[wb] failed to parse %s response status=%s url=%s: %s",
+                method,
+                response.status,
+                url,
+                exc,
+            )
+            return {
+                "status": response.status,
+                "error": str(exc),
+            }
+
     async def _get(self, url, params=None):
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.get(url, params=params) as response:
-                return await response.json()
+                return await self._parse_response(response, "GET", url)
 
     async def _post(self, url, json_data=None):
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.post(url, json=json_data) as response:
-                return await response.json()
+                return await self._parse_response(response, "POST", url)
 
     async def _patch(self, url, json_data=None):
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.patch(url, json=json_data) as response:
-                return await response.json()
+                return await self._parse_response(response, "PATCH", url)
 
     async def get_feedbacks(
         self,
@@ -191,9 +224,18 @@ class ChatProcessor:
         for request in methods:
             try:
                 res = await request(url, json_data=payload)
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "[feedbacks] answer request failed method=%s feedback_id=%s: %s",
+                    request.__name__,
+                    feedback_id,
+                    exc,
+                )
                 continue
             if not res:
+                return True
+
+            if isinstance(res, dict) and not res.get("error") and not res.get("errors"):
                 return True
 
             last_response = last_response or res

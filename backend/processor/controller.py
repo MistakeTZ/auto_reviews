@@ -417,7 +417,7 @@ class MainController:
                 text=text,
                 only_post=True,
             )
-            if response is True or response is {}:
+            if response is True or response == {}:
                 logger.info(
                     "[feedbacks] answered feedback_id=%s (rule=%s)",
                     feedback_id,
