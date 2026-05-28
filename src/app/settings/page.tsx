@@ -8,6 +8,10 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const DEFAULT_BOTS_CONFIG = {
+  tg_bot: process.env.TG_BOT_NAME || 'none',
+  max_bot: process.env.MAX_BOT_NAME || 'none'
+};
 
 export default function SettingsPage() {
   const apiToken = useAppStore(state => state.apiToken);
@@ -29,7 +33,7 @@ export default function SettingsPage() {
   const [newMethodType, setNewMethodType] = useState<'telegram' | 'email' | 'max'>('telegram');
   const [newMethodValue, setNewMethodValue] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [botsConfig, setBotsConfig] = useState({ tg_bot: 'holms_rage_bot', max_bot: 'max_notification_bot' });
+  const [botsConfig, setBotsConfig] = useState(DEFAULT_BOTS_CONFIG);
 
   // Initial load
   useEffect(() => {
@@ -40,8 +44,8 @@ export default function SettingsPage() {
     fetch(`${API_URL}/settings/bots-config`)
       .then(res => res.json())
       .then(data => {
-        if (data && data.tg_bot) {
-          setBotsConfig(data);
+        if (data && (data.tg_bot || data.max_bot)) {
+          setBotsConfig((prev) => ({ ...prev, ...data }));
         }
       })
       .catch(err => console.error("Error loading bots config:", err));
@@ -304,14 +308,14 @@ export default function SettingsPage() {
                       <a
                         href={newMethodType === 'telegram'
                           ? `https://t.me/${botsConfig.tg_bot}?start=${userUuid}`
-                          : `https://t.me/${botsConfig.max_bot}?start=${userUuid}`
+                          : `https://max.ru/${botsConfig.max_bot}?start=${userUuid}`
                         }
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md hover:shadow-indigo-600/20"
                       >
                         <ExternalLink size={14} />
-                        <span>{t('settings.openInTelegram')}</span>
+                        <span>{t(newMethodType === 'telegram' ? 'settings.openInTelegram' : 'settings.openInMax')}</span>
                       </a>
                     ) : (
                       <span className="text-xs text-slate-400 animate-pulse">{t('settings.generatingLink')}</span>

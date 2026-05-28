@@ -249,6 +249,7 @@ export const ru = {
     connectBotTitle: 'Подключение {{bot}} бота',
     connectBotDescription: 'Для привязки перейдите по кнопке ниже в бот и нажмите «Старт». Наша система автоматически распознает ваше устройство и привяжет уведомления к вашему кабинету.',
     openInTelegram: 'Открыть в Telegram',
+    openInMax: 'Открыть в Max',
     generatingLink: 'Генерация ссылки...',
     tokenSaveErrorFallback: 'Произошла ошибка при сохранении токена',
     methodsLimitAlert: 'Достигнут лимит 5 способов уведомлений!',

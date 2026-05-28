@@ -249,6 +249,7 @@ export const en = {
     connectBotTitle: 'Connect {{bot}} bot',
     connectBotDescription: 'To link, open the bot via the button below and press "Start". Our system will automatically detect your device and link notifications to your account.',
     openInTelegram: 'Open in Telegram',
+    openInMax: 'Open in Max',
     generatingLink: 'Generating link...',
     tokenSaveErrorFallback: 'An error occurred while saving the token',
     methodsLimitAlert: 'Maximum limit of 5 notification methods reached!',
