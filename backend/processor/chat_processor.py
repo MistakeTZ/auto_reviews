@@ -172,36 +172,27 @@ class ChatProcessor:
     ) -> Dict:
         text = text.replace("\\n", "\n").replace("\\r", "\r").replace("\\", "")
         logger.info(f"Answer feedback: {feedback_id}, text: {text}")
-        endpoints = [
-            (
-                "https://feedbacks-api.wildberries.ru/api/v1/feedbacks/answer",
-                {"id": feedback_id, "text": text},
-            ),
-            (
-                "https://feedbacks-api.wildberries.ru/api/v1/feedbacks",
-                {"id": feedback_id, "text": text},
-            ),
-        ]
 
+        url = "https://feedbacks-api.wildberries.ru/api/v1/feedbacks/answer"
+        payload = {"id": feedback_id, "text": text}
         last_response = {}
-        for url, payload in endpoints:
-            methods = (
-                [self._post]
-                if only_post
-                else [
-                    self._post,
-                    self._patch,
-                ]
-            )
-            for request in methods:
-                try:
-                    res = await request(url, json_data=payload)
-                except Exception:
-                    continue
-                if not res:
-                    return True
+        methods = (
+            [self._post]
+            if only_post
+            else [
+                self._post,
+                self._patch,
+            ]
+        )
+        for request in methods:
+            try:
+                res = await request(url, json_data=payload)
+            except Exception:
+                continue
+            if not res:
+                return True
 
-                last_response = last_response or res
+            last_response = last_response or res
 
         return last_response
 

@@ -373,12 +373,35 @@ class MainController:
                 await self._upsert_review_in_db(feedback, "", "none")
                 continue
 
+            if True:
+                review_create = await self._upsert_review_in_db(
+                    feedback, text, answer_status
+                )
+
+                if matched_rule.send_notification and review_create:
+                    try:
+                        db = self.db_factory()
+                        await notify_review_processed(
+                            db,
+                            self.user_id,
+                            review_create,
+                        )
+                    except Exception as exc:
+                        logger.exception(
+                            "[feedbacks] failed to send notification for feedback_id=%s: %s",
+                            feedback_id,
+                            exc,
+                        )
+                    finally:
+                        if "db" in locals() and db:
+                            db.close()
+
             response = await self.processor.answer_feedback(
                 feedback_id=feedback_id,
                 text=text,
                 only_post=True,
             )
-            if response is True:
+            if False and response is True:
                 logger.info(
                     "[feedbacks] answered feedback_id=%s (rule=%s)",
                     feedback_id,
@@ -410,7 +433,8 @@ class MainController:
                 logger.warning(
                     "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
                 )
-                await self._upsert_review_in_db(feedback, text, "none")
+                if False:
+                    await self._upsert_review_in_db(feedback, text, "none")
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []
