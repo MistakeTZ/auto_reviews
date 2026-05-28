@@ -1,12 +1,21 @@
 import os
 import logging
+import httpx
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect
 
 from admin import setup_admin
-from bot import configure_webhook, process_update
+from bot import (
+    BotType,
+    MaxBotClient,
+    TelegramBotClient,
+    configure_webhook,
+    parse_max_update,
+    parse_tg_update,
+    process_update,
+)
 from database import engine
 from models import Base
 from routers import auth, rules, reviews, settings, products
@@ -103,9 +112,11 @@ async def setup_bot_webhooks():
     max_token = os.getenv("MAX_BOT_TOKEN", "").strip()
 
     if tg_token:
-        await configure_webhook(tg_token, "telegram", webhook_base_url, webhook_secret)
+        await configure_webhook(
+            BotType.TELEGRAM, tg_token, webhook_base_url, webhook_secret
+        )
     if max_token:
-        await configure_webhook(max_token, "max", webhook_base_url, webhook_secret)
+        await configure_webhook(BotType.MAX, max_token, webhook_base_url, webhook_secret)
 
 
 @app.post("/api/bot/webhook/{bot_type}/{secret}")
@@ -124,9 +135,19 @@ async def bot_webhook(bot_type: str, secret: str, request: Request):
 
     payload = await request.json()
     try:
-        await process_update(payload, token, bot_type)
+        async with httpx.AsyncClient(timeout=30.0) as http_client:
+            if bot_type == "telegram":
+                client = TelegramBotClient(http_client, token)
+                ctx = parse_tg_update(payload, client)
+            else:
+                client = MaxBotClient(http_client, token)
+                ctx = parse_max_update(payload, client)
+
+            # Some updates do not carry link/start payload and can be ignored.
+            if ctx:
+                await process_update(ctx)
     except Exception as e:
-        logger.error(f"Error processing {bot_type} webhook: {e}")
+        logger.error(f"Error processing {bot_type} webhook: {e}, data: {payload}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error processing webhook") from e
     return {"ok": True}
 

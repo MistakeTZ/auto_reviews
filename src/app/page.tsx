@@ -272,14 +272,27 @@ function LandingPageContent() {
 
       {/* Footer */}
       <footer className="site-footer">
-        <div className="site-footer-container">
+        <div className="site-footer-container flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
               <MessageCircle size={16} className="text-slate-900" />
             </div>
             <span className="font-bold text-white tracking-tight">{t('landing.brandName')}</span>
           </div>
-          <p className="site-footer-copy">{t('landing.footerRights')}</p>
+
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-semibold text-slate-400">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              {t('common.privacyPolicy')}
+            </Link>
+            <Link href="/consent" className="hover:text-white transition-colors">
+              {t('common.personalDataConsent')}
+            </Link>
+            <Link href="/legal" className="hover:text-white transition-colors">
+              {t('common.legalInfo')}
+            </Link>
+          </div>
+
+          <p className="site-footer-copy text-sm text-slate-500">{t('landing.footerRights')}</p>
         </div>
       </footer>
     </div>

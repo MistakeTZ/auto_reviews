@@ -137,8 +137,8 @@ def delete_notification(
 @router.get("/bots-config")
 def get_bots_config():
     return {
-        "tg_bot": os.getenv("TG_BOT", "autoreviews_bot"),
-        "max_bot": os.getenv("MAX_BOT", "max_notification_bot"),
+        "tg_bot": os.getenv("TG_BOT_NAME", "autoreviews_bot"),
+        "max_bot": os.getenv("MAX_BOT_NAME", "max_notification_bot"),
     }
 
 

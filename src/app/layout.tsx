@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
+import CookieBanner from "@/components/layout/CookieBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
         <div className="flex-1 min-w-0 overflow-y-auto w-full flex flex-col">
           {children}
         </div>
+        <CookieBanner />
       </body>
     </html>
   );

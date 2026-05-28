@@ -15,6 +15,14 @@ export const en = {
     active: 'Active',
     pending: 'Pending',
     answered: 'Answered',
+    privacyPolicy: 'Privacy Policy',
+    personalDataConsent: 'Personal Data Consent',
+    legalInfo: 'Legal Information',
+    backToHome: 'Back to Home',
+  },
+  cookie: {
+    text: 'Our website uses cookies to improve user experience, analytics, and service operations. By continuing to use the site, you agree to our use of cookies in accordance with our',
+    accept: 'Accept',
   },
   landing: {
     brandName: 'reAnswer',
