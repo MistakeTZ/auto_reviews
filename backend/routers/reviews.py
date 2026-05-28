@@ -128,7 +128,7 @@ async def sync_reviews(
 
         # Check rules
         auto_answer = None
-        status = "manually"
+        status = "none"
         matched_rule = None
         for rule in rules:
             if rule.target == "specific_nm":
