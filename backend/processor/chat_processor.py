@@ -170,7 +170,12 @@ class ChatProcessor:
         text: str,
         only_post: bool = False,
     ) -> Dict:
-        text = text.replace("\\n", "\n").replace("\\r", "\r").replace("\\", "")
+        text = (
+            text.replace("\\n", "\n")
+            .replace("\\r", "\r")
+            .replace("\\", "")
+            .replace("\n", "\n")
+        )
         logger.info(f"Answer feedback: {feedback_id}, text: {text}")
 
         url = "https://feedbacks-api.wildberries.ru/api/v1/feedbacks/answer"
