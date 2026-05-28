@@ -315,7 +315,7 @@ export const en = {
     bestOffer: 'Best offer',
     buyPrice: '990 ₽',
     buyPeriod: 'for 1 month',
-    buyBtn: 'Purchase subscription (Demo)',
+    buyBtn: 'Purchase subscription',
     processing: 'Processing...',
     paymentFailed: 'Payment failed',
     purchaseSuccess: 'Thank you! Your premium plan has been successfully activated for 30 days.',

@@ -490,7 +490,7 @@ function ReferralsPageContent() {
                 </table>
               </div>
             ) : (
-              <div className="text-center py-16 text-slate-500 font-medium">
+              <div className="text-center py-8 text-slate-500 font-medium">
                 <span className="text-4xl block mb-2">👋</span>
                 <p className="text-sm font-bold text-slate-700 mb-1">
                   {t("referrals.noReferralsYet")}

@@ -315,7 +315,7 @@ export const ru = {
     bestOffer: 'Популярно',
     buyPrice: '990 ₽',
     buyPeriod: 'за 1 месяц',
-    buyBtn: 'Купить подписку (Демо)',
+    buyBtn: 'Купить подписку',
     processing: 'Обработка...',
     paymentFailed: 'Оплата не удалась',
     purchaseSuccess: 'Спасибо! Ваш премиум тариф успешно активирован на 30 дней.',
