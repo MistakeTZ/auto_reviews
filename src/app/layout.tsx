@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
-import CookieBanner from "@/components/layout/CookieBanner";
+import AppShell from "@/components/layout/AppShell";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,11 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-slate-50 text-slate-900 flex min-h-screen antialiased overflow-x-hidden`}>
-        <Sidebar />
-        <div className="flex-1 min-w-0 overflow-y-auto w-full flex flex-col">
-          {children}
-        </div>
-        <CookieBanner />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

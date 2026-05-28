@@ -46,12 +46,12 @@ export default function CookieBanner() {
                 <Cookie size={20} className="animate-pulse" />
               </div>
               <h4 className="font-extrabold text-sm uppercase tracking-wider text-slate-200">
-                Cookie Notification
+                {t("cookie.title")}
               </h4>
               <button
                 onClick={() => setIsVisible(false)}
                 className="ml-auto text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800/50"
-                title="Dismiss"
+                title={t("cookie.dismiss")}
               >
                 <X size={16} />
               </button>
@@ -73,7 +73,7 @@ export default function CookieBanner() {
                 onClick={() => setIsVisible(false)}
                 className="text-xs font-semibold text-slate-400 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-slate-800/30"
               >
-                Dismiss
+                {t("cookie.dismiss")}
               </button>
               <button
                 onClick={handleAccept}

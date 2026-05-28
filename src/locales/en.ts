@@ -23,6 +23,8 @@ export const en = {
   cookie: {
     text: 'Our website uses cookies to improve user experience, analytics, and service operations. By continuing to use the site, you agree to our use of cookies in accordance with our',
     accept: 'Accept',
+    title: 'Cookie Notification',
+    dismiss: 'Dismiss',
   },
   landing: {
     brandName: 'reAnswer',

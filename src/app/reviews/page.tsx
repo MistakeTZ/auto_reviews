@@ -58,9 +58,12 @@ export default function ReviewsPage() {
     el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
   }, []);
 
-  const getNormalizedStatus = (status?: string) => {
+  const getNormalizedStatus = (status?: string, autoAnswerText?: string) => {
     if (status === "auto-answered") return "auto";
     if (status === "manual-review") return "manually";
+    if (status === "none" || status === "pending" || status === "fetched") {
+      if ((autoAnswerText || "").trim()) return "manually";
+    }
     if (status === "none") return "none";
     return status || "pending";
   };
@@ -141,8 +144,8 @@ export default function ReviewsPage() {
     return f;
   };
 
-  const getStatusLabel = (status?: string) => {
-    const normalized = getNormalizedStatus(status);
+  const getStatusLabel = (status?: string, autoAnswerText?: string) => {
+    const normalized = getNormalizedStatus(status, autoAnswerText);
 
     if (normalized === "none") return t("reviews.none");
     if (normalized === "fetched") return t("reviews.fetched");
@@ -151,8 +154,8 @@ export default function ReviewsPage() {
     return t("reviews.pending");
   };
 
-  const getStatusDotClass = (status?: string) => {
-    const normalized = getNormalizedStatus(status);
+  const getStatusDotClass = (status?: string, autoAnswerText?: string) => {
+    const normalized = getNormalizedStatus(status, autoAnswerText);
     if (normalized === "none") return "bg-gray-500 shadow-gray-200";
     if (normalized === "auto") return "bg-emerald-500 shadow-emerald-200";
     if (normalized === "fetched") return "bg-sky-500 shadow-sky-200";
@@ -160,8 +163,8 @@ export default function ReviewsPage() {
     return "bg-amber-500 shadow-amber-200";
   };
 
-  const getStatusBadgeClass = (status?: string) => {
-    const normalized = getNormalizedStatus(status);
+  const getStatusBadgeClass = (status?: string, autoAnswerText?: string) => {
+    const normalized = getNormalizedStatus(status, autoAnswerText);
     if (normalized === "none") return "bg-gray-100 text-gray-700";
     if (normalized === "auto") return "bg-emerald-50 text-emerald-700";
     if (normalized === "fetched") return "bg-sky-50 text-sky-700";
@@ -187,7 +190,10 @@ export default function ReviewsPage() {
     const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null;
 
     return allReviews.filter((review) => {
-      const normalizedStatus = getNormalizedStatus(review.status);
+      const normalizedStatus = getNormalizedStatus(
+        review.status,
+        review.autoAnswerText,
+      );
       const hasComment = Boolean(
         (review.text || "").trim() ||
         (review.pros || "").trim() ||
@@ -575,7 +581,8 @@ export default function ReviewsPage() {
                   <Card
                     key={review.id}
                     className={
-                      getNormalizedStatus(review.status) === "pending"
+                      getNormalizedStatus(review.status, review.autoAnswerText) ===
+                      "pending"
                         ? "border-amber-200"
                         : ""
                     }
@@ -585,7 +592,7 @@ export default function ReviewsPage() {
                         <div className="flex items-start">
                           {/* Orange/emerald status dot matching recent actions */}
                           <div
-                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status)} shadow-sm`}
+                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
                           />
                           <div>
                             <h3 className="font-bold text-lg text-slate-900">
@@ -621,9 +628,9 @@ export default function ReviewsPage() {
                         </div>
                         <div>
                           <span
-                            className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getStatusBadgeClass(review.status)}`}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getStatusBadgeClass(review.status, review.autoAnswerText)}`}
                           >
-                            {getStatusLabel(review.status)}
+                            {getStatusLabel(review.status, review.autoAnswerText)}
                           </span>
                         </div>
                       </div>
