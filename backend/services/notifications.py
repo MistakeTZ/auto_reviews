@@ -109,9 +109,7 @@ async def _send_email(email: str, text: str) -> None:
     smtp_user = os.getenv("SMTP_USER")
 
     if not smtp_user:
-        logger.warning(
-            "[notify] SMTP_USER is empty, email notification skipped"
-        )
+        logger.warning("[notify] SMTP_USER is empty, email notification skipped")
         return
 
     message = MIMEText(text, "plain", "utf-8")
@@ -151,6 +149,37 @@ async def _send_telegram_message(chat_id: str, text: str) -> None:
         if not data.get("ok"):
             logger.error("[notify] Telegram API error: %s", data)
             raise RuntimeError(f"Telegram API error: {data}")
+
+
+async def _send_max_message(destination: str, text: str) -> None:
+    token = (os.getenv("MAX_BOT_TOKEN") or "").strip()
+    if not token:
+        logger.warning("[notify] MAX_BOT_TOKEN is empty, max notification skipped")
+        return
+
+    url = f"https://platform-api.max.ru/messages"
+    payload = {
+        "text": text,
+        "format": "html",
+    }
+    headers = {
+        "Authorization": token,
+        "Content-Type": "application/json",
+    }
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        response = await client.post(
+            url,
+            json=payload,
+            params={
+                "disable_link_preview": "true",
+                "chat_id": destination,
+            },
+            headers=headers,
+        )
+        data = response.json()
+        if not data.get("ok"):
+            logger.error("[notify] Max API error: %s", data)
+            raise RuntimeError(f"Max API error: {data}")
 
 
 async def notify_review_processed(
@@ -196,12 +225,15 @@ async def notify_review_processed(
                     exc,
                 )
         elif method_type == "max":
-            logger.info(
-                "[notify-mock][max] user_id=%s max_id=%s payload=%s",
-                user_id,
-                destination,
-                message_text,
-            )
+            try:
+                await _send_max_message(destination, message_text)
+            except Exception as exc:
+                logger.exception(
+                    "[notify] max send failed user_id=%s destination=%s: %s",
+                    user_id,
+                    destination,
+                    exc,
+                )
         else:
             logger.warning(
                 "[notify] unsupported notification type user_id=%s type=%s",

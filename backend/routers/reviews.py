@@ -2,15 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
+import logging
 
 import crud
 import schemas
 import database
-from routers.auth import get_current_user, check_active_subscription
+from routers.auth import check_active_subscription
 from models import User, Review
 from pydantic import BaseModel
 from processor.gpt import AsyncOpenAIClient
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -242,7 +244,7 @@ async def reply_to_review(
         raise HTTPException(status_code=422, detail="Reply text is required")
 
     # Accept both real line breaks and escaped \n sequences from the UI.
-    reply_text = reply_text.replace("\\n", "\n")
+    logger.info(f"Replying to review {review_id} with text: {reply_text}")
 
     refreshed_feedback = None
     async with ChatProcessor(current_user.wb_api_token) as processor:

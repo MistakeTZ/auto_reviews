@@ -170,6 +170,7 @@ class ChatProcessor:
         text: str,
         only_post: bool = False,
     ) -> Dict:
+        text = text.replace("\\n", "\n").replace("\\r", "\r").replace("\\", "")
         logger.info(f"Answer feedback: {feedback_id}, text: {text}")
         endpoints = [
             (

@@ -627,8 +627,7 @@ class MainController:
             temperature=0.3,
             max_tokens=260,
         )
-        answer = str(raw).strip()
-        return answer.replace("\\n", "\n").replace('\\"', '"')
+        return str(raw).strip()
 
     def _safe_parse_json_response(self, raw: str) -> Dict:
         text = str(raw).strip()
