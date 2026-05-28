@@ -32,6 +32,7 @@ export default function AppFooter({
     : "w-8 h-8 rounded-lg bg-white flex items-center justify-center";
 
   const brandIconSize = compactBrand ? 12 : 16;
+  const brandIconColorClass = compactBrand ? "text-white" : "text-slate-900";
 
   const brandTextClass = isDark
     ? "font-bold text-white tracking-tight"
@@ -52,7 +53,7 @@ export default function AppFooter({
       <div className={containerClass}>
         <div className="flex items-center gap-2">
           <div className={brandIconClass}>
-            <MessageCircle size={brandIconSize} className={isDark ? "text-white" : "text-slate-900"} />
+            <MessageCircle size={brandIconSize} className={brandIconColorClass} />
           </div>
           <span className={brandTextClass}>reAnswer</span>
         </div>

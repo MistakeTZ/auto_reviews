@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "@/hooks/useTranslation";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
-import AppFooter from "@/components/layout/AppFooter";
 import { formatDateTime } from "@/lib/formatDateTime";
 
 export default function Dashboard() {
@@ -25,11 +24,14 @@ export default function Dashboard() {
 
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const getNormalizedStatus = (status?: string) => {
+  const getNormalizedStatus = (status?: string, autoAnswerText?: string) => {
     if (status === "auto-answered") return "auto";
     if (status === "manual-review") return "manually";
-    if (status === "pending") return "none";
-    return status || "none";
+    if (status === "none" || status === "pending" || status === "fetched") {
+      if ((autoAnswerText || "").trim()) return "manually";
+    }
+    if (status === "none") return "none";
+    return status || "pending";
   };
 
   const handleSync = async () => {
@@ -56,7 +58,9 @@ export default function Dashboard() {
   const autoAnswered = reviews.filter(
     (r) => getNormalizedStatus(r.status) === "auto",
   ).length;
-  const pending = reviews.filter((r) => getNormalizedStatus(r.status) === "none").length;
+  const pending = reviews.filter(
+    (r) => getNormalizedStatus(r.status) === "none",
+  ).length;
   const averageRating =
     reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviews || 1);
 
@@ -68,69 +72,71 @@ export default function Dashboard() {
             {t("dashboard.overview")}
           </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="p-3 bg-blue-50 rounded-xl text-blue-600 mr-4">
-                <MessageCircle size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 font-semibold">
-                  {t("dashboard.totalReviews")}
-                </p>
-                <p className="text-2xl font-black text-slate-900">
-                  {totalReviews}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-blue-50 rounded-xl text-blue-600 mr-4">
+                  <MessageCircle size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.totalReviews")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {totalReviews}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4">
-                <CheckCircle size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 font-semibold">
-                  {t("dashboard.autoAnswered")}
-                </p>
-                <p className="text-2xl font-black text-slate-900">
-                  {autoAnswered}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4">
+                  <CheckCircle size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.autoAnswered")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {autoAnswered}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="p-3 bg-amber-50 rounded-xl text-amber-600 mr-4">
-                <Clock size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 font-semibold">
-                  {t("dashboard.pendingReply")}
-                </p>
-                <p className="text-2xl font-black text-slate-900">{pending}</p>
-              </div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 mr-4">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.pendingReply")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {pending}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 mr-4">
-                <Activity size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 font-semibold">
-                  {t("dashboard.avgRating")}
-                </p>
-                <p className="text-2xl font-black text-slate-900">
-                  {averageRating.toFixed(1)}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 mr-4">
+                  <Activity size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.avgRating")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {averageRating.toFixed(1)}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
@@ -163,7 +169,9 @@ export default function Dashboard() {
                         key={review.id}
                         className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
                       >
-                        <div className={`w-2.5 h-2.5 mt-2 rounded-full mr-4 ${getStatusDotClass(review.status)}`} />
+                        <div
+                          className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status)} shadow-sm`}
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-slate-800">
                             {review.userName
@@ -246,7 +254,9 @@ export default function Dashboard() {
                         className="flex justify-between items-center mb-2"
                         style={{ gap: "5%" }}
                       >
-                        <h4 className="font-bold text-indigo-700">{rule.name}</h4>
+                        <h4 className="font-bold text-indigo-700">
+                          {rule.name}
+                        </h4>
                         <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md font-bold">
                           {t("common.active")}
                         </span>
@@ -264,7 +274,8 @@ export default function Dashboard() {
                         {rule.conditionKeyword && (
                           <span>
                             {" "}
-                            {t("dashboard.andContains")} "{rule.conditionKeyword}"
+                            {t("dashboard.andContains")} "
+                            {rule.conditionKeyword}"
                           </span>
                         )}
                       </p>
@@ -280,8 +291,6 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
-
-        <AppFooter variant="light" />
       </>
     </SubscriptionGuard>
   );

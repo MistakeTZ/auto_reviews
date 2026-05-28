@@ -8,7 +8,6 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
-import AppFooter from '@/components/layout/AppFooter';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import './landing.css';
@@ -270,9 +269,6 @@ function LandingPageContent() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <AppFooter variant="dark" className="site-footer" />
     </div>
   );
 }

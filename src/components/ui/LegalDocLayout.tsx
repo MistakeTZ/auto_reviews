@@ -5,7 +5,6 @@ import Link from "next/link";
 import { MessageCircle, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import FlagSwitcher from "@/components/ui/FlagSwitcher";
-import AppFooter from "@/components/layout/AppFooter";
 
 interface LegalDocLayoutProps {
   children: React.ReactNode;
@@ -98,8 +97,6 @@ export default function LegalDocLayout({
           {children}
         </div>
       </main>
-
-      <AppFooter variant="dark" compactBrand className="mt-auto" />
     </div>
   );
 }
