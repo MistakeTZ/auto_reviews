@@ -33,6 +33,7 @@ async def create_payment(
             user_id=current_user.id,
             amount_val=req.amount,
             return_url=req.return_url,
+            email=current_user.email,
         )
         return {
             "ok": True,
