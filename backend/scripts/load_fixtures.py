@@ -1,11 +1,14 @@
 import argparse
 import json
+import logging
 from pathlib import Path
 
 from database import SessionLocal, engine
 from models import Base, User, Rule, Review
 
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "fixtures"
 
 
@@ -100,7 +103,7 @@ def main():
     finally:
         db.close()
 
-    print(
+    logger.info(
         f"Fixtures loaded: users={users_count}, rules={rules_count}, reviews={reviews_count}, mode={args.mode}"
     )
 

@@ -1,12 +1,18 @@
+import os
+import logging
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect
+
 from admin import setup_admin
-from models import Base
-from database import engine
-from routers import auth, rules, reviews, settings, products
-from sqlalchemy import inspect, text
-import os
 from bot import configure_webhook, process_update
+from database import engine
+from models import Base
+from routers import auth, rules, reviews, settings, products
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def run_migrations():
@@ -18,7 +24,7 @@ def run_migrations():
                 pass # migrations if needed
 
         except Exception as e:
-            print("Automatic PostgreSQL migrations warning:", e)
+            logger.warning("Automatic PostgreSQL migrations warning:", exc_info=e)
 
 
 run_migrations()
@@ -117,7 +123,11 @@ async def bot_webhook(bot_type: str, secret: str, request: Request):
         raise HTTPException(status_code=503, detail=f"{token_env} is not configured")
 
     payload = await request.json()
-    await process_update(payload, token, bot_type)
+    try:
+        await process_update(payload, token, bot_type)
+    except Exception as e:
+        logger.error(f"Error processing {bot_type} webhook: {e}")
+        raise HTTPException(status_code=500, detail="Error processing webhook") from e
     return {"ok": True}
 
 

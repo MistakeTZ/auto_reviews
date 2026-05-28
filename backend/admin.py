@@ -16,7 +16,7 @@ logger = logging.getLogger("uvicorn.error")
 def _auth_trace(message: str) -> None:
     # Emit both logger and stdout so traces are visible even with strict logger configs.
     logger.warning(message)
-    print(message, flush=True)
+    logger.warning(message, extra={"flush": True})
 
 
 class AdminAuth(AuthenticationBackend):
