@@ -206,8 +206,8 @@ export default function Sidebar() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 hidden h-screen max-h-screen sticky top-0 overflow-hidden shadow-sm z-10">
-        <div className="p-6 flex justify-between items-center border-b border-slate-100" style={{ height: "100vh", maxHeight: "100vh" }}>
+      <aside className="w-64 hidden md:block border-r border-slate-200 bg-white shadow-sm">
+        <div className="sticky top-0 h-screen grid grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden z-10">
           <div className="p-6 flex justify-left items-center">
             <a href="/" className="text-left">
               <h1 className="text-2xl font-black text-indigo-600 tracking-tight">
@@ -224,18 +224,22 @@ export default function Sidebar() {
               <LayoutDashboard size={18} />
               <span>{t("common.dashboard")}</span>
             </Link>
+
             <Link href="/reviews" className={linkClass("/reviews")}>
               <MessageSquare size={18} />
               <span>{t("common.reviewsInbox")}</span>
             </Link>
+
             <Link href="/rules" className={linkClass("/rules")}>
               <ShieldAlert size={18} />
               <span>{t("common.autoAnswerRules")}</span>
             </Link>
+
             <Link href="/settings" className={linkClass("/settings")}>
               <Settings size={18} />
               <span>{t("common.settings")}</span>
             </Link>
+
             <Link href="/referrals" className={linkClass("/referrals")}>
               <Gift size={18} />
               <span>{t("referrals.title")}</span>
@@ -247,13 +251,16 @@ export default function Sidebar() {
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-200">
                 {(userName || t("common.sellerAccount"))[0].toUpperCase()}
               </div>
+
               <div className="overflow-hidden">
                 <p className="text-sm font-bold text-slate-800 truncate">
                   {userName || t("common.sellerAccount")}
                 </p>
+
                 <div className="mt-1">{getPlanBadge()}</div>
               </div>
             </div>
+
             <button
               onClick={handleLogout}
               className="flex items-center justify-center space-x-2 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors w-full px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100"
