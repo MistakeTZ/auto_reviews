@@ -363,9 +363,8 @@ def upsert_nm_ids_bulk(db: Session, user_id: int, products: list[dict]):
         if nm_id in existing_for_user:
             existing_for_user[nm_id].product_name = name
         elif nm_id in existing_global:
-            # Table currently has a global unique constraint on nm_id.
-            # Keep existing owner and update visible name only.
             existing_global[nm_id].product_name = name
+            existing_global[nm_id].user_d_id = user_id
         else:
             db.add(
                 models.NmIDs(
