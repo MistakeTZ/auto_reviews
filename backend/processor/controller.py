@@ -214,8 +214,10 @@ class MainController:
 
         review_data = ReviewCreate(
             wb_review_id=wb_review_id,
-            nm_id=str(feedback.get("nmId") or ""),
-            product_name=str(feedback.get("subjectName") or ""),
+            nm_id=str(feedback.get("productDetails", {}).get("nmId") or ""),
+            product_name=str(
+                feedback.get("productDetails", {}).get("productName") or ""
+            ),
             rating=int(feedback.get("productValuation") or 0),
             text=str(feedback.get("text") or ""),
             date=str(feedback.get("createdDate") or ""),
@@ -293,6 +295,24 @@ class MainController:
 
                 if not should_sync:
                     continue
+                if existing and (existing.auto_answer_text or "").strip().replace(
+                    "\n", ""
+                ).replace("\r", "").replace(" ", "").replace(
+                    "\\", ""
+                ) != api_answer_text.replace(
+                    "\n", ""
+                ).replace(
+                    "\r", ""
+                ).replace(
+                    " ", ""
+                ).replace(
+                    "\\", ""
+                ):
+                    status = "fetched"
+                elif existing:
+                    status = existing.status
+                else:
+                    status = "fetched"
 
                 if existing:
                     logger.info(f"""
@@ -308,18 +328,14 @@ class MainController:
                     db = self.db_factory()
                     review_data = ReviewCreate(
                         wb_review_id=feedback_id,
-                        nm_id=str(feedback.get("nmId") or ""),
-                        product_name=str(feedback.get("subjectName") or ""),
+                        nm_id=str(feedback.get("productDetails", {}).get("nmId") or ""),
+                        product_name=str(
+                            feedback.get("productDetails", {}).get("productName") or ""
+                        ),
                         rating=int(feedback.get("productValuation") or 0),
                         text=str(feedback.get("text") or ""),
                         date=str(feedback.get("createdDate") or ""),
-                        status=(
-                            "fetched"
-                            if not existing
-                            or (existing.auto_answer_text or "").strip()
-                            != api_answer_text
-                            else existing.status
-                        ),
+                        status=status,
                         auto_answer_text=api_answer_text,
                         editable=api_editable_bool,
                         user_name=user_name,
@@ -373,7 +389,7 @@ class MainController:
                 await self._upsert_review_in_db(feedback, "", "none")
                 continue
 
-            if True:
+            if False:
                 review_create = await self._upsert_review_in_db(
                     feedback, text, answer_status
                 )
@@ -401,7 +417,7 @@ class MainController:
                 text=text,
                 only_post=True,
             )
-            if False and response is True:
+            if response is True or response is {}:
                 logger.info(
                     "[feedbacks] answered feedback_id=%s (rule=%s)",
                     feedback_id,
@@ -433,8 +449,7 @@ class MainController:
                 logger.warning(
                     "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
                 )
-                if False:
-                    await self._upsert_review_in_db(feedback, text, "none")
+                await self._upsert_review_in_db(feedback, text, "none")
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []

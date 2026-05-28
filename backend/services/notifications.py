@@ -15,6 +15,30 @@ logger = logging.getLogger(__name__)
 MAX_TEXT_LENGTH = 3500
 
 
+def _env_flag(name: str, default: bool) -> bool:
+    raw = (os.getenv(name) or "").strip().lower()
+    if not raw:
+        return default
+    return raw in {"1", "true", "yes", "on"}
+
+
+def _smtp_host_candidates(primary_host: str) -> list[str]:
+    host = (primary_host or "localhost").strip()
+    candidates = [host]
+
+    # In Docker, 127.0.0.1/localhost points to the container itself.
+    if os.path.exists("/.dockerenv") and host in {"127.0.0.1", "localhost", "::1"}:
+        candidates.append("host.docker.internal")
+
+    seen = set()
+    unique_candidates = []
+    for candidate in candidates:
+        if candidate not in seen:
+            unique_candidates.append(candidate)
+            seen.add(candidate)
+    return unique_candidates
+
+
 def _escape_markdown_v2(text: str) -> str:
     special = r"_[]()~`>#+-=|{}.!*"
     escaped = []
@@ -106,28 +130,54 @@ def build_feedback_notification_text(review: models.Review) -> str:
 async def _send_email(email: str, text: str) -> None:
     smtp_host = os.getenv("SMTP_HOST", "localhost")
     smtp_port = int(os.getenv("SMTP_PORT", "25"))
-    smtp_user = os.getenv("SMTP_USER")
+    smtp_user = (os.getenv("SMTP_USER") or "").strip()
+    smtp_password = (os.getenv("SMTP_PASSWORD") or "").strip()
+    smtp_from = (os.getenv("SMTP_FROM") or smtp_user).strip()
+    smtp_starttls = _env_flag("SMTP_STARTTLS", True)
+    smtp_use_tls = _env_flag("SMTP_USE_TLS", False)
 
-    if not smtp_user:
-        logger.warning("[notify] SMTP_USER is empty, email notification skipped")
+    if not smtp_from:
+        logger.warning("[notify] SMTP_FROM/SMTP_USER is empty, email notification skipped")
         return
 
     message = MIMEText(text, "plain", "utf-8")
-    message["From"] = smtp_user
+    message["From"] = smtp_from
     message["To"] = email
     message["Subject"] = "Новый отзыв на Wildberries"
 
-    try:
-        await aiosmtplib.send(
-            message,
-            hostname=smtp_host,
-            port=smtp_port,
-            username=smtp_user,
-            start_tls=True,
+    smtp_kwargs: dict = {
+        "port": smtp_port,
+        "start_tls": smtp_starttls,
+        "use_tls": smtp_use_tls,
+    }
+    if smtp_user and smtp_password:
+        smtp_kwargs["username"] = smtp_user
+        smtp_kwargs["password"] = smtp_password
+    elif smtp_user and not smtp_password:
+        logger.warning(
+            "[notify] SMTP_USER is set but SMTP_PASSWORD is empty, sending without SMTP auth"
         )
-    except Exception as exc:
-        logger.error("[notify] Failed to send email to %s: %s", email, exc)
-        raise RuntimeError(f"Failed to send email: {exc}") from exc
+
+    last_exc = None
+    for host in _smtp_host_candidates(smtp_host):
+        try:
+            await aiosmtplib.send(
+                message,
+                hostname=host,
+                **smtp_kwargs,
+            )
+            return
+        except Exception as exc:
+            last_exc = exc
+            logger.error(
+                "[notify] Failed to send email to %s via %s:%s: %s",
+                email,
+                host,
+                smtp_port,
+                exc,
+            )
+
+    raise RuntimeError(f"Failed to send email: {last_exc}") from last_exc
 
 
 async def _send_telegram_message(chat_id: str, text: str) -> None:
@@ -176,8 +226,8 @@ async def _send_max_message(destination: str, text: str) -> None:
             },
             headers=headers,
         )
-        data = response.json()
-        if not data.get("ok"):
+        if response.status_code != 200:
+            data = response.json()
             logger.error("[notify] Max API error: %s", data)
             raise RuntimeError(f"Max API error: {data}")
 
