@@ -4,7 +4,8 @@ import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Gift,
   Copy,
@@ -19,7 +20,7 @@ import {
 import confetti from "canvas-confetti";
 import { formatDateTime } from "@/lib/formatDateTime";
 
-export default function ReferralsPage() {
+function ReferralsPageContent() {
   const {
     referralCode,
     tariffType,
@@ -27,8 +28,10 @@ export default function ReferralsPage() {
     hasActiveSubscription,
     referrals,
     applyReferralCode,
-    buySubscription,
     fetchReferralsList,
+    createPayment,
+    checkPaymentStatus,
+    fetchMe,
   } = useAppStore();
 
   const { t } = useTranslation();
@@ -42,9 +45,68 @@ export default function ReferralsPage() {
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseSuccessMsg, setPurchaseSuccessMsg] = useState("");
 
+  // Payment verification state
+  const [paymentVerifying, setPaymentVerifying] = useState(false);
+  const [paymentVerifyStatus, setPaymentVerifyStatus] = useState<"checking" | "success" | "error" | "">("");
+
+  const searchParams = useSearchParams();
+  const paymentId = searchParams.get("payment_id");
+  const mockPaymentId = searchParams.get("mock_payment_id");
+  const paymentCheck = searchParams.get("payment_check");
+
   useEffect(() => {
     void fetchReferralsList();
   }, [fetchReferralsList]);
+
+  // Check URL payment parameters on load
+  useEffect(() => {
+    const checkId = paymentId || mockPaymentId;
+    if (checkId) {
+      setPaymentVerifying(true);
+      setPaymentVerifyStatus("checking");
+      
+      let attempts = 0;
+      const interval = setInterval(async () => {
+        attempts++;
+        try {
+          const res = await checkPaymentStatus(checkId);
+          if (res.success) {
+            clearInterval(interval);
+            setPaymentVerifying(false);
+            setPaymentVerifyStatus("success");
+            setPurchaseSuccessMsg(t("referrals.purchaseSuccess"));
+            void confetti({
+              particleCount: 150,
+              spread: 80,
+              colors: ["#6366f1", "#a855f7", "#ec4899"],
+            });
+            // Strip parameters from URL
+            window.history.replaceState(null, "", window.location.pathname);
+          } else if (attempts >= 6) {
+            clearInterval(interval);
+            setPaymentVerifying(false);
+            setPaymentVerifyStatus("error");
+          }
+        } catch (e) {
+          if (attempts >= 6) {
+            clearInterval(interval);
+            setPaymentVerifying(false);
+            setPaymentVerifyStatus("error");
+          }
+        }
+      }, 2000);
+
+      return () => clearInterval(interval);
+    } else if (paymentCheck) {
+      setPaymentVerifying(true);
+      setPaymentVerifyStatus("checking");
+      void fetchMe().then(() => {
+        setPaymentVerifying(false);
+        setPaymentVerifyStatus("");
+        window.history.replaceState(null, "", window.location.pathname);
+      });
+    }
+  }, [paymentId, mockPaymentId, paymentCheck, checkPaymentStatus, fetchMe, t]);
 
   // Calculations for subscription remaining days
   const getDaysInfo = () => {
@@ -107,13 +169,18 @@ export default function ReferralsPage() {
     setPurchasing(true);
     setPurchaseSuccessMsg("");
     try {
-      await buySubscription();
-      setPurchaseSuccessMsg(t("referrals.purchaseSuccess"));
-      void confetti({
-        particleCount: 150,
-        spread: 80,
-        colors: ["#6366f1", "#a855f7", "#ec4899"],
-      });
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : "http://localhost:8082";
+      const returnUrl = `${origin}/referrals`;
+      const res = await createPayment("990.00", returnUrl);
+      
+      if (res.confirmation_url) {
+        window.location.href = res.confirmation_url;
+      } else {
+        throw new Error("Failed to get checkout link");
+      }
     } catch (err: any) {
       alert(err.message || t("referrals.paymentFailed"));
     } finally {
@@ -131,6 +198,58 @@ export default function ReferralsPage() {
         </h1>
         <p className="text-slate-500 font-medium mt-1">{t("referrals.sub")}</p>
       </div>
+
+      {/* Payment Verification Alerts */}
+      {paymentVerifying && (
+        <Card className="border border-indigo-200 bg-indigo-50/50 backdrop-blur-xl rounded-3xl p-6 flex flex-col md:flex-row items-center gap-4 animate-pulse">
+          <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+            <svg className="animate-spin h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          </div>
+          <div className="text-center md:text-left space-y-1">
+            <h3 className="font-extrabold text-slate-900 text-lg">
+              Checking payment status...
+            </h3>
+            <p className="text-slate-500 text-xs font-semibold">
+              Please wait while we verify your payment with YooKassa. This takes a few seconds.
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {paymentVerifyStatus === "success" && (
+        <Card className="border border-emerald-200 bg-emerald-50/50 backdrop-blur-xl rounded-3xl p-6 flex flex-col md:flex-row items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+            <Check size={24} className="text-emerald-600" />
+          </div>
+          <div className="text-center md:text-left space-y-1">
+            <h3 className="font-extrabold text-slate-900 text-lg">
+              Payment Successful!
+            </h3>
+            <p className="text-slate-500 text-xs font-semibold">
+              Your premium subscription has been successfully activated. Enjoy full access!
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {paymentVerifyStatus === "error" && (
+        <Card className="border border-red-200 bg-red-50/50 backdrop-blur-xl rounded-3xl p-6 flex flex-col md:flex-row items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+            <ShieldAlert size={24} className="text-red-600" />
+          </div>
+          <div className="text-center md:text-left space-y-1">
+            <h3 className="font-extrabold text-slate-900 text-lg">
+              Payment verification delayed or failed
+            </h3>
+            <p className="text-slate-500 text-xs font-semibold">
+              We couldn't verify your payment automatically. If you've been charged, please refresh the page in a few moments or contact support.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Grid: Subscription & Invite Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -385,5 +504,13 @@ export default function ReferralsPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ReferralsPage() {
+  return (
+    <Suspense fallback={<div className="pt-32 text-center text-slate-500 font-bold">Loading...</div>}>
+      <ReferralsPageContent />
+    </Suspense>
   );
 }

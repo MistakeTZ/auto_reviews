@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime, func
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -115,3 +115,17 @@ class NotificationMethod(Base):
     is_active = Column(Boolean, default=True)
 
     owner = relationship("User", back_populates="notification_methods")
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    yookassa_payment_id = Column(String, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    amount = Column(String)
+    status = Column(String)  # 'pending', 'succeeded', 'failed'
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User")

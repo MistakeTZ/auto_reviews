@@ -8,7 +8,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from database import engine
-from models import NmIDs, NotificationMethod, Review, Rule, User
+from models import NmIDs, NotificationMethod, Review, Rule, User, Payment
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -129,6 +129,20 @@ class NotificationMethodAdmin(ModelView, model=NotificationMethod):
     name_plural = "Notification Methods"
 
 
+class PaymentAdmin(ModelView, model=Payment):
+    column_list = [
+        Payment.id,
+        Payment.yookassa_payment_id,
+        Payment.user_id,
+        Payment.amount,
+        Payment.status,
+        Payment.created_at,
+        Payment.updated_at,
+    ]
+    name = "Payment"
+    name_plural = "Payments"
+
+
 def setup_admin(app):
     secret = os.getenv("SQLADMIN_SECRET_KEY", "change-me-sqladmin-secret")
     authentication_backend = AdminAuth(secret_key=secret)
@@ -145,5 +159,6 @@ def setup_admin(app):
     admin.add_view(ReviewAdmin)
     admin.add_view(NmIDsAdmin)
     admin.add_view(NotificationMethodAdmin)
+    admin.add_view(PaymentAdmin)
 
     return admin

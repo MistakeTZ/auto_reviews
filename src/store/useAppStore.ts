@@ -99,6 +99,8 @@ interface AppState {
   deleteNotificationMethod: (id: number) => Promise<void>;
   applyReferralCode: (code: string) => Promise<void>;
   buySubscription: () => Promise<void>;
+  createPayment: (amount?: string, returnUrl?: string) => Promise<{ confirmation_url: string; payment_id: string }>;
+  checkPaymentStatus: (paymentId: string) => Promise<{ success: boolean; status: string }>;
   fetchReferralsList: () => Promise<any[]>;
   syncReviews: () => Promise<void>;
 }
@@ -575,6 +577,50 @@ export const useAppStore = create<AppState>()(
           const data = await res.json().catch(() => ({}));
           throw new Error(data.detail || data.message || 'Failed to buy subscription');
         }
+      },
+
+      createPayment: async (amount = "990.00", returnUrl) => {
+        const { jwtToken } = get();
+        if (!jwtToken) throw new Error("Not authenticated");
+        
+        const res = await fetch(`${API_URL}/payments/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ amount, return_url: returnUrl })
+        });
+        
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || data.message || 'Failed to initiate payment');
+        }
+        
+        const data = await res.json();
+        return { confirmation_url: data.confirmation_url, payment_id: data.payment_id };
+      },
+
+      checkPaymentStatus: async (paymentId: string) => {
+        const { jwtToken } = get();
+        if (!jwtToken) throw new Error("Not authenticated");
+        
+        const res = await fetch(`${API_URL}/payments/check/${paymentId}`, {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`
+          }
+        });
+        
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || data.message || 'Failed to check payment status');
+        }
+        
+        const data = await res.json();
+        if (data.success) {
+          await get().fetchMe();
+        }
+        return { success: data.success, status: data.status };
       },
 
       fetchReferralsList: async () => {

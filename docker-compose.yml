@@ -44,6 +44,8 @@ services:
       - SQLADMIN_SECRET_KEY=${SQLADMIN_SECRET_KEY}
       - TG_BOT_NAME=${TG_BOT_NAME}
       - MAX_BOT_NAME=${MAX_BOT_NAME}
+      - YOOKASSA_SHOP_ID=${YOOKASSA_SHOP_ID}
+      - YOOKASSA_SECRET_KEY=${YOOKASSA_SECRET_KEY}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"]
       interval: 5s

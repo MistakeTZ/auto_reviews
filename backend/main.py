@@ -18,7 +18,7 @@ from bot import (
 )
 from database import engine
 from models import Base
-from routers import auth, rules, reviews, settings, products
+from routers import auth, rules, reviews, settings, products, payments
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -96,6 +96,7 @@ app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(rules.router, prefix="/api/rules", tags=["rules"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
+app.include_router(payments.router, prefix="/api/payments", tags=["payments"])
 
 setup_admin(app)
 
