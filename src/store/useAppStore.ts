@@ -160,8 +160,11 @@ export const useAppStore = create<AppState>()(
           });
           if (res.ok) {
             const data = await res.json();
+            const hasApiToken = Boolean(
+              data.has_wb_api_token ?? (data.wb_api_token && String(data.wb_api_token).trim())
+            );
             set({
-              apiToken: data.wb_api_token,
+              apiToken: hasApiToken ? '********' : null,
               userName: data.name,
               userUuid: data.uuid,
               subscriptionExpiresAt: data.subscription_expires_at,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MessageCircle, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import FlagSwitcher from "@/components/ui/FlagSwitcher";
+import AppFooter from "@/components/layout/AppFooter";
 
 interface LegalDocLayoutProps {
   children: React.ReactNode;
@@ -98,33 +99,7 @@ export default function LegalDocLayout({
         </div>
       </main>
 
-      {/* Simplified Matching Footer */}
-      <footer className="py-8 px-6 bg-gradient-to-b from-slate-900/95 to-slate-900 border-t border-slate-800 mt-auto text-slate-400">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center">
-              <MessageCircle size={12} className="text-white" />
-            </div>
-            <span className="font-bold text-white tracking-tight">reAnswer</span>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-6 text-xs font-semibold text-slate-400">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              {t("common.privacyPolicy")}
-            </Link>
-            <Link href="/consent" className="hover:text-white transition-colors">
-              {t("common.personalDataConsent")}
-            </Link>
-            <Link href="/legal" className="hover:text-white transition-colors">
-              {t("common.legalInfo")}
-            </Link>
-          </div>
-
-          <p className="text-xs text-slate-500">
-            {t("landing.footerRights")}
-          </p>
-        </div>
-      </footer>
+      <AppFooter variant="dark" compactBrand className="mt-auto" />
     </div>
   );
 }

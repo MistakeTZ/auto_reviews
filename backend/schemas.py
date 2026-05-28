@@ -30,6 +30,23 @@ class User(UserBase):
         from_attributes = True
 
 
+class UserPublic(UserBase):
+    id: int
+    uuid: str
+    subscription_expires_at: Optional[datetime] = None
+    tariff_type: Optional[str] = None
+    trial_activated: Optional[bool] = None
+    referral_code: Optional[str] = None
+    referred_by_id: Optional[int] = None
+    has_active_subscription: bool = False
+    rules_count: int = 0
+    notification_methods_count: int = 0
+    has_wb_api_token: bool = False
+
+    class Config:
+        from_attributes = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

@@ -13,7 +13,7 @@ class User(Base):
     name = Column(String)
     wb_api_token = Column(String, nullable=True)
     uuid = Column(String, unique=True, default=lambda: str(uuid.uuid4()))
-    
+
     # Subscription & Referral Fields
     subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
     tariff_type = Column(String, default="trial", nullable=True)
@@ -31,7 +31,12 @@ class User(Base):
         if not self.subscription_expires_at:
             return False
         import datetime
-        now = datetime.datetime.now(self.subscription_expires_at.tzinfo) if self.subscription_expires_at.tzinfo else datetime.datetime.now()
+
+        now = (
+            datetime.datetime.now(self.subscription_expires_at.tzinfo)
+            if self.subscription_expires_at.tzinfo
+            else datetime.datetime.now()
+        )
         return self.subscription_expires_at > now
 
     @property
@@ -41,6 +46,10 @@ class User(Base):
     @property
     def notification_methods_count(self) -> int:
         return len(self.notification_methods)
+
+    @property
+    def has_wb_api_token(self) -> bool:
+        return bool((self.wb_api_token or "").strip())
 
 
 class Rule(Base):
@@ -76,13 +85,11 @@ class Review(Base):
     rating = Column(Integer)
     text = Column(String)
     date = Column(String)
-    status = Column(
-        String, default="none"
-    )  # 'none', 'auto', 'manually', 'fetched'
+    status = Column(String, default="none")  # 'none', 'auto', 'manually', 'fetched'
     auto_answer_text = Column(String, nullable=True)
     editable = Column(Boolean, default=True, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    
+
     # Premium Review Metadata fields
     user_name = Column(String, nullable=True)
     pros = Column(String, nullable=True)
@@ -126,6 +133,8 @@ class Payment(Base):
     amount = Column(String)
     status = Column(String)  # 'pending', 'succeeded', 'failed'
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
     user = relationship("User")

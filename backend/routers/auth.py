@@ -36,7 +36,7 @@ def get_current_user(
     return user
 
 
-@router.post("/register", response_model=schemas.User)
+@router.post("/register", response_model=schemas.UserPublic)
 def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
@@ -66,7 +66,7 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/me", response_model=schemas.User)
+@router.get("/me", response_model=schemas.UserPublic)
 def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
 

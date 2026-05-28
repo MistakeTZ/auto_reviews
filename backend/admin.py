@@ -72,7 +72,7 @@ class UserAdmin(ModelView, model=User):
         User.id,
         User.email,
         User.name,
-        User.wb_api_token,
+        # User.wb_api_token,
         User.uuid,
     ]
     form_excluded_columns = [User.rules, User.reviews, User.nm_ids, User.notification_methods]
