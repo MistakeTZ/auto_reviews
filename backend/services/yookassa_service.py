@@ -57,6 +57,7 @@ async def create_yookassa_payment(
                     "vat_code": 1,
                     "measure": "piece",
                     "payment_subject": "service",
+                    "payment_mode": "full_payment",
                 }
             ],
         },
