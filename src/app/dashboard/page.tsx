@@ -45,8 +45,8 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusDotClass = (status?: string) => {
-    const normalized = getNormalizedStatus(status);
+  const getStatusDotClass = (status?: string, autoAnswerText?: string) => {
+    const normalized = getNormalizedStatus(status, autoAnswerText);
     if (normalized === "none") return "bg-gray-500 shadow-gray-200";
     if (normalized === "auto") return "bg-emerald-500 shadow-emerald-200";
     if (normalized === "fetched") return "bg-sky-500 shadow-sky-200";
@@ -56,10 +56,10 @@ export default function Dashboard() {
 
   const totalReviews = reviews.length;
   const autoAnswered = reviews.filter(
-    (r) => getNormalizedStatus(r.status) === "auto",
+    (r) => getNormalizedStatus(r.status, r.autoAnswerText) === "auto",
   ).length;
   const pending = reviews.filter(
-    (r) => getNormalizedStatus(r.status) === "none",
+    (r) => getNormalizedStatus(r.status, r.autoAnswerText) === "none",
   ).length;
   const averageRating =
     reviews.reduce((acc, r) => acc + r.rating, 0) / (totalReviews || 1);
@@ -170,7 +170,7 @@ export default function Dashboard() {
                         className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
                       >
                         <div
-                          className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status)} shadow-sm`}
+                          className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-slate-800">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Mail, Send, Plus, Trash2, ExternalLink, Bell, Bot, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import FlagSwitcher from '@/components/ui/FlagSwitcher';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 const DEFAULT_BOTS_CONFIG = {
@@ -23,7 +24,7 @@ export default function SettingsPage() {
   const userUuid = useAppStore(state => state.userUuid);
   const fetchMe = useAppStore(state => state.fetchMe);
 
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const [tokenInput, setTokenInput] = useState(apiToken || '');
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -102,9 +103,29 @@ export default function SettingsPage() {
 
   const reachedLimit = notificationMethods.length >= 5;
 
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ru' : 'en');
+  };
+
   return (
     <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-3xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('landing.toggleLanguage')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-700 font-semibold"
+          >
+            <FlagSwitcher />
+            <span>{language === 'en' ? 'English' : 'Русский'}</span>
+          </button>
+        </CardContent>
+      </Card>
 
       {/* WB Integration Card */}
       <Card>

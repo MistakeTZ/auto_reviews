@@ -6,11 +6,10 @@ import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Menu, X,
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useEffect, useState } from 'react';
-import FlagSwitcher from '@/components/ui/FlagSwitcher';
 
 export default function Sidebar() {
   const { isAuthenticated, jwtToken, logout, fetchMe, fetchProducts, fetchRules, fetchReviews, userName, tariffType, hasActiveSubscription } = useAppStore();
-  const { t, language, setLanguage } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -48,10 +47,6 @@ export default function Sidebar() {
     router.push('/');
   };
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'ru' : 'en');
-  };
-
   const linkClass = (path: string) => `flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-medium ${pathname === path
       ? 'bg-indigo-50 text-indigo-700'
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -73,14 +68,7 @@ export default function Sidebar() {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Wildberries</p>
         </a>
         
-        {/* Mobile Language Toggle */}
-        <button 
-          onClick={toggleLanguage} 
-          className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-center" 
-          title="Toggle Language"
-        >
-          <FlagSwitcher />
-        </button>
+        <div className="w-10" aria-hidden="true" />
       </header>
 
       {/* Mobile Drawer Overlay / Backdrop */}
@@ -159,20 +147,11 @@ export default function Sidebar() {
 
       {/* Desktop Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:grid grid-rows-[auto_minmax(0,1fr)_auto] h-screen max-h-screen sticky top-0 overflow-hidden shadow-sm z-10">
-        <div className="p-6 flex justify-between items-center">
+        <div className="p-6 flex justify-center items-center">
           <a href="/" className="text-center">
             <h1 className="text-2xl font-black text-indigo-600 tracking-tight">reAnswer</h1>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Wildberries</p>
           </a>
-          
-          {/* Desktop Language Toggle */}
-          <button 
-            onClick={toggleLanguage} 
-            className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-center" 
-            title="Toggle Language"
-          >
-            <FlagSwitcher />
-          </button>
         </div>
 
         <nav className="min-h-0 overflow-y-auto px-4 space-y-1.5 mt-2">
