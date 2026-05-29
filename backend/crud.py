@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -12,6 +14,10 @@ def get_user(db: Session, user_id: int):
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
+
+
+def get_user_by_sid(db: Session, sid: str):
+    return db.query(models.User).filter(models.User.sid == sid).first()
 
 
 def get_user_by_referral_code(db: Session, referral_code: str):
@@ -43,10 +49,11 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def update_user_token(db: Session, user_id: int, token: str):
+def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] = None):
     db_user = get_user(db, user_id)
     if db_user:
         db_user.wb_api_token = token
+        db_user.sid = sid
 
         # Trial starts after token input
         if not db_user.trial_activated:

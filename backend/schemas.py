@@ -16,6 +16,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     wb_api_token: Optional[str] = None
+    sid: Optional[str] = None
     uuid: str
     subscription_expires_at: Optional[datetime] = None
     tariff_type: Optional[str] = None
@@ -32,6 +33,7 @@ class User(UserBase):
 
 class UserPublic(UserBase):
     id: int
+    sid: Optional[str] = None
     uuid: str
     subscription_expires_at: Optional[datetime] = None
     tariff_type: Optional[str] = None

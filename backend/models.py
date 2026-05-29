@@ -12,6 +12,7 @@ class User(Base):
     hashed_password = Column(String)
     name = Column(String)
     wb_api_token = Column(String, nullable=True)
+    sid = Column(String, nullable=True, index=True)
     uuid = Column(String, unique=True, default=lambda: str(uuid.uuid4()))
 
     # Subscription & Referral Fields

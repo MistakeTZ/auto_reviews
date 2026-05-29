@@ -14,7 +14,6 @@ import schemas
 from typing import List
 import os
 
-
 router = APIRouter()
 
 
@@ -22,18 +21,26 @@ class TokenUpdate(BaseModel):
     token: str
 
 
-def check_token(token: str) -> bool:
+def check_token(token: str, db: Session) -> bool:
     if token is None or token.strip() == "":
-        return {"error": "Token is empty"}
+        return {"error": "Токен пустой"}
     if "." not in token:
-        return {"error": "Token is invalid"}
+        return {"error": "Токен недействителен"}
     jwt = token.split(".")[1]
 
     try:
         jwt_decoded = base64.urlsafe_b64decode(jwt + "==").decode()
         decoded_data = json.loads(jwt_decoded)
     except (Exception, ValueError):
-        return {"error": "Invalid token"}
+        return {"error": "Токен недействителен"}
+
+    sid = decoded_data.get("sid")
+    if not sid:
+        return {"error": "Токен не содержит sid"}
+
+    user = crud.get_user_by_sid(db, sid=sid)
+    if user:
+        return {"error": "Данный кабинет уже привязан к другому аккаунту"}
 
     s_bit_payload = decoded_data.get("s", 0)
     need_scopes = {
@@ -51,21 +58,23 @@ def check_token(token: str) -> bool:
     ]
 
     if missing_scopes:
-        return {"error": f"Token is missing scopes: {', '.join(missing_scopes)}"}
+        return {
+            "error": f"Токен не содержит необходимые права: {', '.join(missing_scopes)}"
+        }
     if read_only:
-        return {"error": "Token is read only"}
+        return {"error": "Токен только для чтения, необходим токен с правами на запись"}
 
     expires_at = datetime.fromtimestamp(decoded_data.get("exp", 0))
 
     if datetime.now() > expires_at:
-        return {"error": "Token is expired"}
+        return {"error": "Токен истек"}
 
     ping_url = "https://common-api.wildberries.ru/ping"
     try:
         response = requests.get(ping_url, headers={"Authorization": token})
         if response.status_code != 200:
-            return {"error": "Token is invalid"}
-        return {"ok": True}
+            return {"error": "Токен недействителен"}
+        return {"ok": True, "sid": sid}
     except Exception as e:
         return {"error": str(e)}
 
@@ -76,11 +85,14 @@ def update_token(
     db: Session = Depends(database.get_db),
     current_user: User = Depends(get_current_user),
 ):
-    checked_token = check_token(token_data.token)
+    checked_token = check_token(token_data.token, db)
     if checked_token.get("error"):
         raise HTTPException(status_code=401, detail=checked_token.get("error"))
     updated_user = crud.update_user_token(
-        db, user_id=current_user.id, token=token_data.token
+        db,
+        user_id=current_user.id,
+        token=token_data.token,
+        sid=checked_token.get("sid"),
     )
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -108,7 +120,7 @@ def add_notification(
     if current_user.tariff_type == "trial" and len(existing) >= 1:
         raise HTTPException(
             status_code=400,
-            detail="Trial users are limited to 1 notification method. Upgrade for up to 5 methods."
+            detail="Trial users are limited to 1 notification method. Upgrade for up to 5 methods.",
         )
     if len(existing) >= 5:
         raise HTTPException(
@@ -182,6 +194,7 @@ def referrals_list(
     current_user: User = Depends(get_current_user),
 ):
     from models import User as DbUser
+
     referrals = db.query(DbUser).filter(DbUser.referred_by_id == current_user.id).all()
     return [
         {
