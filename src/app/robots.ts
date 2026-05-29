@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/', '/register', '/login', '/demo'],
-        disallow: ['/dashboard', '/reviews', '/rules', '/settings', '/api/'],
+        disallow: ['/dashboard', '/reviews', '/questions', '/rules', '/settings', '/api/'],
       },
     ],
     sitemap: 'https://autoreviews.app/sitemap.xml',

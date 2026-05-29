@@ -18,7 +18,15 @@ from bot import (
 )
 from database import engine
 from models import Base
-from routers import auth, rules, reviews, settings, products, payments
+from routers import (
+    auth,
+    rules,
+    reviews,
+    settings,
+    products,
+    payments,
+    questions,
+)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +38,7 @@ def run_migrations():
         try:
             inspector = inspect(engine)
             with engine.connect() as conn:
-                pass # migrations if needed
+                pass  # migrations if needed
 
         except Exception as e:
             logger.warning("Automatic PostgreSQL migrations warning:", exc_info=e)
@@ -40,6 +48,7 @@ run_migrations()
 
 Base.metadata.create_all(bind=engine)
 
+
 class XForwardedProtoMiddleware:
     def __init__(self, app):
         self.app = app
@@ -47,25 +56,31 @@ class XForwardedProtoMiddleware:
     async def __call__(self, scope, receive, send):
         if scope["type"] in ("http", "websocket"):
             headers = dict(scope.get("headers", []))
-            
+
             # Determine host
             host_val = b""
             if b"x-forwarded-host" in headers:
                 host_val = headers[b"x-forwarded-host"].split(b",")[0].strip()
             elif b"host" in headers:
                 host_val = headers[b"host"].split(b",")[0].strip()
-                
+
             host_str = host_val.decode("latin1").lower()
-            
+
             # Determine proto
             proto = ""
             if b"x-forwarded-proto" in headers:
-                proto = headers[b"x-forwarded-proto"].decode("latin1").split(",")[0].strip().lower()
-            
+                proto = (
+                    headers[b"x-forwarded-proto"]
+                    .decode("latin1")
+                    .split(",")[0]
+                    .strip()
+                    .lower()
+                )
+
             # If the request comes from production domain (reanswer.ru) or has https proxy proto, force https
             if proto == "https" or "reanswer.ru" in host_str:
                 scope["scheme"] = "https"
-                
+
             # Keep host header aligned with X-Forwarded-Host if provided
             if b"x-forwarded-host" in headers:
                 new_headers = []
@@ -75,7 +90,7 @@ class XForwardedProtoMiddleware:
                     else:
                         new_headers.append((k, v))
                 scope["headers"] = new_headers
-                
+
         await self.app(scope, receive, send)
 
 
@@ -96,6 +111,7 @@ app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(rules.router, prefix="/api/rules", tags=["rules"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
+app.include_router(questions.router, prefix="/api/questions", tags=["questions"])
 app.include_router(payments.router, prefix="/api/payments", tags=["payments"])
 
 setup_admin(app)
@@ -117,7 +133,9 @@ async def setup_bot_webhooks():
             BotType.TELEGRAM, tg_token, webhook_base_url, webhook_secret
         )
     if max_token:
-        await configure_webhook(BotType.MAX, max_token, webhook_base_url, webhook_secret)
+        await configure_webhook(
+            BotType.MAX, max_token, webhook_base_url, webhook_secret
+        )
 
 
 @app.post("/api/bot/webhook/{bot_type}/{secret}")
@@ -148,7 +166,9 @@ async def bot_webhook(bot_type: str, secret: str, request: Request):
             if ctx:
                 await process_update(ctx)
     except Exception as e:
-        logger.error(f"Error processing {bot_type} webhook: {e}, data: {payload}", exc_info=True)
+        logger.error(
+            f"Error processing {bot_type} webhook: {e}, data: {payload}", exc_info=True
+        )
         raise HTTPException(status_code=500, detail="Error processing webhook") from e
     return {"ok": True}
 

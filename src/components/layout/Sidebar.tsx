@@ -5,6 +5,7 @@ import { useAppStore } from "@/store/useAppStore";
 import {
   LayoutDashboard,
   MessageSquare,
+  CircleHelp,
   ShieldAlert,
   Settings,
   LogOut,
@@ -155,6 +156,14 @@ export default function Sidebar() {
             <span>{t("common.reviewsInbox")}</span>
           </Link>
           <Link
+            href="/questions"
+            onClick={() => setIsOpen(false)}
+            className={linkClass("/questions")}
+          >
+            <CircleHelp size={18} />
+            <span>{t("common.questionsInbox")}</span>
+          </Link>
+          <Link
             href="/rules"
             onClick={() => setIsOpen(false)}
             className={linkClass("/rules")}
@@ -228,6 +237,11 @@ export default function Sidebar() {
             <Link href="/reviews" className={linkClass("/reviews")}>
               <MessageSquare size={18} />
               <span>{t("common.reviewsInbox")}</span>
+            </Link>
+
+            <Link href="/questions" className={linkClass("/questions")}>
+              <CircleHelp size={18} />
+              <span>{t("common.questionsInbox")}</span>
             </Link>
 
             <Link href="/rules" className={linkClass("/rules")}>
