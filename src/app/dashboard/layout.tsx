@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
-  description: 'Your reAnswer seller dashboard — monitor review statistics, recent replies, and automation activity.',
+  title: 'Дэшборд ',
+  description: 'Ваш дэшборд продавца reAnswer — отслеживайте статистику отзывов, последние ответы и активность автоматизации.',
   robots: { index: false, follow: false },
 };
 

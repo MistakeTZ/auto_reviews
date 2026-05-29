@@ -9,10 +9,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL("https://autoreviews.app"),
   title: {
-    default: "reAnswer — Smart Wildberries Review Automation",
+    default: "reAnswer — AI автоответы на отзывы Wildberries",
     template: "%s | reAnswer"
   },
-  description: "Automate your Wildberries review responses using AI. Boost your seller rating, save time, and increase sales with smart rule-based auto-replies.",
+  description: "Автоматизируйте ответы на отзывы Wildberries с помощью ИИ. Повышайте рейтинг продавца, экономьте время и увеличивайте продажи с помощью умных автоответов на основе правил.",
   icons: {
     icon: "/favicon.png",
   },

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Auto-Answer Rules',
-  description: 'Create and manage smart auto-reply rules for your Wildberries reviews — filter by rating, product, or keyword.',
+  title: 'Правила автоответов',
+  description: 'Создавайте и управляйте умными правилами автоответов для ваших отзывов Wildberries — фильтруйте по рейтингу, товару или ключевому слову.',
   robots: { index: false, follow: false },
 };
 

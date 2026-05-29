@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sign Up',
-  description: 'Create a free reAnswer account and start automating your Wildberries review responses in minutes.',
+  title: 'Регистрация',
+  description: 'Создайте бесплатный аккаунт reAnswer и начните автоматизировать ответы на отзывы Wildberries за считанные минуты.',
   openGraph: {
-    title: 'Sign Up — reAnswer',
-    description: 'Create a free reAnswer account and start automating your Wildberries review responses in minutes.',
+    title: 'Регистрация — reAnswer',
+    description: 'Создайте бесплатный аккаунт reAnswer и начните автоматизировать ответы на отзывы Wildberries за считанные минуты.',
     url: 'https://autoreviews.app/register',
   },
 };

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Reviews Inbox',
-  description: 'View and manage incoming Wildberries reviews. Reply manually or let reAnswer auto-respond based on your rules.',
+  title: 'Отзывы покупателей',
+  description: 'Просматривайте и управляйте входящими отзывами Wildberries. Отвечайте вручную или позвольте reAnswer автоматически отвечать на основе ваших правил.',
   robots: { index: false, follow: false },
 };
 
