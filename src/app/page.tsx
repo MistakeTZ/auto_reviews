@@ -126,9 +126,9 @@ function LandingPageContent() {
                   {isAuthenticated ? t('common.dashboard') : t('landing.getStarted')}
                   <ArrowRight size={18} className="ml-2" />
                 </Link>
-                {/* <Link href="/demo" className="btn-secondary">
+                <Link href="https://youtu.be/z8gAzje9ho4" target="_blank" rel="noopener noreferrer" className="btn-secondary">
                   {t('landing.viewDemo')}
-                </Link> */}
+                </Link>
               </div>
             </div>
 
