@@ -47,7 +47,7 @@ class MainController:
     async def poll_once(self):
         await asyncio.gather(
             # self._handle_chats(),
-            # self._handle_questions(),
+            self._handle_questions(),
             self._handle_feedbacks(),
         )
 
@@ -106,27 +106,64 @@ class MainController:
         questions = await self.processor.get_questions(is_answered=False, take=50)
         for question in questions:
             question_id = str(question.get("id", ""))
-
-            result = await self._build_question_answer(question)
-            text = result.get("text", "")
-            state = result.get("state", "none")
-            if not text.strip():
-                logger.warning(
-                    "[questions] empty answer for question_id=%s, skipping", question_id
-                )
+            if not question_id:
                 continue
 
-            response = await self.processor.answer_question(
-                question_id=question_id, text=text, state=state
+            saved = await self._upsert_question_in_db(question)
+            if saved:
+                logger.info("[questions] synced question_id=%s to db", question_id)
+
+    async def _upsert_question_in_db(self, question: Dict) -> ReviewCreate | None:
+        """Persist/update a question record in the reviews table without answering it."""
+        if not self.db_factory or not self.user_id:
+            return
+
+        question_id = str(question.get("id") or "")
+        if not question_id:
+            return
+
+        product_details = question.get("productDetails") or {}
+        user_name = (question.get("userName") or "").strip()
+        if user_name and user_name.startswith("Покупатель"):
+            user_name = None
+
+        review_data = ReviewCreate(
+            wb_review_id=f"q_{question_id}",
+            nm_id=str(product_details.get("nmId") or ""),
+            product_name=str(product_details.get("productName") or "Unknown Product"),
+            rating=0,
+            text=str(
+                question.get("text")
+                or question.get("questionText")
+                or question.get("question")
+                or ""
+            ),
+            date=str(question.get("createdDate") or question.get("createdAt") or ""),
+            status="none",
+            auto_answer_text=None,
+            editable=False,
+            user_name=user_name,
+            pros=None,
+            cons=None,
+            photos_count=0,
+            has_video=False,
+            is_edited_feedback=False,
+        )
+
+        db = None
+        try:
+            db = self.db_factory()
+            upsert_review(db, review_data, self.user_id)
+            return review_data
+        except Exception as exc:
+            logger.exception(
+                "[questions] failed to upsert question %s: %s", question_id, exc
             )
-            if self._is_success_response(response):
-                logger.info(
-                    "[questions] answered question_id=%s state=%s", question_id, state
-                )
-            else:
-                logger.warning(
-                    "[questions] failed question_id=%s: %s", question_id, response
-                )
+        finally:
+            if "db" in locals() and db:
+                db.close()
+
+        return None
 
     def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Rule]:
         """Return the first rule that matches this feedback, or None."""

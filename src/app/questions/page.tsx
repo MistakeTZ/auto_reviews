@@ -79,7 +79,24 @@ export default function QuestionsPage() {
     setIsSyncing(true);
     setCurrentPage(1);
     try {
-      await loadQuestions();
+      if (!jwtToken) {
+        setAllQuestions([]);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/questions/sync?include_answered=true&take=100`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setAllQuestions(Array.isArray(data) ? data : []);
+      } else {
+        await loadQuestions();
+      }
     } finally {
       setIsSyncing(false);
     }
