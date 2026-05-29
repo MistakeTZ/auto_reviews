@@ -424,7 +424,7 @@ export default function ReviewsPage() {
                                   onChange={() => toggleStarFilter(star)}
                                   className="h-3.5 w-3.5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
                                 />
-                                <span>⭐ {star}</span>
+                                <span style={{ minWidth: "30px" }}>⭐ {star}</span>
                               </label>
                             );
                           })

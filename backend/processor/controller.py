@@ -662,7 +662,7 @@ class MainController:
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": feedback_summary},
             ],
-            model="gpt-4",
+            model="gpt-4o-mini",
             temperature=0.3,
             max_tokens=260,
         )
