@@ -32,6 +32,7 @@ class User(Base):
 
     rules = relationship("Rule", back_populates="owner")
     reviews = relationship("Review", back_populates="owner")
+    questions = relationship("Question", back_populates="owner")
     nm_ids = relationship("NmIDs", back_populates="owner")
     notification_methods = relationship("NotificationMethod", back_populates="owner")
 
@@ -108,6 +109,22 @@ class Review(Base):
     is_edited_feedback = Column(Boolean, default=False, nullable=True)
 
     owner = relationship("User", back_populates="reviews")
+
+
+class Question(Base):
+    __tablename__ = "questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    wb_question_id = Column(String, index=True)
+    nm_id = Column(String)
+    product_name = Column(String)
+    text = Column(String)
+    date = Column(String)
+    answer_text = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user_name = Column(String, nullable=True)
+
+    owner = relationship("User", back_populates="questions")
 
 
 class NmIDs(Base):

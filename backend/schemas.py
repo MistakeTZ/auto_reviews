@@ -130,6 +130,28 @@ class Review(ReviewBase):
         from_attributes = True
 
 
+class QuestionBase(BaseModel):
+    wb_question_id: str
+    nm_id: str
+    product_name: str
+    text: str
+    date: str
+    answer_text: Optional[str] = None
+    user_name: Optional[str] = None
+
+
+class QuestionCreate(QuestionBase):
+    pass
+
+
+class Question(QuestionBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
 class NotificationMethodBase(BaseModel):
     type: str  # 'email', 'telegram', 'max'
     value: str

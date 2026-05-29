@@ -343,6 +343,41 @@ def update_review_status(
     return db_review
 
 
+def get_questions(db: Session, user_id: int, include_answered: bool = True):
+    query = db.query(models.Question).filter(models.Question.user_id == user_id)
+    if not include_answered:
+        query = query.filter(
+            (models.Question.answer_text.is_(None)) | (models.Question.answer_text == "")
+        )
+    return query.order_by(models.Question.id.desc()).all()
+
+
+def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id: int):
+    db_question = (
+        db.query(models.Question)
+        .filter(
+            models.Question.wb_question_id == question_data.wb_question_id,
+            models.Question.user_id == user_id,
+        )
+        .first()
+    )
+
+    if db_question:
+        db_question.nm_id = question_data.nm_id
+        db_question.product_name = question_data.product_name
+        db_question.text = question_data.text
+        db_question.date = question_data.date
+        db_question.answer_text = question_data.answer_text
+        db_question.user_name = question_data.user_name
+    else:
+        db_question = models.Question(**question_data.model_dump(), user_id=user_id)
+        db.add(db_question)
+
+    db.commit()
+    db.refresh(db_question)
+    return db_question
+
+
 def get_nm_ids(db: Session, user_id: int):
     return db.query(models.NmIDs).filter(models.NmIDs.user_d_id == user_id).all()
 

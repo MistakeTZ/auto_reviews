@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 import database
 import crud
 import schemas
-from models import Review, User
+from models import User
 from processor.chat_processor import ChatProcessor
 from routers.auth import check_active_subscription
 
@@ -34,27 +34,24 @@ def _extract_answer_text(question: Dict) -> Optional[str]:
     return None
 
 
-def _to_question_out_from_review(review: Review) -> QuestionOut:
-    wb_id = str(review.wb_review_id or "")
-    question_id = wb_id[2:] if wb_id.startswith("q_") else wb_id
-    answer_text = (review.auto_answer_text or "").strip() or None
+def _to_question_out_from_model(question: schemas.Question) -> QuestionOut:
+    answer_text = (question.answer_text or "").strip() or None
 
     return QuestionOut(
-        id=question_id,
-        nm_id=review.nm_id,
-        product_name=review.product_name,
-        text=review.text,
+        id=question.wb_question_id,
+        nm_id=question.nm_id,
+        product_name=question.product_name,
+        text=question.text,
         answer_text=answer_text,
-        date=review.date,
+        date=question.date,
         is_answered=bool(answer_text),
-        user_name=review.user_name,
+        user_name=question.user_name,
     )
 
 
-def _to_question_review_create(question: Dict) -> schemas.ReviewCreate:
+def _to_question_create(question: Dict) -> schemas.QuestionCreate:
     product_details = question.get("productDetails") or {}
     answer_text = _extract_answer_text(question)
-    status = "manually" if answer_text else "none"
 
     user_name = (question.get("userName") or "").strip()
     if user_name and user_name.startswith("Покупатель"):
@@ -62,11 +59,10 @@ def _to_question_review_create(question: Dict) -> schemas.ReviewCreate:
 
     question_id = str(question.get("id") or "")
 
-    return schemas.ReviewCreate(
-        wb_review_id=f"q_{question_id}",
+    return schemas.QuestionCreate(
+        wb_question_id=question_id,
         nm_id=str(product_details.get("nmId") or ""),
         product_name=str(product_details.get("productName") or "Unknown Product"),
-        rating=0,
         text=str(
             question.get("text")
             or question.get("questionText")
@@ -74,15 +70,8 @@ def _to_question_review_create(question: Dict) -> schemas.ReviewCreate:
             or ""
         ),
         date=str(question.get("createdDate") or question.get("createdAt") or ""),
-        status=status,
-        auto_answer_text=answer_text,
-        editable=False,
+        answer_text=answer_text,
         user_name=user_name,
-        pros=None,
-        cons=None,
-        photos_count=0,
-        has_video=False,
-        is_edited_feedback=False,
     )
 
 
@@ -115,19 +104,12 @@ def read_questions(
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
-    query = (
-        db.query(Review)
-        .filter(Review.user_id == current_user.id)
-        .filter(Review.wb_review_id.like("q_%"))
+    rows = crud.get_questions(
+        db,
+        user_id=current_user.id,
+        include_answered=include_answered,
     )
-
-    if not include_answered:
-        query = query.filter(
-            (Review.auto_answer_text.is_(None)) | (Review.auto_answer_text == "")
-        )
-
-    rows = query.order_by(Review.id.desc()).all()
-    normalized = [_to_question_out_from_review(row) for row in rows]
+    normalized = [_to_question_out_from_model(schemas.Question.model_validate(row)) for row in rows]
     normalized.sort(key=lambda item: item.date or "", reverse=True)
     return normalized
 
@@ -145,16 +127,14 @@ async def sync_questions(
         question_id = str(question.get("id") or "")
         if not question_id:
             continue
-        review_data = _to_question_review_create(question)
-        crud.upsert_review(db, review_data, current_user.id)
+        question_data = _to_question_create(question)
+        crud.upsert_question(db, question_data, current_user.id)
 
-    rows = (
-        db.query(Review)
-        .filter(Review.user_id == current_user.id)
-        .filter(Review.wb_review_id.like("q_%"))
-        .order_by(Review.id.desc())
-        .all()
+    rows = crud.get_questions(
+        db,
+        user_id=current_user.id,
+        include_answered=include_answered,
     )
-    normalized = [_to_question_out_from_review(row) for row in rows]
+    normalized = [_to_question_out_from_model(schemas.Question.model_validate(row)) for row in rows]
     normalized.sort(key=lambda item: item.date or "", reverse=True)
     return normalized

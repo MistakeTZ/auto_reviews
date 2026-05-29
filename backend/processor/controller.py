@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
-from crud import get_reviews, get_rules, upsert_review
-from schemas import ReviewCreate
+from crud import get_reviews, get_rules, upsert_question, upsert_review
+from schemas import QuestionCreate, ReviewCreate
 from services.notifications import notify_review_processed
 
 
@@ -113,8 +113,8 @@ class MainController:
             if saved:
                 logger.info("[questions] synced question_id=%s to db", question_id)
 
-    async def _upsert_question_in_db(self, question: Dict) -> ReviewCreate | None:
-        """Persist/update a question record in the reviews table without answering it."""
+    async def _upsert_question_in_db(self, question: Dict) -> QuestionCreate | None:
+        """Persist/update a question record in the questions table without answering it."""
         if not self.db_factory or not self.user_id:
             return
 
@@ -127,11 +127,10 @@ class MainController:
         if user_name and user_name.startswith("Покупатель"):
             user_name = None
 
-        review_data = ReviewCreate(
-            wb_review_id=f"q_{question_id}",
+        question_data = QuestionCreate(
+            wb_question_id=question_id,
             nm_id=str(product_details.get("nmId") or ""),
             product_name=str(product_details.get("productName") or "Unknown Product"),
-            rating=0,
             text=str(
                 question.get("text")
                 or question.get("questionText")
@@ -139,22 +138,15 @@ class MainController:
                 or ""
             ),
             date=str(question.get("createdDate") or question.get("createdAt") or ""),
-            status="none",
-            auto_answer_text=None,
-            editable=False,
+            answer_text=None,
             user_name=user_name,
-            pros=None,
-            cons=None,
-            photos_count=0,
-            has_video=False,
-            is_edited_feedback=False,
         )
 
         db = None
         try:
             db = self.db_factory()
-            upsert_review(db, review_data, self.user_id)
-            return review_data
+            upsert_question(db, question_data, self.user_id)
+            return question_data
         except Exception as exc:
             logger.exception(
                 "[questions] failed to upsert question %s: %s", question_id, exc
