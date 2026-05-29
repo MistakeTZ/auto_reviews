@@ -113,10 +113,14 @@ export const ru = {
   dashboard: {
     overview: 'Обзор',
     totalReviews: 'Всего отзывов',
+    totalQuestions: 'Всего вопросов',
     autoAnswered: 'Автоответы',
     pendingReply: 'Ожидают ответа',
+    unansweredQuestions: 'Без ответа',
     avgRating: 'Средняя оценка',
     recentActivity: 'Последние действия',
+    recentQuestions: 'Последние вопросы',
+    noRecentQuestions: 'Пока нет вопросов.',
     activeRules: 'Активные правила',
     noActiveRules: 'Нет активных правил. Перейдите в настройки, чтобы создать.',
     ifRatingIs: 'Если оценка',
@@ -126,6 +130,7 @@ export const ru = {
     lessThan: 'меньше',
     moreThan: 'больше',
     syncReviews: 'Обновить',
+    syncQuestions: 'Обновить',
     syncing: 'Обновление...',
   },
   reviews: {

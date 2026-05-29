@@ -113,10 +113,14 @@ export const en = {
   dashboard: {
     overview: 'Overview',
     totalReviews: 'Total Reviews',
+    totalQuestions: 'Total Questions',
     autoAnswered: 'Auto-Answered',
     pendingReply: 'Pending Reply',
+    unansweredQuestions: 'Unanswered Questions',
     avgRating: 'Average Rating',
     recentActivity: 'Recent Activity',
+    recentQuestions: 'Recent Questions',
+    noRecentQuestions: 'No recent questions.',
     activeRules: 'Active Rules',
     noActiveRules: 'No active rules. Go to settings to create one.',
     ifRatingIs: 'If rating is',
@@ -126,6 +130,7 @@ export const en = {
     lessThan: 'less than',
     moreThan: 'more than',
     syncReviews: 'Update',
+    syncQuestions: 'Update',
     syncing: 'Updating...',
   },
   reviews: {
