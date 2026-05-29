@@ -97,7 +97,7 @@ export default function RulesPage() {
       withVideo: rule.withVideo || false,
       withPhoto: rule.withPhoto || false,
       withName: rule.withName || false,
-      sendNotification: rule.sendNotification || false,
+      sendNotification: rule.sendNotification || true,
       isEditedFeedback: rule.isEditedFeedback || false,
     });
     setIsAdding(true);

@@ -21,7 +21,7 @@ export default function ReviewsPage() {
   type TriFilter = "all" | "yes" | "no";
 
   const [statusFilter, setStatusFilter] = useState<ReviewFilter>("all");
-  const [starsFilter, setStarsFilter] = useState<string>("all");
+  const [starsFilter, setStarsFilter] = useState<number[]>([]);
   const [productFilter, setProductFilter] = useState<string>("all");
   const [withCommentFilter, setWithCommentFilter] = useState<TriFilter>("all");
   const [withAnswerFilter, setWithAnswerFilter] = useState<TriFilter>("all");
@@ -104,6 +104,16 @@ export default function ReviewsPage() {
 
   const handleStatusFilterChange = (f: ReviewFilter) => {
     setStatusFilter(f);
+    setCurrentPage(1);
+  };
+
+  const toggleStarFilter = (star: number) => {
+    setStarsFilter((prev) => {
+      if (prev.includes(star)) {
+        return prev.filter((value) => value !== star);
+      }
+      return [...prev, star].sort((a, b) => a - b);
+    });
     setCurrentPage(1);
   };
 
@@ -207,10 +217,7 @@ export default function ReviewsPage() {
 
       if (statusFilter !== "all" && normalizedStatus !== statusFilter)
         return false;
-      if (
-        starsFilter !== "all" &&
-        Number(review.rating) !== Number(starsFilter)
-      )
+      if (starsFilter.length > 0 && !starsFilter.includes(Number(review.rating)))
         return false;
       if (productFilter !== "all" && review.productName !== productFilter)
         return false;
@@ -271,9 +278,35 @@ export default function ReviewsPage() {
     ).sort((a, b) => a.localeCompare(b));
   }, [allReviews]);
 
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (statusFilter !== "all") count += 1;
+    if (starsFilter.length > 0) count += 1;
+    if (productFilter !== "all") count += 1;
+    if (withCommentFilter !== "all") count += 1;
+    if (withAnswerFilter !== "all") count += 1;
+    if (withPhotoFilter !== "all") count += 1;
+    if (withVideoFilter !== "all") count += 1;
+    if (editableFilter !== "all") count += 1;
+    if (dateFrom) count += 1;
+    if (dateTo) count += 1;
+    return count;
+  }, [
+    statusFilter,
+    starsFilter,
+    productFilter,
+    withCommentFilter,
+    withAnswerFilter,
+    withPhotoFilter,
+    withVideoFilter,
+    editableFilter,
+    dateFrom,
+    dateTo,
+  ]);
+
   const resetFilters = () => {
     setStatusFilter("all");
-    setStarsFilter("all");
+    setStarsFilter([]);
     setProductFilter("all");
     setWithCommentFilter("all");
     setWithAnswerFilter("all");
@@ -311,14 +344,30 @@ export default function ReviewsPage() {
             <Button
               variant="outline"
               onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-              className="h-9 px-3.5 rounded-xl text-sm font-bold"
+              className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2"
             >
               {t("reviews.filters")}
+              {activeFiltersCount > 0 && (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] font-black text-white">
+                  {activeFiltersCount}
+                </span>
+              )}
             </Button>
 
             {isFilterMenuOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-[22rem] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:w-[30rem]">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="absolute right-0 z-20 mt-2 w-[22rem] rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-2xl backdrop-blur sm:w-[30rem]">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-black tracking-wide text-slate-800">
+                    {t("reviews.filters")}
+                  </p>
+                  {activeFiltersCount > 0 && (
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
                       {t("reviews.filterStatus")}
@@ -328,7 +377,7 @@ export default function ReviewsPage() {
                       onChange={(e) =>
                         handleStatusFilterChange(e.target.value as ReviewFilter)
                       }
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       {(
                         [
@@ -350,23 +399,38 @@ export default function ReviewsPage() {
                     <label className="mb-1 block text-xs font-bold text-slate-600">
                       {t("reviews.filterStars")}
                     </label>
-                    <select
-                      value={starsFilter}
-                      onChange={(e) => {
-                        setStarsFilter(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                    >
-                      <option value="all">
-                        {t("reviews.all")}
-                      </option>
-                      {starsOptions.map((star) => (
-                        <option key={star} value={String(star)}>
-                          {star}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-2">
+                      <div className="grid grid-cols-3 gap-2">
+                        {starsOptions.length === 0 ? (
+                          <p className="col-span-3 px-1 py-2 text-xs text-slate-500">
+                            {t("reviews.noReviews")}
+                          </p>
+                        ) : (
+                          starsOptions.map((star) => {
+                            const isChecked = starsFilter.includes(star);
+
+                            return (
+                              <label
+                                key={star}
+                                className={`flex cursor-pointer select-none items-center gap-2 rounded-lg border px-2 py-1.5 text-xs font-bold transition ${
+                                  isChecked
+                                    ? "border-amber-300 bg-amber-50 text-amber-700"
+                                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => toggleStarFilter(star)}
+                                  className="h-3.5 w-3.5 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                                />
+                                <span>⭐ {star}</span>
+                              </label>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="sm:col-span-2">
@@ -379,7 +443,7 @@ export default function ReviewsPage() {
                         setProductFilter(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">
                         {t("reviews.all")}
@@ -402,7 +466,7 @@ export default function ReviewsPage() {
                         setWithCommentFilter(e.target.value as TriFilter);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">
                         {t("reviews.all")}
@@ -426,7 +490,7 @@ export default function ReviewsPage() {
                         setWithAnswerFilter(e.target.value as TriFilter);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">
                         {t("reviews.all")}
@@ -450,7 +514,7 @@ export default function ReviewsPage() {
                         setWithPhotoFilter(e.target.value as TriFilter);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">
                         {t("reviews.all")}
@@ -474,7 +538,7 @@ export default function ReviewsPage() {
                         setWithVideoFilter(e.target.value as TriFilter);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">
                         {t("reviews.all")}
@@ -498,7 +562,7 @@ export default function ReviewsPage() {
                         setEditableFilter(e.target.value as TriFilter);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">
                         {t("reviews.all")}
@@ -523,7 +587,7 @@ export default function ReviewsPage() {
                         setDateFrom(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     />
                   </div>
 
@@ -538,7 +602,7 @@ export default function ReviewsPage() {
                         setDateTo(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     />
                   </div>
                 </div>
