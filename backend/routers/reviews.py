@@ -340,7 +340,7 @@ async def generate_reply_for_review(
             {"role": "user", "content": review_summary},
             
         ],
-        model="gpt-4.1-nano",
+        model="gpt-5-nano",
         temperature=0.4,
         max_tokens=260,
     )

@@ -120,9 +120,19 @@ export default function ReviewsPage() {
   const handleReply = async (id: string) => {
     if (replyText[id]) {
       await markAsAnswered(id, replyText[id]);
+      setAllReviews((prev) =>
+        prev.map((review) =>
+          String(review.id) === String(id)
+            ? {
+                ...review,
+                status: "manual-review",
+                autoAnswerText: replyText[id],
+              }
+            : review,
+        ),
+      );
       setReplyText((prev) => ({ ...prev, [id]: "" }));
       setIsEditingAnswer((prev) => ({ ...prev, [id]: false }));
-      await loadAllReviews();
     }
   };
 
