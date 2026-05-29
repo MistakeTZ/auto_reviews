@@ -32,9 +32,9 @@ export default function PrivacyPolicyPage() {
           <br />
           ОГРН/ОГРНИП: 326370000028346
           <br />
-          Контактный e-mail: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a>
+          Контактный e-mail: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a>
           <br />
-          Контактный телефон: <a href="tel:+79203477723" className="text-indigo-600 hover:underline">+7 920 347-77-23</a>
+          Контактный телефон: <a href="tel:+79106974491" className="text-indigo-600 hover:underline">+7 910 697-44-91</a>
         </p>
       </section>
 
@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
           Вы имеете право на доступ к своим персональным данным, их уточнение, блокирование или уничтожение в случае, если данные являются неполными, устаревшими или неточными.
         </p>
         <p className="mb-4">
-          Вы можете в любой момент отозвать свое согласие на обработку персональных данных, направив соответствующее заявление по адресу электронной почты: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a>. После получения Вашего обращения мы прекратим обработку данных и удалим Ваш аккаунт в установленные законом сроки, за исключением сведений, хранение которых обязательно в соответствии с законом.
+          Вы можете в любой момент отозвать свое согласие на обработку персональных данных, направив соответствующее заявление по адресу электронной почты: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a>. После получения Вашего обращения мы прекратим обработку данных и удалим Ваш аккаунт в установленные законом сроки, за исключением сведений, хранение которых обязательно в соответствии с законом.
         </p>
       </section>
 
@@ -119,9 +119,9 @@ export default function PrivacyPolicyPage() {
           <br />
           OGRN/OGRNIP: 326370000028346
           <br />
-          Contact Email: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a>
+          Contact Email: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a>
           <br />
-          Contact Phone: <a href="tel:+79203477723" className="text-indigo-600 hover:underline">+7 920 347-77-23</a>
+          Contact Phone: <a href="tel:+79106974491" className="text-indigo-600 hover:underline">+7 910 697-44-91</a>
         </p>
       </section>
 
@@ -170,7 +170,7 @@ export default function PrivacyPolicyPage() {
           You have the right to access your personal data, clarify it, block it, or destroy it if the data is incomplete, outdated, or inaccurate.
         </p>
         <p className="mb-4">
-          You can revoke your consent to the processing of personal data at any time by sending a request to our email: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a>. Upon receipt of your request, we will cease processing and delete your account within legally established terms, except for information mandatory for storage by law.
+          You can revoke your consent to the processing of personal data at any time by sending a request to our email: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a>. Upon receipt of your request, we will cease processing and delete your account within legally established terms, except for information mandatory for storage by law.
         </p>
       </section>
 

@@ -28,7 +28,7 @@ export default function PersonalDataConsentPage() {
           <br />
           ОГРН/ОГРНИП: 326370000028346
           <br />
-          Контактный e-mail: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a>
+          Контактный e-mail: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a>
         </p>
       </section>
 
@@ -72,7 +72,7 @@ export default function PersonalDataConsentPage() {
           Настоящее Согласие действует с момента Вашей регистрации на Сайте или предоставления данных иными способами до момента прекращения работы Сайта или до момента отзыва согласия.
         </p>
         <p className="mb-4">
-          Вы можете отозвать данное Согласие в любой момент. Для этого необходимо отправить письменное уведомление в свободной форме на адрес электронной почты Оператора: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a> с темой письма «Отзыв согласия на обработку персональных данных».
+          Вы можете отозвать данное Согласие в любой момент. Для этого необходимо отправить письменное уведомление в свободной форме на адрес электронной почты Оператора: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a> с темой письма «Отзыв согласия на обработку персональных данных».
         </p>
         <p className="mb-4">
           После получения уведомления об отзыве согласия Оператор прекратит обработку персональных данных и уничтожит их в срок, не превышающий 30 дней, за исключением случаев, когда сохранение данных требуется применимым законодательством. Мы также уведомляем Вас, что отзыв Согласия влечет за собой полное удаление Вашей учетной записи и невозможность дальнейшего использования Сайта.
@@ -100,7 +100,7 @@ export default function PersonalDataConsentPage() {
           <br />
           OGRN/OGRNIP: 326370000028346
           <br />
-          Contact Email: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a>
+          Contact Email: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a>
         </p>
       </section>
 
@@ -144,7 +144,7 @@ export default function PersonalDataConsentPage() {
           This Consent is valid from the moment of registration on the Site or the provision of data in other ways until the termination of the Site operations or until the consent is revoked.
         </p>
         <p className="mb-4">
-          You can revoke this Consent at any time. To do this, send a written notice in free form to the Operator\'s email address: <a href="mailto:lebedevaekw@gmail.com" className="text-indigo-600 hover:underline">lebedevaekw@gmail.com</a> with the subject line "Revocation of consent to personal data processing".
+          You can revoke this Consent at any time. To do this, send a written notice in free form to the Operator\'s email address: <a href="mailto:lebedevaekw@yandex.ru" className="text-indigo-600 hover:underline">lebedevaekw@yandex.ru</a> with the subject line "Revocation of consent to personal data processing".
         </p>
         <p className="mb-4">
           Upon receipt of the revocation notice, the Operator will stop processing personal data and destroy it within a period not exceeding 30 days, except for cases required by applicable law. We also notify you that the revocation of Consent results in the complete deletion of your account and the inability to further use the Site.

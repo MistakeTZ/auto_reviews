@@ -16,8 +16,8 @@ export default function LegalInfoPage() {
     shortName: "ИП Лебедева Е.В.",
     inn: "371119373205",
     ogrnip: "326370000028346",
-    email: "lebedevaekw@gmail.com",
-    phone: "+7 920 347-77-23",
+    email: "lebedevaekw@yandex.ru",
+    phone: "+7 910 697-44-91",
   };
 
   const copyToClipboard = (text: string, fieldName: string) => {
