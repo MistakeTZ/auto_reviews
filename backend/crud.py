@@ -8,6 +8,14 @@ import uuid
 from datetime import datetime, timezone, timedelta
 
 
+DEFAULT_GPT_RULE_PROMPT = (
+    "Ты помощник продавца на Wildberries. Составь вежливый и полезный ответ на отзыв "
+    "на русском языке. Учитывай тон и содержание отзыва, не выдумывай факты, "
+    "предлагай решение при негативе. Ответ должен быть коротким, профессиональным "
+    "и готовым к отправке без дополнительных правок."
+)
+
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -44,6 +52,28 @@ def create_user(db: Session, user: schemas.UserCreate):
         referred_by_id=referred_by_id,
     )
     db.add(db_user)
+    db.flush()
+
+    # Create default GPT rule that applies to all reviews for new users.
+    db_default_rule = models.Rule(
+        name="GPT для всех отзывов",
+        target="general",
+        nm_id=None,
+        condition_rating_operator="more_than",
+        condition_rating=None,
+        condition_keyword=None,
+        action_text=DEFAULT_GPT_RULE_PROMPT,
+        action_type="gpt",
+        with_video=False,
+        with_photo=False,
+        with_name=False,
+        priority=1,
+        send_notification=False,
+        is_edited_feedback=False,
+        user_id=db_user.id,
+    )
+    db.add(db_default_rule)
+
     db.commit()
     db.refresh(db_user)
     return db_user

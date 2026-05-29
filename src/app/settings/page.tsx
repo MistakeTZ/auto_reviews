@@ -3,6 +3,7 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 import {
   AlertCircle,
   CheckCircle2,
@@ -183,6 +184,92 @@ export default function SettingsPage() {
           )}
 
           <div className="space-y-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 md:p-5 space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-base md:text-lg font-bold text-slate-900">
+                  {t("settings.tokenGuideTitle")}
+                </h3>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  {t("settings.tokenGuideIntro")}
+                </p>
+                <p className="text-sm font-medium text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                  {t("settings.tokenGuideDesktopNote")}
+                </p>
+              </div>
+
+              <ol className="space-y-3 text-sm text-slate-700 list-decimal pl-5">
+                <li>
+                  <span className="font-semibold text-slate-900">
+                    {t("settings.tokenGuideStep1Title")}
+                  </span>{" "}
+                  {t("settings.tokenGuideStep1Desc")}
+                </li>
+                <li>
+                  <span className="font-semibold text-slate-900">
+                    {t("settings.tokenGuideStep2Title")}
+                  </span>{" "}
+                  {t("settings.tokenGuideStep2Desc")}
+                </li>
+                <li>
+                  <span className="font-semibold text-slate-900">
+                    {t("settings.tokenGuideStep3Title")}
+                  </span>{" "}
+                  {t("settings.tokenGuideStep3Desc")}
+                </li>
+              </ol>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <figure className="space-y-2">
+                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <Image
+                      src="/api_integration.jpg"
+                      alt={t("settings.tokenGuideImg1Alt")}
+                      width={1200}
+                      height={800}
+                      className="h-auto w-full object-cover"
+                    />
+                  </div>
+                  <figcaption className="text-xs text-slate-500">
+                    {t("settings.tokenGuideImg1Caption")}
+                  </figcaption>
+                </figure>
+
+                <figure className="space-y-2">
+                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <Image
+                      src="/new_token.jpg"
+                      alt={t("settings.tokenGuideImg2Alt")}
+                      width={1200}
+                      height={800}
+                      className="h-auto w-full object-cover"
+                    />
+                  </div>
+                  <figcaption className="text-xs text-slate-500">
+                    {t("settings.tokenGuideImg2Caption")}
+                  </figcaption>
+                </figure>
+
+                <figure className="space-y-2">
+                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <Image
+                      src="/token_params.png"
+                      alt={t("settings.tokenGuideImg3Alt")}
+                      width={1200}
+                      height={800}
+                      className="h-auto w-full object-cover"
+                    />
+                  </div>
+                  <figcaption className="text-xs text-slate-500">
+                    {t("settings.tokenGuideImg3Caption")}
+                  </figcaption>
+                </figure>
+              </div>
+
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t("settings.tokenGuidePermissionsNote")}
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">
                 {t("settings.apiToken")}
