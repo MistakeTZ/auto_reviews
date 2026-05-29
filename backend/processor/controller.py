@@ -664,7 +664,7 @@ class MainController:
             ],
             model="gpt-4o-mini",
             temperature=0.3,
-            max_tokens=260,
+            max_tokens=1000,
         )
         return str(raw).strip()
 
