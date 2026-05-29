@@ -151,7 +151,7 @@ export default function Dashboard() {
             {t("dashboard.overview")}
           </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardContent className="flex items-center p-6">
                 <div className="p-3 bg-blue-50 rounded-xl text-blue-600 mr-4">
@@ -163,38 +163,6 @@ export default function Dashboard() {
                   </p>
                   <p className="text-2xl font-black text-slate-900">
                     {totalReviews}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="flex items-center p-6">
-                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4">
-                  <CheckCircle size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 font-semibold">
-                    {t("dashboard.autoAnswered")}
-                  </p>
-                  <p className="text-2xl font-black text-slate-900">
-                    {autoAnswered}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="flex items-center p-6">
-                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 mr-4">
-                  <Clock size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 font-semibold">
-                    {t("dashboard.pendingReply")}
-                  </p>
-                  <p className="text-2xl font-black text-slate-900">
-                    {pending}
                   </p>
                 </div>
               </CardContent>
@@ -234,6 +202,38 @@ export default function Dashboard() {
 
             <Card>
               <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-amber-50 rounded-xl text-amber-600 mr-4">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.pendingReply")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {pending}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4">
+                  <CheckCircle size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.autoAnswered")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {autoAnswered}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="flex items-center p-6">
                 <div className="p-3 bg-orange-50 rounded-xl text-orange-600 mr-4">
                   <Clock size={24} />
                 </div>
@@ -249,7 +249,7 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between py-4">
                 <CardTitle>{t("dashboard.recentActivity")}</CardTitle>
@@ -409,7 +409,9 @@ export default function Dashboard() {
                                 : t("questions.unanswered")}
                             </span>
                             <span className="text-xs font-semibold text-slate-400 ml-1">
-                              {question.date ? formatDateTime(question.date) : "-"}
+                              {question.date
+                                ? formatDateTime(question.date)
+                                : "-"}
                             </span>
                           </div>
                         </div>
@@ -424,7 +426,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="md:hidden">
               <CardHeader>
                 <CardTitle>{t("dashboard.activeRules")}</CardTitle>
               </CardHeader>
