@@ -17,6 +17,8 @@ import {
   Bell,
   Bot,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -50,6 +52,7 @@ export default function SettingsPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showToken, setShowToken] = useState(false);
+  const [isTokenGuideOpen, setIsTokenGuideOpen] = useState(false);
 
   // Notification states
   const [newMethodType, setNewMethodType] = useState<
@@ -185,89 +188,125 @@ export default function SettingsPage() {
 
           <div className="space-y-4">
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 md:p-5 space-y-4">
-              <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
                 <h3 className="text-base md:text-lg font-bold text-slate-900">
                   {t("settings.tokenGuideTitle")}
                 </h3>
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  {t("settings.tokenGuideIntro")}
-                </p>
-                <p className="text-sm font-medium text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                  {t("settings.tokenGuideDesktopNote")}
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsTokenGuideOpen((v) => !v)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  aria-expanded={isTokenGuideOpen}
+                  aria-controls="wb-token-guide-content"
+                >
+                  {isTokenGuideOpen
+                    ? t("settings.tokenGuideHide")
+                    : t("settings.tokenGuideShow")}
+                  {isTokenGuideOpen ? (
+                    <ChevronUp size={14} />
+                  ) : (
+                    <ChevronDown size={14} />
+                  )}
+                </button>
               </div>
 
-              <ol className="space-y-3 text-sm text-slate-700 list-decimal pl-5">
-                <li>
-                  <span className="font-semibold text-slate-900">
-                    {t("settings.tokenGuideStep1Title")}
-                  </span>{" "}
-                  {t("settings.tokenGuideStep1Desc")}
-                </li>
-                <li>
-                  <span className="font-semibold text-slate-900">
-                    {t("settings.tokenGuideStep2Title")}
-                  </span>{" "}
-                  {t("settings.tokenGuideStep2Desc")}
-                </li>
-                <li>
-                  <span className="font-semibold text-slate-900">
-                    {t("settings.tokenGuideStep3Title")}
-                  </span>{" "}
-                  {t("settings.tokenGuideStep3Desc")}
-                </li>
-              </ol>
+              {isTokenGuideOpen && (
+                <div id="wb-token-guide-content" className="space-y-4">
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    {t("settings.tokenGuideIntro")}
+                  </p>
+                  <p className="text-sm font-medium text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                    {t("settings.tokenGuideDesktopNote")}
+                  </p>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <figure className="space-y-2">
-                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    <Image
-                      src="/api_integration.jpg"
-                      alt={t("settings.tokenGuideImg1Alt")}
-                      width={1200}
-                      height={800}
-                      className="h-auto w-full object-cover"
-                    />
+                  <ol className="space-y-3 text-sm text-slate-700 list-decimal pl-5">
+                    <li>
+                      <span className="font-semibold text-slate-900">
+                        {t("settings.tokenGuideStep1Title")}
+                      </span>{" "}
+                      {t("settings.tokenGuideStep1Desc")}
+                    </li>
+                    <li>
+                      <span className="font-semibold text-slate-900">
+                        {t("settings.tokenGuideStep2Title")}
+                      </span>{" "}
+                      {t("settings.tokenGuideStep2Desc")}
+                    </li>
+                    <li>
+                      <span className="font-semibold text-slate-900">
+                        {t("settings.tokenGuideStep3Title")}
+                      </span>{" "}
+                      {t("settings.tokenGuideStep3Desc")}
+                    </li>
+                  </ol>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <figure className="space-y-2">
+                      <a
+                        href="/api_integration.jpg"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block overflow-hidden rounded-lg border border-slate-200 bg-white transition-transform hover:scale-[1.01]"
+                      >
+                        <Image
+                          src="/api_integration.jpg"
+                          alt={t("settings.tokenGuideImg1Alt")}
+                          width={1200}
+                          height={800}
+                          className="h-auto w-full object-cover"
+                        />
+                      </a>
+                      <figcaption className="text-xs text-slate-500">
+                        {t("settings.tokenGuideImg1Caption")}
+                      </figcaption>
+                    </figure>
+
+                    <figure className="space-y-2">
+                      <a
+                        href="/new_token.jpg"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block overflow-hidden rounded-lg border border-slate-200 bg-white transition-transform hover:scale-[1.01]"
+                      >
+                        <Image
+                          src="/new_token.jpg"
+                          alt={t("settings.tokenGuideImg2Alt")}
+                          width={1200}
+                          height={800}
+                          className="h-auto w-full object-cover"
+                        />
+                      </a>
+                      <figcaption className="text-xs text-slate-500">
+                        {t("settings.tokenGuideImg2Caption")}
+                      </figcaption>
+                    </figure>
+
+                    <figure className="space-y-2">
+                      <a
+                        href="/token_params.png"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block overflow-hidden rounded-lg border border-slate-200 bg-white transition-transform hover:scale-[1.01]"
+                      >
+                        <Image
+                          src="/token_params.png"
+                          alt={t("settings.tokenGuideImg3Alt")}
+                          width={1200}
+                          height={800}
+                          className="h-auto w-full object-cover"
+                        />
+                      </a>
+                      <figcaption className="text-xs text-slate-500">
+                        {t("settings.tokenGuideImg3Caption")}
+                      </figcaption>
+                    </figure>
                   </div>
-                  <figcaption className="text-xs text-slate-500">
-                    {t("settings.tokenGuideImg1Caption")}
-                  </figcaption>
-                </figure>
 
-                <figure className="space-y-2">
-                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    <Image
-                      src="/new_token.jpg"
-                      alt={t("settings.tokenGuideImg2Alt")}
-                      width={1200}
-                      height={800}
-                      className="h-auto w-full object-cover"
-                    />
-                  </div>
-                  <figcaption className="text-xs text-slate-500">
-                    {t("settings.tokenGuideImg2Caption")}
-                  </figcaption>
-                </figure>
-
-                <figure className="space-y-2">
-                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    <Image
-                      src="/token_params.png"
-                      alt={t("settings.tokenGuideImg3Alt")}
-                      width={1200}
-                      height={800}
-                      className="h-auto w-full object-cover"
-                    />
-                  </div>
-                  <figcaption className="text-xs text-slate-500">
-                    {t("settings.tokenGuideImg3Caption")}
-                  </figcaption>
-                </figure>
-              </div>
-
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {t("settings.tokenGuidePermissionsNote")}
-              </p>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {t("settings.tokenGuidePermissionsNote")}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
