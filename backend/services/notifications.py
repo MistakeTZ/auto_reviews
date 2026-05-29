@@ -140,7 +140,9 @@ async def _send_email(email: str, text: str) -> None:
         logger.warning("[notify] SMTP_FROM/SMTP_USER is empty, email notification skipped")
         return
 
-    message = MIMEText(text, "plain", "utf-8")
+    # Keep existing HTML tags from notification text and preserve line breaks.
+    email_html = f"<html><body style='white-space: pre-line;'>{text}</body></html>"
+    message = MIMEText(email_html, "html", "utf-8")
     message["From"] = smtp_from
     message["To"] = email
     message["Subject"] = "Новый отзыв на Wildberries"
