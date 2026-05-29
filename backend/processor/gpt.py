@@ -23,7 +23,7 @@ class AsyncOpenAIClient:
         response = await self.client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=temperature,
+            # temperature=temperature,
             # max_tokens=max_tokens,
             max_completion_tokens=max_tokens,
         )
