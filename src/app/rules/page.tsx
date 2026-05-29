@@ -32,7 +32,7 @@ export default function RulesPage() {
     withVideo: false,
     withPhoto: false,
     withName: false,
-    sendNotification: false,
+    sendNotification: true,
     isEditedFeedback: false
   });
 
@@ -57,7 +57,7 @@ export default function RulesPage() {
         withVideo: false,
         withPhoto: false,
         withName: false,
-        sendNotification: false,
+        sendNotification: true,
         isEditedFeedback: false
       });
     }
@@ -78,7 +78,7 @@ export default function RulesPage() {
       withVideo: false,
       withPhoto: false,
       withName: false,
-      sendNotification: false,
+      sendNotification: true,
       isEditedFeedback: false
     });
   };
@@ -97,8 +97,8 @@ export default function RulesPage() {
       withVideo: rule.withVideo || false,
       withPhoto: rule.withPhoto || false,
       withName: rule.withName || false,
-      sendNotification: rule.sendNotification || true,
       isEditedFeedback: rule.isEditedFeedback || false,
+      sendNotification: rule.sendNotification || true,
     });
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });

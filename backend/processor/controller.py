@@ -541,7 +541,7 @@ class MainController:
                     ),
                 },
             ],
-            model="gpt-4",
+            model="gpt-4o-mini",
             temperature=0.2,
             max_tokens=300,
         )
@@ -581,7 +581,7 @@ class MainController:
                     "content": json.dumps(question, ensure_ascii=False),
                 },
             ],
-            model="gpt-4",
+            model="gpt-4o-mini",
             temperature=0.3,
             max_tokens=300,
         )
@@ -655,7 +655,7 @@ class MainController:
         feedback_summary = "\n".join(parts)
         prompt = (
             prompt or ""
-        ).strip() + "\n\nНапиши ответ на этот отзыв в том виде, в котором он будет отправлен покупателю. Верни только текст самого отзыва"
+        ).strip() + "\n\nНапиши ответ на этот отзыв в том виде, в котором он будет отправлен покупателю без изменений и квадратных скобок. Верни только текст самого отзыва"
 
         raw = await self.gpt.chat_completion(
             messages=[
