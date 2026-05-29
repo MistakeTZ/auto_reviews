@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import database
 from routers.auth import get_current_user
 from models import User, Payment
@@ -66,7 +67,20 @@ async def check_payment_status(
     # Reload payment to get current status after verification
     db.refresh(payment)
 
-    return {"ok": True, "status": payment.status, "success": success}
+    successful_payments_count = (
+        db.query(func.count(Payment.id))
+        .filter(Payment.user_id == current_user.id, Payment.status == "succeeded")
+        .scalar()
+        or 0
+    )
+    is_first_payment = payment.status == "succeeded" and successful_payments_count == 1
+
+    return {
+        "ok": True,
+        "status": payment.status,
+        "success": success,
+        "is_first_payment": is_first_payment,
+    }
 
 
 @router.post("/yookassa/webhook")

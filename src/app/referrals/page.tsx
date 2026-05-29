@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { formatDateTime } from "@/lib/formatDateTime";
+import { trackMetrikaGoal } from "@/lib/metrika";
 
 function ReferralsPageContent() {
   const {
@@ -47,7 +48,9 @@ function ReferralsPageContent() {
 
   // Payment verification state
   const [paymentVerifying, setPaymentVerifying] = useState(false);
-  const [paymentVerifyStatus, setPaymentVerifyStatus] = useState<"checking" | "success" | "error" | "">("");
+  const [paymentVerifyStatus, setPaymentVerifyStatus] = useState<
+    "checking" | "success" | "error" | ""
+  >("");
 
   const searchParams = useSearchParams();
   const paymentId = searchParams.get("payment_id");
@@ -64,7 +67,7 @@ function ReferralsPageContent() {
     if (checkId) {
       setPaymentVerifying(true);
       setPaymentVerifyStatus("checking");
-      
+
       let attempts = 0;
       const interval = setInterval(async () => {
         attempts++;
@@ -74,6 +77,9 @@ function ReferralsPageContent() {
             clearInterval(interval);
             setPaymentVerifying(false);
             setPaymentVerifyStatus("success");
+            if (res.isFirstPayment) {
+              trackMetrikaGoal("firstPayment", `firstPayment:${checkId}`);
+            }
             setPurchaseSuccessMsg(t("referrals.purchaseSuccess"));
             void confetti({
               particleCount: 150,
@@ -175,7 +181,7 @@ function ReferralsPageContent() {
           : "http://localhost:8082";
       const returnUrl = `${origin}/referrals`;
       const res = await createPayment("990.00", returnUrl);
-      
+
       if (res.confirmation_url) {
         window.location.href = res.confirmation_url;
       } else {
@@ -203,9 +209,24 @@ function ReferralsPageContent() {
       {paymentVerifying && (
         <Card className="border border-indigo-200 bg-indigo-50/50 backdrop-blur-xl rounded-3xl p-6 flex flex-col md:flex-row items-center gap-4 animate-pulse">
           <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-            <svg className="animate-spin h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            <svg
+              className="animate-spin h-6 w-6 text-indigo-600"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
             </svg>
           </div>
           <div className="text-center md:text-left space-y-1">
@@ -213,7 +234,8 @@ function ReferralsPageContent() {
               Checking payment status...
             </h3>
             <p className="text-slate-500 text-sm font-semibold">
-              Please wait while we verify your payment with YooKassa. This takes a few seconds.
+              Please wait while we verify your payment with YooKassa. This takes
+              a few seconds.
             </p>
           </div>
         </Card>
@@ -229,7 +251,8 @@ function ReferralsPageContent() {
               Payment Successful!
             </h3>
             <p className="text-slate-500 text-sm font-semibold">
-              Your premium subscription has been successfully activated. Enjoy full access!
+              Your premium subscription has been successfully activated. Enjoy
+              full access!
             </p>
           </div>
         </Card>
@@ -245,7 +268,9 @@ function ReferralsPageContent() {
               Payment verification delayed or failed
             </h3>
             <p className="text-slate-500 text-sm font-semibold">
-              We couldn't verify your payment automatically. If you've been charged, please refresh the page in a few moments or contact support.
+              We couldn't verify your payment automatically. If you've been
+              charged, please refresh the page in a few moments or contact
+              support.
             </p>
           </div>
         </Card>
@@ -509,7 +534,13 @@ function ReferralsPageContent() {
 
 export default function ReferralsPage() {
   return (
-    <Suspense fallback={<div className="pt-32 text-center text-slate-500 font-bold">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="pt-32 text-center text-slate-500 font-bold">
+          Loading...
+        </div>
+      }
+    >
       <ReferralsPageContent />
     </Suspense>
   );

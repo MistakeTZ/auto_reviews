@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export interface Product {
   nmId: string;
@@ -16,13 +16,13 @@ export interface Review {
   text: string;
   date: string;
   status:
-    | 'pending'
-    | 'auto-answered'
-    | 'manual-review'
-    | 'none'
-    | 'auto'
-    | 'manually'
-    | 'fetched';
+    | "pending"
+    | "auto-answered"
+    | "manual-review"
+    | "none"
+    | "auto"
+    | "manually"
+    | "fetched";
   autoAnswerText?: string;
   wb_review_id: string;
   userName?: string;
@@ -36,12 +36,12 @@ export interface Review {
 export interface Rule {
   id: string;
   name: string;
-  target: 'general' | 'specific_nm';
+  target: "general" | "specific_nm";
   nmId?: string; // If specific_nm
-  conditionRatingOperator: 'exact' | 'less_than' | 'more_than';
+  conditionRatingOperator: "exact" | "less_than" | "more_than";
   conditionRating: number | null;
   conditionKeyword: string;
-  actionType: 'template' | 'gpt';
+  actionType: "template" | "gpt";
   actionText: string;
   withVideo?: boolean;
   withPhoto?: boolean;
@@ -54,7 +54,7 @@ export interface Rule {
 export interface NotificationMethod {
   id: number;
   userId: number;
-  type: 'email' | 'telegram' | 'max';
+  type: "email" | "telegram" | "max";
   value: string;
   isActive?: boolean;
 }
@@ -66,15 +66,15 @@ interface AppState {
   apiToken: string | null;
   userName: string | null;
   userUuid: string | null;
-  language: 'en' | 'ru';
+  language: "en" | "ru";
   reviews: Review[];
   rules: Rule[];
   products: Product[];
   notificationMethods: NotificationMethod[];
-  
+
   // Subscription & Referral Fields
   subscriptionExpiresAt: string | null;
-  tariffType: 'trial' | 'full' | null;
+  tariffType: "trial" | "full" | null;
   trialActivated: boolean;
   hasActiveSubscription: boolean;
   referralCode: string | null;
@@ -83,24 +83,35 @@ interface AppState {
 
   login: (token: string) => void;
   logout: () => void;
-  setLanguage: (lang: 'en' | 'ru') => void;
+  setLanguage: (lang: "en" | "ru") => void;
   fetchMe: () => Promise<void>;
   fetchProducts: (refresh?: boolean, replace?: boolean) => Promise<void>;
   fetchRules: () => Promise<void>;
-  fetchReviews: (page?: number, pageSize?: number, status?: string) => Promise<any>;
+  fetchReviews: (
+    page?: number,
+    pageSize?: number,
+    status?: string,
+  ) => Promise<any>;
   setToken: (token: string) => Promise<void>;
-  addRule: (rule: Omit<Rule, 'id'>) => Promise<void>;
+  addRule: (rule: Omit<Rule, "id">) => Promise<void>;
   updateRule: (id: string, rule: Partial<Rule>) => Promise<void>;
   deleteRule: (id: string) => Promise<void>;
   markReviewAsAnswered: (id: string, text: string) => Promise<void>;
   generateReviewReply: (id: string) => Promise<string>;
   fetchNotificationMethods: () => Promise<void>;
-  addNotificationMethod: (method: Omit<NotificationMethod, 'id' | 'userId'>) => Promise<void>;
+  addNotificationMethod: (
+    method: Omit<NotificationMethod, "id" | "userId">,
+  ) => Promise<void>;
   deleteNotificationMethod: (id: number) => Promise<void>;
   applyReferralCode: (code: string) => Promise<void>;
   buySubscription: () => Promise<void>;
-  createPayment: (amount?: string, returnUrl?: string) => Promise<{ confirmation_url: string; payment_id: string }>;
-  checkPaymentStatus: (paymentId: string) => Promise<{ success: boolean; status: string }>;
+  createPayment: (
+    amount?: string,
+    returnUrl?: string,
+  ) => Promise<{ confirmation_url: string; payment_id: string }>;
+  checkPaymentStatus: (
+    paymentId: string,
+  ) => Promise<{ success: boolean; status: string; isFirstPayment: boolean }>;
   fetchReferralsList: () => Promise<any[]>;
   syncReviews: () => Promise<void>;
 }
@@ -114,7 +125,7 @@ export const useAppStore = create<AppState>()(
       apiToken: null,
       userName: null,
       userUuid: null,
-      language: 'ru',
+      language: "ru",
       products: [],
       reviews: [],
       rules: [],
@@ -127,27 +138,33 @@ export const useAppStore = create<AppState>()(
       referredById: null,
       referrals: [],
 
-      login: (token: string) => set({ isAuthenticated: true, hasLoadedProfile: false, jwtToken: token }),
+      login: (token: string) =>
+        set({
+          isAuthenticated: true,
+          hasLoadedProfile: false,
+          jwtToken: token,
+        }),
 
-      logout: () => set({
-        isAuthenticated: false,
-        hasLoadedProfile: false,
-        jwtToken: null,
-        apiToken: null,
-        userName: null,
-        userUuid: null,
-        reviews: [],
-        rules: [],
-        products: [],
-        notificationMethods: [],
-        subscriptionExpiresAt: null,
-        tariffType: null,
-        trialActivated: false,
-        hasActiveSubscription: false,
-        referralCode: null,
-        referredById: null,
-        referrals: [],
-      }),
+      logout: () =>
+        set({
+          isAuthenticated: false,
+          hasLoadedProfile: false,
+          jwtToken: null,
+          apiToken: null,
+          userName: null,
+          userUuid: null,
+          reviews: [],
+          rules: [],
+          products: [],
+          notificationMethods: [],
+          subscriptionExpiresAt: null,
+          tariffType: null,
+          trialActivated: false,
+          hasActiveSubscription: false,
+          referralCode: null,
+          referredById: null,
+          referrals: [],
+        }),
 
       setLanguage: (lang) => set({ language: lang }),
 
@@ -156,15 +173,16 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             const data = await res.json();
             const hasApiToken = Boolean(
-              data.has_wb_api_token ?? (data.wb_api_token && String(data.wb_api_token).trim())
+              data.has_wb_api_token ??
+              (data.wb_api_token && String(data.wb_api_token).trim()),
             );
             set({
-              apiToken: hasApiToken ? '********' : null,
+              apiToken: hasApiToken ? "********" : null,
               userName: data.name,
               userUuid: data.uuid,
               subscriptionExpiresAt: data.subscription_expires_at,
@@ -188,10 +206,10 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const qs = refresh
-            ? `?refresh=true&replace=${replace ? 'true' : 'false'}`
-            : '';
+            ? `?refresh=true&replace=${replace ? "true" : "false"}`
+            : "";
           const res = await fetch(`${API_URL}/products/${qs}`, {
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             const data = await res.json();
@@ -207,7 +225,7 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/rules/`, {
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             const data = await res.json();
@@ -219,7 +237,7 @@ export const useAppStore = create<AppState>()(
                 conditionRatingOperator: r.condition_rating_operator,
                 conditionRating: r.condition_rating,
                 conditionKeyword: r.condition_keyword,
-                actionType: r.action_type ?? 'template',
+                actionType: r.action_type ?? "template",
                 actionText: r.action_text,
                 withVideo: r.with_video,
                 withPhoto: r.with_photo,
@@ -227,7 +245,7 @@ export const useAppStore = create<AppState>()(
                 priority: r.priority,
                 sendNotification: r.send_notification,
                 isEditedFeedback: r.is_edited_feedback,
-              }))
+              })),
             });
           }
         } catch (e) {
@@ -235,20 +253,25 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      fetchReviews: async (page?: number, pageSize?: number, status?: string) => {
+      fetchReviews: async (
+        page?: number,
+        pageSize?: number,
+        status?: string,
+      ) => {
         const { jwtToken } = get();
         if (!jwtToken) return;
         try {
           let url = `${API_URL}/reviews/`;
           const params = new URLSearchParams();
-          if (page !== undefined) params.append('page', String(page));
-          if (pageSize !== undefined) params.append('page_size', String(pageSize));
-          if (status !== undefined) params.append('status', status);
+          if (page !== undefined) params.append("page", String(page));
+          if (pageSize !== undefined)
+            params.append("page_size", String(pageSize));
+          if (status !== undefined) params.append("status", status);
           const qs = params.toString();
           if (qs) url += `?${qs}`;
 
           const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             const data = await res.json();
@@ -272,7 +295,7 @@ export const useAppStore = create<AppState>()(
                 total: data.total,
                 page: data.page,
                 pageSize: data.page_size,
-                pages: data.pages
+                pages: data.pages,
               };
             } else {
               const items = data.map(mapReview);
@@ -289,19 +312,21 @@ export const useAppStore = create<AppState>()(
         const { jwtToken } = get();
         if (!jwtToken) return;
         const res = await fetch(`${API_URL}/settings/token`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${jwtToken}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
           },
-          body: JSON.stringify({ token })
+          body: JSON.stringify({ token }),
         });
         if (res.ok) {
           set({ apiToken: token });
           await get().fetchProducts(true, true);
         } else {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || data.message || 'Failed to verify token');
+          throw new Error(
+            data.detail || data.message || "Failed to verify token",
+          );
         }
       },
 
@@ -325,12 +350,12 @@ export const useAppStore = create<AppState>()(
             is_edited_feedback: rule.isEditedFeedback || false,
           };
           const res = await fetch(`${API_URL}/rules/`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${jwtToken}`,
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
           });
           if (res.ok) {
             const r = await res.json();
@@ -342,14 +367,14 @@ export const useAppStore = create<AppState>()(
               conditionRatingOperator: r.condition_rating_operator,
               conditionRating: r.condition_rating,
               conditionKeyword: r.condition_keyword,
-              actionType: r.action_type ?? 'template',
+              actionType: r.action_type ?? "template",
               actionText: r.action_text,
               withVideo: r.with_video,
               withPhoto: r.with_photo,
               withName: r.with_name,
               priority: r.priority,
               sendNotification: r.send_notification,
-              isEditedFeedback: r.is_edited_feedback
+              isEditedFeedback: r.is_edited_feedback,
             };
             set({ rules: [...rules, newRule] });
           }
@@ -363,11 +388,11 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/rules/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
-            set({ rules: rules.filter(r => r.id !== id) });
+            set({ rules: rules.filter((r) => r.id !== id) });
           }
         } catch (e) {
           console.error(e);
@@ -379,28 +404,43 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const payload: any = {};
-          if (updatedFields.name !== undefined) payload.name = updatedFields.name;
-          if (updatedFields.target !== undefined) payload.target = updatedFields.target;
-          if (updatedFields.nmId !== undefined) payload.nm_id = updatedFields.nmId || null;
-          if (updatedFields.conditionRatingOperator !== undefined) payload.condition_rating_operator = updatedFields.conditionRatingOperator;
-          if (updatedFields.conditionRating !== undefined) payload.condition_rating = updatedFields.conditionRating;
-          if (updatedFields.conditionKeyword !== undefined) payload.condition_keyword = updatedFields.conditionKeyword || null;
-          if (updatedFields.actionType !== undefined) payload.action_type = updatedFields.actionType;
-          if (updatedFields.actionText !== undefined) payload.action_text = updatedFields.actionText;
-          if (updatedFields.withVideo !== undefined) payload.with_video = updatedFields.withVideo;
-          if (updatedFields.withPhoto !== undefined) payload.with_photo = updatedFields.withPhoto;
-          if (updatedFields.withName !== undefined) payload.with_name = updatedFields.withName;
-          if (updatedFields.priority !== undefined) payload.priority = updatedFields.priority;
-          if (updatedFields.sendNotification !== undefined) payload.send_notification = updatedFields.sendNotification;
-          if (updatedFields.isEditedFeedback !== undefined) payload.is_edited_feedback = updatedFields.isEditedFeedback;
+          if (updatedFields.name !== undefined)
+            payload.name = updatedFields.name;
+          if (updatedFields.target !== undefined)
+            payload.target = updatedFields.target;
+          if (updatedFields.nmId !== undefined)
+            payload.nm_id = updatedFields.nmId || null;
+          if (updatedFields.conditionRatingOperator !== undefined)
+            payload.condition_rating_operator =
+              updatedFields.conditionRatingOperator;
+          if (updatedFields.conditionRating !== undefined)
+            payload.condition_rating = updatedFields.conditionRating;
+          if (updatedFields.conditionKeyword !== undefined)
+            payload.condition_keyword = updatedFields.conditionKeyword || null;
+          if (updatedFields.actionType !== undefined)
+            payload.action_type = updatedFields.actionType;
+          if (updatedFields.actionText !== undefined)
+            payload.action_text = updatedFields.actionText;
+          if (updatedFields.withVideo !== undefined)
+            payload.with_video = updatedFields.withVideo;
+          if (updatedFields.withPhoto !== undefined)
+            payload.with_photo = updatedFields.withPhoto;
+          if (updatedFields.withName !== undefined)
+            payload.with_name = updatedFields.withName;
+          if (updatedFields.priority !== undefined)
+            payload.priority = updatedFields.priority;
+          if (updatedFields.sendNotification !== undefined)
+            payload.send_notification = updatedFields.sendNotification;
+          if (updatedFields.isEditedFeedback !== undefined)
+            payload.is_edited_feedback = updatedFields.isEditedFeedback;
 
           const res = await fetch(`${API_URL}/rules/${id}`, {
-            method: 'PUT',
+            method: "PUT",
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${jwtToken}`,
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
           });
           if (res.ok) {
             const r = await res.json();
@@ -412,17 +452,17 @@ export const useAppStore = create<AppState>()(
               conditionRatingOperator: r.condition_rating_operator,
               conditionRating: r.condition_rating,
               conditionKeyword: r.condition_keyword,
-              actionType: r.action_type ?? 'template',
+              actionType: r.action_type ?? "template",
               actionText: r.action_text,
               withVideo: r.with_video,
               withPhoto: r.with_photo,
               withName: r.with_name,
               priority: r.priority,
               sendNotification: r.send_notification,
-              isEditedFeedback: r.is_edited_feedback
+              isEditedFeedback: r.is_edited_feedback,
             };
             set({
-              rules: rules.map(rule => rule.id === id ? updatedRule : rule)
+              rules: rules.map((rule) => (rule.id === id ? updatedRule : rule)),
             });
           }
         } catch (e) {
@@ -435,16 +475,20 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/reviews/${id}/reply`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${jwtToken}`,
             },
-            body: JSON.stringify({ answer_feedback: text })
+            body: JSON.stringify({ answer_feedback: text }),
           });
           if (res.ok) {
             set({
-              reviews: reviews.map(r => r.id === id ? { ...r, status: 'manual-review', autoAnswerText: text } : r)
+              reviews: reviews.map((r) =>
+                r.id === id
+                  ? { ...r, status: "manual-review", autoAnswerText: text }
+                  : r,
+              ),
             });
           }
         } catch (e) {
@@ -454,22 +498,24 @@ export const useAppStore = create<AppState>()(
 
       generateReviewReply: async (id: string) => {
         const { jwtToken } = get();
-        if (!jwtToken) throw new Error('Not authenticated');
+        if (!jwtToken) throw new Error("Not authenticated");
 
         const res = await fetch(`${API_URL}/reviews/${id}/generate`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            Authorization: `Bearer ${jwtToken}`
-          }
+            Authorization: `Bearer ${jwtToken}`,
+          },
         });
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || data.message || 'Failed to generate reply');
+          throw new Error(
+            data.detail || data.message || "Failed to generate reply",
+          );
         }
 
         const data = await res.json();
-        return String(data.text || '').trim();
+        return String(data.text || "").trim();
       },
 
       fetchNotificationMethods: async () => {
@@ -477,7 +523,7 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/settings/notifications`, {
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             const data = await res.json();
@@ -487,8 +533,8 @@ export const useAppStore = create<AppState>()(
                 userId: m.user_id,
                 type: m.type,
                 value: m.value,
-                isActive: m.is_active
-              }))
+                isActive: m.is_active,
+              })),
             });
           }
         } catch (e) {
@@ -501,16 +547,16 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/settings/notifications`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${jwtToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${jwtToken}`,
             },
             body: JSON.stringify({
               type: method.type,
               value: method.value,
-              is_active: method.isActive !== undefined ? method.isActive : true
-            })
+              is_active: method.isActive !== undefined ? method.isActive : true,
+            }),
           });
           if (res.ok) {
             const m = await res.json();
@@ -519,7 +565,7 @@ export const useAppStore = create<AppState>()(
               userId: m.user_id,
               type: m.type,
               value: m.value,
-              isActive: m.is_active
+              isActive: m.is_active,
             };
             set({ notificationMethods: [...notificationMethods, newMethod] });
           }
@@ -533,12 +579,14 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/settings/notifications/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             set({
-              notificationMethods: notificationMethods.filter(m => m.id !== id)
+              notificationMethods: notificationMethods.filter(
+                (m) => m.id !== id,
+              ),
             });
           }
         } catch (e) {
@@ -550,18 +598,20 @@ export const useAppStore = create<AppState>()(
         const { jwtToken } = get();
         if (!jwtToken) return;
         const res = await fetch(`${API_URL}/settings/apply-referral`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${jwtToken}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
           },
-          body: JSON.stringify({ code })
+          body: JSON.stringify({ code }),
         });
         if (res.ok) {
           await get().fetchMe();
         } else {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || data.message || 'Failed to apply referral code');
+          throw new Error(
+            data.detail || data.message || "Failed to apply referral code",
+          );
         }
       },
 
@@ -569,61 +619,74 @@ export const useAppStore = create<AppState>()(
         const { jwtToken } = get();
         if (!jwtToken) return;
         const res = await fetch(`${API_URL}/settings/buy-subscription`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            Authorization: `Bearer ${jwtToken}`
-          }
+            Authorization: `Bearer ${jwtToken}`,
+          },
         });
         if (res.ok) {
           await get().fetchMe();
         } else {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || data.message || 'Failed to buy subscription');
+          throw new Error(
+            data.detail || data.message || "Failed to buy subscription",
+          );
         }
       },
 
       createPayment: async (amount = "990.00", returnUrl) => {
         const { jwtToken } = get();
         if (!jwtToken) throw new Error("Not authenticated");
-        
+
         const res = await fetch(`${API_URL}/payments/create`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${jwtToken}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
           },
-          body: JSON.stringify({ amount, return_url: returnUrl })
+          body: JSON.stringify({ amount, return_url: returnUrl }),
         });
-        
+
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || data.message || 'Failed to initiate payment');
+          throw new Error(
+            data.detail || data.message || "Failed to initiate payment",
+          );
         }
-        
+
         const data = await res.json();
-        return { confirmation_url: data.confirmation_url, payment_id: data.payment_id };
+        return {
+          confirmation_url: data.confirmation_url,
+          payment_id: data.payment_id,
+        };
       },
 
       checkPaymentStatus: async (paymentId: string) => {
         const { jwtToken } = get();
         if (!jwtToken) throw new Error("Not authenticated");
-        
+
         const res = await fetch(`${API_URL}/payments/check/${paymentId}`, {
           headers: {
-            Authorization: `Bearer ${jwtToken}`
-          }
+            Authorization: `Bearer ${jwtToken}`,
+          },
         });
-        
+
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || data.message || 'Failed to check payment status');
+          throw new Error(
+            data.detail || data.message || "Failed to check payment status",
+          );
         }
-        
+
         const data = await res.json();
         if (data.success) {
           await get().fetchMe();
         }
-        return { success: data.success, status: data.status };
+        return {
+          success: data.success,
+          status: data.status,
+          isFirstPayment: Boolean(data.is_first_payment),
+        };
       },
 
       fetchReferralsList: async () => {
@@ -631,7 +694,7 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return [];
         try {
           const res = await fetch(`${API_URL}/settings/referrals-list`, {
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             const data = await res.json();
@@ -649,8 +712,8 @@ export const useAppStore = create<AppState>()(
         if (!jwtToken) return;
         try {
           const res = await fetch(`${API_URL}/reviews/sync`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${jwtToken}` }
+            method: "POST",
+            headers: { Authorization: `Bearer ${jwtToken}` },
           });
           if (res.ok) {
             await get().fetchReviews();
@@ -658,16 +721,16 @@ export const useAppStore = create<AppState>()(
         } catch (e) {
           console.error(e);
         }
-      }
+      },
     }),
     {
-      name: 'auto-reviews-storage',
+      name: "auto-reviews-storage",
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         jwtToken: state.jwtToken,
         language: state.language,
-        apiToken: state.apiToken
+        apiToken: state.apiToken,
       }),
-    }
-  )
+    },
+  ),
 );
