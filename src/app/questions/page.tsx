@@ -19,11 +19,18 @@ type QuestionItem = {
   text: string;
   answer_text?: string | null;
   date?: string | null;
+  editable?: boolean | null;
+  state?: string | null;
   is_answered: boolean;
   user_name?: string | null;
 };
 
-type StatusFilter = "all" | "answered" | "unanswered";
+type StatusFilter =
+  | "all"
+  | "answered"
+  | "answeredGlobal"
+  | "answeredPrivate"
+  | "unanswered";
 type TriFilter = "all" | "yes" | "no";
 
 export default function QuestionsPage() {
@@ -50,11 +57,14 @@ export default function QuestionsPage() {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/questions/?include_answered=true&take=100`, {
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
+      const res = await fetch(
+        `${API_URL}/questions/?include_answered=true&take=100`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         setAllQuestions([]);
@@ -84,12 +94,15 @@ export default function QuestionsPage() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/questions/sync?include_answered=true&take=100`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
+      const res = await fetch(
+        `${API_URL}/questions/sync?include_answered=true&take=100`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
         },
-      });
+      );
 
       if (res.ok) {
         const data = await res.json();
@@ -124,6 +137,16 @@ export default function QuestionsPage() {
       const questionDate = parseDate(question.date);
 
       if (statusFilter === "answered" && !question.is_answered) return false;
+      if (
+        statusFilter === "answeredGlobal" &&
+        (!question.is_answered || question.state !== "wbRu")
+      )
+        return false;
+      if (
+        statusFilter === "answeredPrivate" &&
+        (!question.is_answered || question.state !== "none")
+      )
+        return false;
       if (statusFilter === "unanswered" && question.is_answered) return false;
 
       if (productFilter !== "all") {
@@ -141,9 +164,19 @@ export default function QuestionsPage() {
 
       return true;
     });
-  }, [allQuestions, statusFilter, productFilter, withAnswerFilter, dateFrom, dateTo]);
+  }, [
+    allQuestions,
+    statusFilter,
+    productFilter,
+    withAnswerFilter,
+    dateFrom,
+    dateTo,
+  ]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredQuestions.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredQuestions.length / PAGE_SIZE),
+  );
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const paginatedQuestions = useMemo(() => {
     const start = (safeCurrentPage - 1) * PAGE_SIZE;
@@ -159,7 +192,9 @@ export default function QuestionsPage() {
 
   const productOptions = useMemo(() => {
     return Array.from(
-      new Set(allQuestions.map((q) => q.product_name).filter(Boolean) as string[]),
+      new Set(
+        allQuestions.map((q) => q.product_name).filter(Boolean) as string[],
+      ),
     ).sort((a, b) => a.localeCompare(b));
   }, [allQuestions]);
 
@@ -201,7 +236,9 @@ export default function QuestionsPage() {
               ) : (
                 <RotateCw className="h-4 w-4 text-indigo-600" />
               )}
-              {isSyncing ? t("questions.syncing") : t("questions.syncQuestions")}
+              {isSyncing
+                ? t("questions.syncing")
+                : t("questions.syncQuestions")}
             </Button>
           </div>
 
@@ -241,8 +278,18 @@ export default function QuestionsPage() {
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
                     >
                       <option value="all">{t("questions.all")}</option>
-                      <option value="answered">{t("questions.answered")}</option>
-                      <option value="unanswered">{t("questions.unanswered")}</option>
+                      <option value="answered">
+                        {t("questions.answered")}
+                      </option>
+                      <option value="answeredGlobal">
+                        {t("questions.answeredGlobal")}
+                      </option>
+                      <option value="answeredPrivate">
+                        {t("questions.answeredPrivate")}
+                      </option>
+                      <option value="unanswered">
+                        {t("questions.unanswered")}
+                      </option>
                     </select>
                   </div>
 
@@ -359,7 +406,9 @@ export default function QuestionsPage() {
                               : question.product_name || "-"}
                           </h3>
                           <span className="text-xs font-semibold text-slate-400 mt-2 inline-block">
-                            {question.date ? formatDateTime(question.date) : "-"}
+                            {question.date
+                              ? formatDateTime(question.date)
+                              : "-"}
                           </span>
                         </div>
                         <span
@@ -384,14 +433,18 @@ export default function QuestionsPage() {
                         </p>
                       </div>
 
-                      <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
-                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-1.5">
-                          {t("questions.answerLabel")}
-                        </p>
-                        <p className="text-sm text-slate-800 font-medium">
-                          {hasAnswer ? question.answer_text : t("questions.noAnswer")}
-                        </p>
-                      </div>
+                      {hasAnswer && (
+                        <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+                          <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-1.5">
+                            {question.state === "wbRu"
+                              ? t("questions.answerLabelGlobal")
+                              : t("questions.answerLabelPrivate")}
+                          </p>
+                          <p className="text-sm text-slate-800 font-medium">
+                            {question.answer_text}
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
@@ -407,26 +460,30 @@ export default function QuestionsPage() {
             {totalPages > 1 && (
               <div className="mt-8 flex justify-center items-center gap-1.5">
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   disabled={safeCurrentPage === 1}
                   className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-slate-500 transition-all font-bold text-sm shadow-sm"
                 >
                   ← {t("questions.back")}
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setCurrentPage(p)}
-                    className={`rounded-xl px-4 py-2 text-sm font-bold transition-all shadow-sm ${
-                      safeCurrentPage === p
-                        ? "bg-indigo-600 text-white shadow-indigo-200"
-                        : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (p) => (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`rounded-xl px-4 py-2 text-sm font-bold transition-all shadow-sm ${
+                        safeCurrentPage === p
+                          ? "bg-indigo-600 text-white shadow-indigo-200"
+                          : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ),
+                )}
 
                 <button
                   onClick={() =>

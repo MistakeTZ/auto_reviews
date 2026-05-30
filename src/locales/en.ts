@@ -191,6 +191,8 @@ export const en = {
     yes: 'Yes',
     no: 'No',
     answered: 'Answered',
+    answeredGlobal: 'Answer published',
+    answeredPrivate: 'Answer sent to buyer',
     unanswered: 'Unanswered',
     questionLabel: 'Question:',
     answerLabel: 'Answer:',

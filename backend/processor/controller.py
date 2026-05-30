@@ -22,11 +22,13 @@ class MainController:
         use_gpt_for_feedbacks: bool = True,
         user_id: Optional[int] = None,
         db_factory: Optional[Callable] = None,
+        full_check_cycles: int = 60,
     ):
         self.processor = processor
         self.gpt = gpt_client
         self.poll_interval = poll_interval
         self.use_gpt_for_feedbacks = use_gpt_for_feedbacks
+        self.full_check_cycles = full_check_cycles
         self.user_id = user_id
         self.db_factory = db_factory
 
@@ -36,19 +38,23 @@ class MainController:
         self._feedback_examples: List[Dict] = []
 
     async def run(self):
+        cycle_count = 0
         while True:
             try:
-                await self.poll_once()
+                await self.poll_once(
+                    full_check=cycle_count % self.full_check_cycles == 0
+                )
             except Exception as exc:
                 logger.exception("Poll error: %s", exc)
+            cycle_count += 1
 
             await asyncio.sleep(self.poll_interval)
 
-    async def poll_once(self):
+    async def poll_once(self, full_check: bool = False):
         await asyncio.gather(
             # self._handle_chats(),
-            self._handle_questions(),
-            self._handle_feedbacks(),
+            self._handle_questions(full_check),
+            self._handle_feedbacks(full_check),
         )
 
     async def _handle_chats(self):
@@ -96,14 +102,21 @@ class MainController:
                     "[chat] failed to send answer for chat_id=%s: %s", chat_id, response
                 )
 
-    async def _handle_questions(self):
-        count = await self.processor.get_count_unanswered_questions()
-        if count == 0:
-            logger.debug("[questions] no unanswered questions, skipping")
-            return
+    async def _handle_questions(self, full_check: bool = False):
+        if not full_check:
+            count = await self.processor.get_count_unanswered_questions()
+            if count == 0:
+                logger.debug("[questions] no unanswered questions, skipping")
+                return
 
         logger.info("[questions] %d unanswered question(s) found", count)
         questions = await self.processor.get_questions(is_answered=False, take=50)
+        if full_check:
+            answered_questions = await self.processor.get_questions(
+                is_answered=True, take=50
+            )
+            questions.extend(answered_questions)
+
         for question in questions:
             question_id = str(question.get("id", ""))
             if not question_id:
@@ -131,14 +144,19 @@ class MainController:
             wb_question_id=question_id,
             nm_id=str(product_details.get("nmId") or ""),
             product_name=str(product_details.get("productName") or "Unknown Product"),
-            text=str(
-                question.get("text")
-                or question.get("questionText")
-                or question.get("question")
-                or ""
+            text=question.get("text"),
+            date=question.get("createdDate"),
+            editable=bool(
+                question.get("answer", {}).get("editable", True)
+                if question.get("answer")
+                else True
             ),
-            date=str(question.get("createdDate") or question.get("createdAt") or ""),
-            answer_text=None,
+            state=question.get("state", "none"),
+            answer_text=(
+                question.get("answer", {}).get("text")
+                if question.get("answer")
+                else None
+            ),
             user_name=user_name,
         )
 
@@ -273,7 +291,7 @@ class MainController:
 
         return review_data
 
-    async def _handle_feedbacks(self):
+    async def _handle_feedbacks(self, full_check: bool = False):
         # Load rules from DB once per poll cycle
         rules: List[Any] = []
         existing_reviews_by_wb_id: Dict[str, Any] = {}
@@ -293,7 +311,9 @@ class MainController:
             logger.warning("[feedbacks] no rules found; will only sync fetched answers")
 
         count = await self.processor.get_count_unanswered_feedbacks()
-        feedbacks = await self.processor.get_feedbacks(is_answered=True, take=3)
+        feedbacks = await self.processor.get_feedbacks(
+            is_answered=True, take=50 if full_check else 2
+        )
         if count > 0:
             new_feedbacks = await self.processor.get_feedbacks(
                 is_answered=False, take=50

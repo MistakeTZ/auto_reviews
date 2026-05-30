@@ -123,6 +123,8 @@ class Question(Base):
     answer_text = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user_name = Column(String, nullable=True)
+    editable = Column(Boolean, default=True, nullable=True)
+    state = Column(String, default="none")
 
     owner = relationship("User", back_populates="questions")
 

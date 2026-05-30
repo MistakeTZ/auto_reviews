@@ -26,6 +26,8 @@ type QuestionItem = {
   text: string;
   answer_text?: string | null;
   date?: string | null;
+  editable?: boolean | null;
+  state?: string | null;
   is_answered: boolean;
   user_name?: string | null;
 };
