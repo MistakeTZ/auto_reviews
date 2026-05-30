@@ -181,6 +181,7 @@ def setup_admin(app):
     admin.add_view(UserAdmin)
     admin.add_view(RuleAdmin)
     admin.add_view(ReviewAdmin)
+    admin.add_view(QuestionAdmin)
     admin.add_view(NmIDsAdmin)
     admin.add_view(NotificationMethodAdmin)
     admin.add_view(PaymentAdmin)
