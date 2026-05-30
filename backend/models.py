@@ -27,6 +27,7 @@ class User(Base):
     subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
     tariff_type = Column(String, default="trial", nullable=True)
     trial_activated = Column(Boolean, default=False, nullable=True)
+    registration_bonus_days = Column(Integer, default=0, nullable=False)
     referred_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_code = Column(String, unique=True, index=True, nullable=True)
 
@@ -138,6 +139,18 @@ class NmIDs(Base):
     user_d_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="nm_ids")
+
+
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String, unique=True, index=True)
+    days_on_registration = Column(Integer, default=0)  # Days added on registration
+    topup_days = Column(Integer, default=0)  # Days added on subscription top-up
+    expires_at = Column(DateTime(timezone=True), nullable=True) # Null means no expiration
+    max_uses = Column(Integer, nullable=True)  # Null means unlimited
+    used_count = Column(Integer, default=0)
 
 
 class NotificationMethod(Base):

@@ -47,6 +47,23 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/check-promocode")
+def check_promocode(code: str, db: Session = Depends(database.get_db)):
+    promo, error = crud.validate_registration_promocode(db, code)
+    if error:
+        return {
+            "valid": False,
+            "message": error,
+            "days_on_registration": 0,
+        }
+
+    return {
+        "valid": True,
+        "message": "Promo code is valid",
+        "days_on_registration": int(promo.days_on_registration or 0),
+    }
+
+
 @router.post("/login", response_model=schemas.Token)
 def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

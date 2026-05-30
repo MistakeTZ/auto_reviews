@@ -17,8 +17,15 @@ function RegisterPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoChecking, setPromoChecking] = useState(false);
+  const [promoValid, setPromoValid] = useState<boolean | null>(null);
+  const [promoBonusDays, setPromoBonusDays] = useState(0);
+  const [promoMessage, setPromoMessage] = useState("");
 
   const [error, setError] = useState("");
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   useEffect(() => {
     const refFromQuery = searchParams.get("ref")?.trim() || "";
@@ -27,14 +34,54 @@ function RegisterPageContent() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const code = promoCode.trim();
+    if (!code) {
+      setPromoChecking(false);
+      setPromoValid(null);
+      setPromoBonusDays(0);
+      setPromoMessage("");
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setPromoChecking(true);
+      try {
+        const res = await fetch(
+          `${API_URL}/auth/check-promocode?code=${encodeURIComponent(code)}`,
+        );
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+
+        const isValid = Boolean(data.valid);
+        setPromoValid(isValid);
+        setPromoBonusDays(Number(data.days_on_registration || 0));
+        setPromoMessage(String(data.message || ""));
+      } catch {
+        if (cancelled) return;
+        setPromoValid(false);
+        setPromoBonusDays(0);
+        setPromoMessage(t("auth.promoCheckError"));
+      } finally {
+        if (!cancelled) setPromoChecking(false);
+      }
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [promoCode, API_URL, t]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (email && password && name) {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
         const pendingReferralCode =
           localStorage.getItem("pendingReferralCode")?.trim() || "";
+        const trimmedPromoCode = promoCode.trim();
         const payload = {
           email,
           name,
@@ -42,6 +89,7 @@ function RegisterPageContent() {
           ...(pendingReferralCode
             ? { referral_code: pendingReferralCode }
             : {}),
+          ...(trimmedPromoCode ? { promo_code: trimmedPromoCode } : {}),
         };
         const regRes = await fetch(`${API_URL}/auth/register`, {
           method: "POST",
@@ -72,13 +120,16 @@ function RegisterPageContent() {
             login(data.access_token);
             router.push("/dashboard");
           } else {
-            setError("Login failed after registration");
+            setError(t("auth.loginAfterRegisterFailed"));
           }
         } else {
-          setError("Registration failed (maybe email already in use?)");
+          const errData = await regRes.json().catch(() => ({}));
+          setError(
+            String(errData.detail || t("auth.registrationFailedMaybeEmail")),
+          );
         }
       } catch {
-        setError("Connection error");
+        setError(t("auth.connectionError"));
       }
     }
   };
@@ -119,6 +170,38 @@ function RegisterPageContent() {
                 required
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t("auth.promoCode")}
+              </label>
+              <input
+                type="text"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                className="w-full px-4 py-2 bg-white  border border-gray-300  rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder={t("auth.promoCodeOptional")}
+              />
+              {promoCode.trim() && (
+                <p
+                  className={`mt-2 text-xs ${
+                    promoChecking
+                      ? "text-slate-500"
+                      : promoValid
+                        ? "text-green-600"
+                        : "text-red-500"
+                  }`}
+                >
+                  {promoChecking
+                    ? t("auth.promoChecking")
+                    : promoValid
+                      ? promoBonusDays > 0
+                        ? `${t("auth.promoValidPrefix")} +${promoBonusDays} ${t("auth.promoDaysSuffix")}`
+                        : t("auth.promoValid")
+                      : promoMessage || t("auth.promoInvalid")}
+                </p>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">
                 {t("auth.password")}

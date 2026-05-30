@@ -830,7 +830,7 @@ export default function ReviewsPage() {
                           </span>
                         </div>
                         <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                          <div className="relative flex-1">
+                          <div className="relative flex-1 min-w-0">
                             <input
                               type={dateFrom ? "date" : "text"}
                               placeholder="От"
@@ -843,12 +843,11 @@ export default function ReviewsPage() {
                                 setDateFrom(e.target.value);
                                 setCurrentPage(1);
                               }}
-                              className="w-full h-10 pl-3 pr-8 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
                             />
-                            <Calendar size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                           </div>
                           <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
-                          <div className="relative flex-1">
+                          <div className="relative flex-1 min-w-0">
                             <input
                               type={dateTo ? "date" : "text"}
                               placeholder="до"
@@ -861,9 +860,8 @@ export default function ReviewsPage() {
                                 setDateTo(e.target.value);
                                 setCurrentPage(1);
                               }}
-                              className="w-full h-10 pl-3 pr-8 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
                             />
-                            <Calendar size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                           </div>
                         </div>
                       </div>

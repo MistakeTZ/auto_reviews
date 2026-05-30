@@ -38,7 +38,14 @@ def run_migrations():
         try:
             inspector = inspect(engine)
             with engine.connect() as conn:
-                pass  # migrations if needed
+                user_columns = {
+                    col.get("name") for col in inspector.get_columns("users")
+                }
+                if "registration_bonus_days" not in user_columns:
+                    conn.exec_driver_sql(
+                        "ALTER TABLE users ADD COLUMN registration_bonus_days INTEGER NOT NULL DEFAULT 0"
+                    )
+                    conn.commit()
 
         except Exception as e:
             logger.warning("Automatic PostgreSQL migrations warning:", exc_info=e)

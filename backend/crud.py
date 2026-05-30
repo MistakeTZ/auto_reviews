@@ -34,9 +34,44 @@ def get_user_by_referral_code(db: Session, referral_code: str):
     )
 
 
+def get_promo_code_by_code(db: Session, code: str):
+    normalized = (code or "").strip()
+    if not normalized:
+        return None
+    return (
+        db.query(models.PromoCode)
+        .filter(func.lower(models.PromoCode.code) == normalized.lower())
+        .first()
+    )
+
+
+def validate_registration_promocode(db: Session, code: str):
+    normalized = (code or "").strip()
+    if not normalized:
+        return None, "Promo code is empty"
+
+    promo = get_promo_code_by_code(db, normalized)
+    if not promo:
+        return None, "Promo code is invalid"
+
+    if promo.expires_at:
+        now = datetime.now(timezone.utc)
+        expires_at = promo.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
+            return None, "Promo code has expired"
+
+    if promo.max_uses is not None and (promo.used_count or 0) >= promo.max_uses:
+        return None, "Promo code usage limit reached"
+
+    return promo, None
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password)
     referred_by_id = None
+    registration_bonus_days = 0
 
     if user.referral_code:
         referrer = get_user_by_referral_code(db, user.referral_code.strip())
@@ -44,11 +79,20 @@ def create_user(db: Session, user: schemas.UserCreate):
             raise ValueError("Invalid referral code")
         referred_by_id = referrer.id
 
+    if user.promo_code:
+        promo, promo_error = validate_registration_promocode(db, user.promo_code)
+        if promo_error:
+            raise ValueError(promo_error)
+        registration_bonus_days = int(promo.days_on_registration or 0)
+        promo.used_count = int(promo.used_count or 0) + 1
+        db.add(promo)
+
     db_user = models.User(
         email=user.email,
         hashed_password=hashed_password,
         name=user.name,
         referral_code=str(uuid.uuid4())[:8],
+        registration_bonus_days=registration_bonus_days,
         referred_by_id=referred_by_id,
     )
     db.add(db_user)
@@ -89,7 +133,9 @@ def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] 
         if not db_user.trial_activated:
             db_user.trial_activated = True
             now = datetime.now(timezone.utc)
-            db_user.subscription_expires_at = now + timedelta(days=14)
+            trial_days = 7 + max(int(db_user.registration_bonus_days or 0), 0)
+            db_user.subscription_expires_at = now + timedelta(days=trial_days)
+            db_user.registration_bonus_days = 0
             db_user.tariff_type = "trial"
 
             # If referred by someone, extend referrer's subscription by 7 days on full tariff

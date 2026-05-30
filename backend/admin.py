@@ -8,7 +8,16 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from database import engine
-from models import NmIDs, NotificationMethod, Question, Review, Rule, User, Payment
+from models import (
+    NmIDs,
+    NotificationMethod,
+    Question,
+    Review,
+    Rule,
+    User,
+    Payment,
+    PromoCode,
+)
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -141,6 +150,20 @@ class NmIDsAdmin(ModelView, model=NmIDs):
     name_plural = "Products"
 
 
+class PromoCodeAdmin(ModelView, model=PromoCode):
+    column_list = [
+        PromoCode.id,
+        PromoCode.code,
+        PromoCode.days_on_registration,
+        PromoCode.topup_days,
+        PromoCode.expires_at,
+        PromoCode.max_uses,
+        PromoCode.used_count,
+    ]
+    name = "Promo Code"
+    name_plural = "Promo Codes"
+
+
 class NotificationMethodAdmin(ModelView, model=NotificationMethod):
     column_list = [
         NotificationMethod.id,
@@ -183,6 +206,7 @@ def setup_admin(app):
     admin.add_view(ReviewAdmin)
     admin.add_view(QuestionAdmin)
     admin.add_view(NmIDsAdmin)
+    admin.add_view(PromoCodeAdmin)
     admin.add_view(NotificationMethodAdmin)
     admin.add_view(PaymentAdmin)
 
