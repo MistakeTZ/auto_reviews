@@ -24,35 +24,16 @@ function LandingPageContent() {
     .split('\n\n')
     .map((group) => group.split('\n').map((line) => line.trim()).filter(Boolean));
 
-  const [isVisible, setIsVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
-
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Scroll reveal observer
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-revealed');
-          }
-        });
-      },
-      { threshold: 0.05 }
-    );
-
-    const elements = document.querySelectorAll('[data-reveal]');
-    elements.forEach((el) => observer.observe(el));
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      elements.forEach((el) => observer.unobserve(el));
     };
   }, []);
 
@@ -68,7 +49,7 @@ function LandingPageContent() {
   };
 
   return (
-    <div className={`landing-page landing-shell ${isVisible ? 'is-visible' : ''}`}>
+    <div className="landing-page">
       {/* Header */}
       <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
         <div className="header-container">
@@ -107,7 +88,7 @@ function LandingPageContent() {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-container">
-            <div className="hero-content" data-reveal="left">
+            <div className="hero-content">
               <span className="eyebrow">{t('landing.trustedBanner')}</span>
               <h2 className="hero-headline">
                 {t('landing.titlePrefix')}
@@ -132,12 +113,12 @@ function LandingPageContent() {
               </div>
             </div>
 
-            <div className="hero-visual" data-reveal="right">
+            <div className="hero-visual">
               <div className="image-container">
                 <picture>
-                  <source media="(max-width: 769px)" srcSet="/dashboard_sm.jpg" />
-                  <source media="(min-width: 770px)" srcSet="/dashboard_md.jpg" />
-                  <img src="/dashboard_md.jpg" alt={t('landing.heroImageAlt')} fetchPriority="high" decoding="async" />
+                  <source media="(max-width: 769px)" srcSet="/dashboard_sm.webp" />
+                  <source media="(min-width: 770px)" srcSet="/dashboard_md.webp" />
+                  <img src="/dashboard_md.webp" alt={t('landing.heroImageAlt')} fetchPriority="high" decoding="async" />
                 </picture>
               </div>
             </div>
@@ -145,7 +126,7 @@ function LandingPageContent() {
         </section>
 
         {/* Trust Metrics Bar */}
-        <section className="trust-bar-section" data-reveal="zoom">
+        <section className="trust-bar-section">
           <div className="trust-bar-container">
             <div className="trust-metric">
               <strong>{t('landing.stat1')}</strong>
@@ -166,7 +147,7 @@ function LandingPageContent() {
 
         {/* Features Section */}
         <section className="services-section">
-          <div className="services-header" data-reveal="zoom">
+          <div className="services-header">
             <span className="services-eyebrow">{t('landing.capabilities')}</span>
             <h2 className="services-title">{t('landing.feature1Title') ? t('landing.ourPowerfulFeatures') : t('landing.features')}</h2>
           </div>
@@ -176,7 +157,7 @@ function LandingPageContent() {
               { icon: Settings, title: t('landing.feature2Title'), desc: t('landing.feature2Desc') },
               { icon: ShieldCheck, title: t('landing.feature3Title'), desc: t('landing.feature3Desc') }
             ].map((feature, idx) => (
-              <div key={idx} className="service-card" data-reveal="left" style={{ ['--reveal-delay' as any]: `${idx * 150}ms` }}>
+              <div key={idx} className="service-card">
                 <div className="service-card-icon">
                   <feature.icon size={28} />
                 </div>
@@ -190,15 +171,15 @@ function LandingPageContent() {
         {/* How it Works Section */}
         <section className="why-choose-section">
           <div className="why-choose-container">
-            <span className="why-choose-eyebrow" data-reveal="zoom">{t('landing.process')}</span>
-            <h2 className="why-choose-title" data-reveal="zoom">{t('landing.howItWorks')}</h2>
+            <span className="why-choose-eyebrow">{t('landing.process')}</span>
+            <h2 className="why-choose-title">{t('landing.howItWorks')}</h2>
             <div className="why-choose-grid">
               {[
                 { step: '01', title: t('landing.step1Title'), desc: t('landing.step1Desc') },
                 { step: '02', title: t('landing.step2Title'), desc: t('landing.step2Desc') },
                 { step: '03', title: t('landing.step3Title'), desc: t('landing.step3Desc') }
               ].map((item, idx) => (
-                <div key={idx} className="why-choose-card" data-reveal="left" style={{ ['--reveal-delay' as any]: `${idx * 150}ms` }}>
+                <div key={idx} className="why-choose-card">
                   <div className="why-choose-card-header">
                     <div className="why-choose-icon">{item.step}</div>
                     <h3>{item.title}</h3>
@@ -213,8 +194,8 @@ function LandingPageContent() {
         {/* Testimonials Section */}
         <section className="about-us-section">
           <div className="about-us-intro">
-            <span className="about-us-eyebrow" data-reveal="zoom">{t('landing.reviews')}</span>
-            <h2 className="about-us-headline" data-reveal="zoom">{t('landing.testimonialsTitle')}</h2>
+            <span className="about-us-eyebrow">{t('landing.reviews')}</span>
+            <h2 className="about-us-headline">{t('landing.testimonialsTitle')}</h2>
           </div>
           <div className="about-us-pillars">
             {[
@@ -222,7 +203,7 @@ function LandingPageContent() {
               { text: t('landing.testimonial2Text'), author: t('landing.testimonial2Author'), role: t('landing.testimonial2Role') },
               { text: t('landing.testimonial3Text'), author: t('landing.testimonial3Author'), role: t('landing.testimonial3Role') }
             ].map((testimonial, idx) => (
-              <div key={idx} className="about-us-card" data-reveal="left" style={{ ['--reveal-delay' as any]: `${idx * 150}ms` }}>
+              <div key={idx} className="about-us-card">
                 <p>{testimonial.text}</p>
                 <div className="about-us-card-author">
                   <div className="about-us-card-avatar">
@@ -240,7 +221,7 @@ function LandingPageContent() {
 
         {/* Pricing Section */}
         <section className="pricing-section">
-          <div className="pricing-header" data-reveal="zoom">
+          <div className="pricing-header">
             <span className="why-choose-eyebrow">{t('landing.pricing')}</span>
             <h2 className="why-choose-title">{t('landing.pricingTitle')}</h2>
           </div>
@@ -250,7 +231,7 @@ function LandingPageContent() {
               { title: t('landing.pricingPro'), price: t('landing.pricingProPrice'), desc: t('landing.pricingProDesc'), isPopular: true, period: t('landing.pricingMonth') },
               { title: t('landing.pricingEnterprise'), price: t('landing.pricingEnterprisePrice'), desc: t('landing.pricingEnterpriseDesc'), isPopular: false, period: t('landing.pricingWeek') }
             ].map((plan, idx) => (
-              <div key={idx} className={`pricing-card ${plan.isPopular ? 'is-popular' : ''}`} data-reveal="left" style={{ ['--reveal-delay' as any]: `${idx * 150}ms` }}>
+              <div key={idx} className={`pricing-card ${plan.isPopular ? 'is-popular' : ''}`}>
                 <h3>{plan.title}</h3>
                 <p className="pricing-card-desc">{plan.desc}</p>
                 <div className="pricing-price-wrap">
