@@ -8,7 +8,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from database import engine
-from models import NmIDs, NotificationMethod, Review, Rule, User, Payment
+from models import NmIDs, NotificationMethod, Question, Review, Rule, User, Payment
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -76,7 +76,12 @@ class UserAdmin(ModelView, model=User):
         User.sid,
         User.uuid,
     ]
-    form_excluded_columns = [User.rules, User.reviews, User.nm_ids, User.notification_methods]
+    form_excluded_columns = [
+        User.rules,
+        User.reviews,
+        User.nm_ids,
+        User.notification_methods,
+    ]
     name = "User"
     name_plural = "Users"
 
@@ -110,6 +115,24 @@ class ReviewAdmin(ModelView, model=Review):
     ]
     name = "Review"
     name_plural = "Reviews"
+
+
+class QuestionAdmin(ModelView, model=Question):
+    column_list = [
+        Question.id,
+        Question.wb_question_id,
+        Question.nm_id,
+        Question.product_name,
+        Question.text,
+        Question.answer_text,
+        Question.date,
+        Question.state,
+        Question.editable,
+        Question.user_name,
+        Question.user_id,
+    ]
+    name = "Question"
+    name_plural = "Questions"
 
 
 class NmIDsAdmin(ModelView, model=NmIDs):

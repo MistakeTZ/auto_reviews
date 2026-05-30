@@ -293,7 +293,7 @@ export default function QuestionsPage() {
                     </select>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <label className="mb-1 block text-xs font-bold text-slate-600">
                       {t("questions.filterWithAnswer")}
                     </label>
@@ -309,7 +309,7 @@ export default function QuestionsPage() {
                       <option value="yes">{t("questions.yes")}</option>
                       <option value="no">{t("questions.no")}</option>
                     </select>
-                  </div>
+                  </div> */}
 
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-bold text-slate-600">
