@@ -69,7 +69,11 @@ def _to_question_create(question: Dict) -> schemas.QuestionCreate:
         product_name=str(product_details.get("productName") or "Unknown Product"),
         text=str(question.get("text") or ""),
         date=str(question.get("createdDate") or question.get("createdAt") or ""),
-        state=question.get("state") or "none",
+        state=(
+            question.get("state")
+            or (question.get("answer") or {}).get("state")
+            or None
+        ),
         editable=(
             question.get("editable") if question.get("editable") is not None else True
         ),

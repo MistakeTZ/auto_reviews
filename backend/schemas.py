@@ -137,7 +137,7 @@ class QuestionBase(BaseModel):
     text: str
     date: str
     editable: bool = True
-    state: str = "none"
+    state: Optional[str] = None
     answer_text: Optional[str] = None
     user_name: Optional[str] = None
 

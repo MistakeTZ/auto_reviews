@@ -151,7 +151,7 @@ class MainController:
                 if question.get("answer")
                 else True
             ),
-            state=question.get("state", "none"),
+            state=(question.get("state")),
             answer_text=(
                 question.get("answer", {}).get("text")
                 if question.get("answer")

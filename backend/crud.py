@@ -397,12 +397,16 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
         db_question.product_name = question_data.product_name
         db_question.text = question_data.text
         db_question.date = question_data.date
-        db_question.state = question_data.state
+        if question_data.state is not None and str(question_data.state).strip() != "":
+            db_question.state = question_data.state
         db_question.editable = question_data.editable
         db_question.answer_text = question_data.answer_text
         db_question.user_name = question_data.user_name
     else:
-        db_question = models.Question(**question_data.model_dump(), user_id=user_id)
+        payload = question_data.model_dump()
+        if not payload.get("state"):
+            payload["state"] = "none"
+        db_question = models.Question(**payload, user_id=user_id)
         db.add(db_question)
 
     db.commit()
