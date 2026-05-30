@@ -41,9 +41,11 @@ class MainController:
         cycle_count = 0
         while True:
             try:
-                await self.poll_once(
-                    full_check=cycle_count % self.full_check_cycles == 0
+                full_check = cycle_count % self.full_check_cycles == 0
+                logger.info(
+                    "Starting poll cycle %d, full_check=%s", cycle_count, full_check
                 )
+                await self.poll_once(full_check=full_check)
             except Exception as exc:
                 logger.exception("Poll error: %s", exc)
             cycle_count += 1
