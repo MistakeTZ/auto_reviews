@@ -16,7 +16,7 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://autoreviews.app"),
+  metadataBase: new URL("https://reanswer.ru"),
   title: {
     default: "reAnswer — AI автоответы на отзывы Wildberries",
     template: "%s | reAnswer"

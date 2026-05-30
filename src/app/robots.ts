@@ -5,10 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/register', '/login', '/demo'],
+        allow: ['/', '/register', '/login', '/privacy', '/legal', '/consent'],
         disallow: ['/dashboard', '/reviews', '/questions', '/rules', '/settings', '/api/'],
       },
     ],
-    sitemap: 'https://autoreviews.app/sitemap.xml',
+    sitemap: 'https://reanswer.ru/sitemap.xml',
   };
 }
