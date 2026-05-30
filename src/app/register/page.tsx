@@ -13,7 +13,7 @@ function RegisterPageContent() {
   const login = useAppStore((state) => state.login);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -62,7 +62,11 @@ function RegisterPageContent() {
         if (cancelled) return;
         setPromoValid(false);
         setPromoBonusDays(0);
-        setPromoMessage(t("auth.promoCheckError"));
+        setPromoMessage(
+          language === "ru"
+            ? "Не удалось проверить промокод"
+            : "Could not verify promo code",
+        );
       } finally {
         if (!cancelled) setPromoChecking(false);
       }
@@ -72,7 +76,7 @@ function RegisterPageContent() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [promoCode, API_URL, t]);
+  }, [promoCode, API_URL, language]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -22,6 +22,7 @@ class User(UserBase):
     subscription_expires_at: Optional[datetime] = None
     tariff_type: Optional[str] = None
     trial_activated: Optional[bool] = None
+    registration_bonus_days: int = 0
     referral_code: Optional[str] = None
     referred_by_id: Optional[int] = None
     has_active_subscription: bool = False
@@ -39,6 +40,7 @@ class UserPublic(UserBase):
     subscription_expires_at: Optional[datetime] = None
     tariff_type: Optional[str] = None
     trial_activated: Optional[bool] = None
+    registration_bonus_days: int = 0
     referral_code: Optional[str] = None
     referred_by_id: Optional[int] = None
     has_active_subscription: bool = False

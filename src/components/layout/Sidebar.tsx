@@ -27,6 +27,7 @@ export default function Sidebar() {
     fetchRules,
     fetchReviews,
     userName,
+    apiToken,
     tariffType,
     hasActiveSubscription,
   } = useAppStore();
@@ -36,7 +37,9 @@ export default function Sidebar() {
 
   const getPlanBadge = () => {
     const planName = !hasActiveSubscription
-      ? "subscription.expiredPlan"
+      ? !apiToken
+        ? "subscription.noToken"
+        : "subscription.expiredPlan"
       : tariffType === "trial"
         ? "subscription.trialPlan"
         : "subscription.premiumPlanShort";

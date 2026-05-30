@@ -343,6 +343,7 @@ export const ru = {
     buyPlanBtn: 'Активировать тариф',
     activePlan: 'Активный план',
     trialPlan: 'Пробный тариф',
+    noToken: 'Без токена',
     expiredPlan: 'Срок действия истек',
     premiumPlan: 'Премиум тариф (1 месяц)',
     premiumPlanShort: 'Премиум тариф',

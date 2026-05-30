@@ -4,7 +4,7 @@ import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
-import { Lock, Settings, Gift, Sparkles, CreditCard } from 'lucide-react';
+import { Lock, Gift, Sparkles, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface SubscriptionGuardProps {
@@ -12,8 +12,8 @@ interface SubscriptionGuardProps {
 }
 
 export default function SubscriptionGuard({ children }: SubscriptionGuardProps) {
-  const { hasActiveSubscription, trialActivated, tariffType, isAuthenticated, hasLoadedProfile } = useAppStore();
-  const { t } = useTranslation();
+  const { hasActiveSubscription, trialActivated, tariffType, isAuthenticated, hasLoadedProfile, registrationBonusDays } = useAppStore();
+  const { t, language } = useTranslation();
   const router = useRouter();
 
   if (!isAuthenticated) {
@@ -31,6 +31,10 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
   // If not active, show the premium lock screen
   const isTrialNotStarted = !trialActivated;
   const isTrialExpired = trialActivated && tariffType === 'trial';
+  const trialDays = 7 + Math.max(0, Number(registrationBonusDays || 0));
+  const trialNotStartedTitle = language === 'ru'
+    ? `Активируйте ${trialDays} дней пробного периода`
+    : `Activate ${trialDays} days of trial period`;
 
   return (
     <div className="min-h-[80vh] w-full flex items-center justify-center p-4 md:p-8 animate-fade-in">
@@ -47,27 +51,11 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
         {isTrialNotStarted ? (
           <>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
-              {t('subscription.trialNotStartedTitle')}
+              {trialNotStartedTitle}
             </h2>
             <p className="text-slate-600 font-medium text-sm md:text-base leading-relaxed mb-8">
               {t('subscription.trialNotStartedDesc')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full">
-              <Button
-                onClick={() => router.push('/settings')}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/25 transition-all active:scale-95 text-sm"
-              >
-                <Settings size={18} />
-                {t('subscription.goToSettings')}
-              </Button>
-              <Button
-                onClick={() => router.push('/referrals')}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 font-bold px-6 py-3.5 rounded-2xl transition-all active:scale-95 text-sm"
-              >
-                <Gift size={18} />
-                {t('subscription.goToReferrals')}
-              </Button>
-            </div>
           </>
         ) : isTrialExpired ? (
           <>

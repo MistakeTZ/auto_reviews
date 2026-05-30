@@ -76,6 +76,7 @@ interface AppState {
   subscriptionExpiresAt: string | null;
   tariffType: "trial" | "full" | null;
   trialActivated: boolean;
+  registrationBonusDays: number;
   hasActiveSubscription: boolean;
   referralCode: string | null;
   referredById: number | null;
@@ -133,6 +134,7 @@ export const useAppStore = create<AppState>()(
       subscriptionExpiresAt: null,
       tariffType: null,
       trialActivated: false,
+      registrationBonusDays: 0,
       hasActiveSubscription: false,
       referralCode: null,
       referredById: null,
@@ -160,6 +162,7 @@ export const useAppStore = create<AppState>()(
           subscriptionExpiresAt: null,
           tariffType: null,
           trialActivated: false,
+          registrationBonusDays: 0,
           hasActiveSubscription: false,
           referralCode: null,
           referredById: null,
@@ -188,6 +191,7 @@ export const useAppStore = create<AppState>()(
               subscriptionExpiresAt: data.subscription_expires_at,
               tariffType: data.tariff_type,
               trialActivated: data.trial_activated,
+              registrationBonusDays: Number(data.registration_bonus_days || 0),
               hasActiveSubscription: data.has_active_subscription,
               referralCode: data.referral_code,
               referredById: data.referred_by_id,

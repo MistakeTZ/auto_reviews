@@ -342,6 +342,7 @@ export const en = {
     buyPlanBtn: 'Activate subscription plan',
     activePlan: 'Active plan',
     trialPlan: 'Trial plan',
+    noToken: 'No token',
     expiredPlan: 'Expired',
     premiumPlan: 'Premium plan (1 month)',
     premiumPlanShort: 'Premium plan',
