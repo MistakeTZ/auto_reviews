@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=PT+Sans:wght@400;500;600;700;800&display=swap');
-
 :root {
   --color-navy: #0A192F;
   --navy-light: #2530D9;
@@ -9,8 +7,8 @@
   --color-dark-gray: #4A5568;
   --color-light-gray: #F7FAFC;
   --color-white: #FFFFFF;
-  --font-main-latin: 'Inter', sans-serif;
-  --font-main-cyrillic: 'PT Sans', sans-serif;
+  --font-main-latin: var(--font-inter), 'Inter', sans-serif;
+  --font-main-cyrillic: var(--font-pt-sans), 'PT Sans', sans-serif;
   --font-main: var(--font-main-latin);
 
   --btn-height: 3.25rem;
@@ -718,7 +716,7 @@ html[lang='ru'] {
   font-weight: bold;
 }
 
-.about-us-card-info h4 {
+.about-us-card-info h3 {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 700;

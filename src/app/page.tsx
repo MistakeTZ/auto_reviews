@@ -134,7 +134,11 @@ function LandingPageContent() {
 
             <div className="hero-visual" data-reveal="right">
               <div className="image-container">
-                <img src="/dashboard.jpg" alt={t('landing.heroImageAlt')} />
+                <picture>
+                  <source media="(max-width: 769px)" srcSet="/dashboard_sm.jpg" />
+                  <source media="(min-width: 770px)" srcSet="/dashboard_md.jpg" />
+                  <img src="/dashboard_md.jpg" alt={t('landing.heroImageAlt')} fetchPriority="high" decoding="async" />
+                </picture>
               </div>
             </div>
           </div>
@@ -225,7 +229,7 @@ function LandingPageContent() {
                     {testimonial.author[0]}
                   </div>
                   <div className="about-us-card-info">
-                    <h4>{testimonial.author}</h4>
+                    <h3>{testimonial.author}</h3>
                     <p>{testimonial.role}</p>
                   </div>
                 </div>
