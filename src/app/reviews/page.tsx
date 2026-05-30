@@ -7,11 +7,25 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { formatDateTime } from "@/lib/formatDateTime";
-import { Loader2, Pencil, RotateCw, X, MessageSquare, Star, ShoppingBag, Reply, Image, Video, Calendar, Filter } from "lucide-react";
+import {
+  Loader2,
+  Pencil,
+  RotateCw,
+  X,
+  MessageSquare,
+  Star,
+  ShoppingBag,
+  Reply,
+  Image,
+  Video,
+  Calendar,
+  Filter,
+} from "lucide-react";
 import "./reviews.css";
 
 export default function ReviewsPage() {
   const fetchReviews = useAppStore((state) => state.fetchReviews);
+  const products = useAppStore((state) => state.products);
   const markAsAnswered = useAppStore((state) => state.markReviewAsAnswered);
   const generateReviewReply = useAppStore((state) => state.generateReviewReply);
   const syncReviews = useAppStore((state) => state.syncReviews);
@@ -46,7 +60,9 @@ export default function ReviewsPage() {
   const [isEditingAnswer, setIsEditingAnswer] = useState<{
     [key: string]: boolean;
   }>({});
-  const replyTextareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
+  const replyTextareaRefs = useRef<{
+    [key: string]: HTMLTextAreaElement | null;
+  }>({});
 
   const resizeReplyTextarea = useCallback((id: string) => {
     const el = replyTextareaRefs.current[id];
@@ -206,11 +222,41 @@ export default function ReviewsPage() {
     return d;
   };
 
+  const productsByNmId = useMemo(() => {
+    type ProductMeta = { name: string; photo?: string };
+    const map: Record<string, ProductMeta> = {};
+
+    if (Array.isArray(products)) {
+      products.forEach((product: any) => {
+        const nmId = String(product?.nmId || "").trim();
+        if (!nmId) return;
+        map[nmId] = {
+          name: String(product?.name || `WB #${nmId}`),
+          photo: product?.photo ? String(product.photo) : undefined,
+        };
+      });
+      return map;
+    }
+
+    Object.entries(products as Record<string, any>).forEach(([nmId, value]) => {
+      const key = String(value?.nmId || nmId || "").trim();
+      if (!key) return;
+      map[key] = {
+        name: String(value?.name || value?.title || `WB #${key}`),
+        photo: value?.photo ? String(value.photo) : undefined,
+      };
+    });
+
+    return map;
+  }, [products]);
+
   const filteredReviews = useMemo(() => {
     const fromDate = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null;
     const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null;
 
     return allReviews.filter((review) => {
+      const resolvedProductName =
+        productsByNmId[String(review.nmId || "")]?.name || review.productName;
       const normalizedStatus = getNormalizedStatus(
         review.status,
         review.autoAnswerText,
@@ -228,9 +274,12 @@ export default function ReviewsPage() {
 
       if (statusFilter !== "all" && normalizedStatus !== statusFilter)
         return false;
-      if (starsFilter.length > 0 && !starsFilter.includes(Number(review.rating)))
+      if (
+        starsFilter.length > 0 &&
+        !starsFilter.includes(Number(review.rating))
+      )
         return false;
-      if (productFilter !== "all" && review.productName !== productFilter)
+      if (productFilter !== "all" && resolvedProductName !== productFilter)
         return false;
       if (!matchesTriFilter(hasComment, withCommentFilter)) return false;
       if (!matchesTriFilter(hasAnswer, withAnswerFilter)) return false;
@@ -258,6 +307,7 @@ export default function ReviewsPage() {
     editableFilter,
     dateFrom,
     dateTo,
+    productsByNmId,
   ]);
 
   useEffect(() => {
@@ -285,9 +335,16 @@ export default function ReviewsPage() {
 
   const productOptions = useMemo(() => {
     return Array.from(
-      new Set(allReviews.map((r) => r.productName).filter(Boolean)),
+      new Set(
+        allReviews
+          .map(
+            (r) =>
+              productsByNmId[String(r.nmId || "")]?.name || r.productName || "",
+          )
+          .filter(Boolean),
+      ),
     ).sort((a, b) => a.localeCompare(b));
-  }, [allReviews]);
+  }, [allReviews, productsByNmId]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -358,7 +415,10 @@ export default function ReviewsPage() {
     if (productFilter !== "all") {
       tags.push({
         id: "product",
-        label: productFilter.length > 15 ? `${productFilter.slice(0, 15)}...` : productFilter,
+        label:
+          productFilter.length > 15
+            ? `${productFilter.slice(0, 15)}...`
+            : productFilter,
         onClear: () => {
           setProductFilter("all");
           setCurrentPage(1);
@@ -369,7 +429,8 @@ export default function ReviewsPage() {
     if (withCommentFilter !== "all") {
       tags.push({
         id: "comment",
-        label: withCommentFilter === "yes" ? "С комментарием" : "Без комментария",
+        label:
+          withCommentFilter === "yes" ? "С комментарием" : "Без комментария",
         onClear: () => {
           setWithCommentFilter("all");
           setCurrentPage(1);
@@ -500,9 +561,7 @@ export default function ReviewsPage() {
                   onClick={() => setIsFilterMenuOpen(false)}
                   className="reviews-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
                 />
-                <div
-                  className="reviews-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]"
-                >
+                <div className="reviews-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]">
                   {/* Sticky Header */}
                   <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
                     <h2 className="text-xl font-black text-slate-900">
@@ -534,7 +593,9 @@ export default function ReviewsPage() {
                         <select
                           value={statusFilter}
                           onChange={(e) =>
-                            handleStatusFilterChange(e.target.value as ReviewFilter)
+                            handleStatusFilterChange(
+                              e.target.value as ReviewFilter,
+                            )
                           }
                           className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
                         >
@@ -553,7 +614,10 @@ export default function ReviewsPage() {
                           ))}
                         </select>
                         <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                          <svg
+                            className="h-4 w-4 fill-current"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                           </svg>
                         </div>
@@ -598,7 +662,14 @@ export default function ReviewsPage() {
                                   : "bg-white border border-slate-200/60 text-slate-600 hover:bg-slate-100/80 hover:text-slate-800"
                               }`}
                             >
-                              <Star size={12} className={isChecked ? "text-amber-500 fill-amber-500" : "text-amber-400 fill-amber-400"} />
+                              <Star
+                                size={12}
+                                className={
+                                  isChecked
+                                    ? "text-amber-500 fill-amber-500"
+                                    : "text-amber-400 fill-amber-400"
+                                }
+                              />
                               <span>{star}</span>
                             </button>
                           );
@@ -633,7 +704,10 @@ export default function ReviewsPage() {
                           ))}
                         </select>
                         <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                          <svg
+                            className="h-4 w-4 fill-current"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                           </svg>
                         </div>
@@ -665,7 +739,10 @@ export default function ReviewsPage() {
                             <option value="no">{t("reviews.no")}</option>
                           </select>
                           <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                            <svg
+                              className="h-3 w-3 fill-current"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                             </svg>
                           </div>
@@ -695,7 +772,10 @@ export default function ReviewsPage() {
                             <option value="no">{t("reviews.no")}</option>
                           </select>
                           <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                            <svg
+                              className="h-3 w-3 fill-current"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                             </svg>
                           </div>
@@ -728,7 +808,10 @@ export default function ReviewsPage() {
                             <option value="no">{t("reviews.no")}</option>
                           </select>
                           <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                            <svg
+                              className="h-3 w-3 fill-current"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                             </svg>
                           </div>
@@ -758,7 +841,10 @@ export default function ReviewsPage() {
                             <option value="no">{t("reviews.no")}</option>
                           </select>
                           <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                            <svg
+                              className="h-3 w-3 fill-current"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                             </svg>
                           </div>
@@ -791,7 +877,10 @@ export default function ReviewsPage() {
                             <option value="no">{t("reviews.no")}</option>
                           </select>
                           <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                            <svg
+                              className="h-3 w-3 fill-current"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                             </svg>
                           </div>
@@ -908,22 +997,28 @@ export default function ReviewsPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-2" />
-            <p className="text-sm font-semibold">
-              {t("reviews.loading")}
-            </p>
+            <p className="text-sm font-semibold">{t("reviews.loading")}</p>
           </div>
         ) : (
           <>
             <div className="space-y-5">
               {paginatedReviews.map((review) => {
                 const isReviewEditable = review.editable !== false;
+                const productMeta = productsByNmId[String(review.nmId || "")];
+                const productName =
+                  productMeta?.name ||
+                  review.productName ||
+                  `WB #${review.nmId}`;
+                const productPhoto = productMeta?.photo;
 
                 return (
                   <Card
                     key={review.id}
                     className={
-                      getNormalizedStatus(review.status, review.autoAnswerText) ===
-                      "pending"
+                      getNormalizedStatus(
+                        review.status,
+                        review.autoAnswerText,
+                      ) === "pending"
                         ? "border-amber-200"
                         : ""
                     }
@@ -935,35 +1030,49 @@ export default function ReviewsPage() {
                           <div
                             className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
                           />
-                          <div>
-                            <h3 className="font-bold text-lg text-slate-900">
-                              {review.userName
-                                ? `${review.userName} • ${review.productName}`
-                                : review.productName}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-2 mt-2">
-                              <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/40 rounded-lg">
-                                ⭐ {review.rating}
-                              </span>
-                              {review.photosCount !== undefined &&
-                                review.photosCount > 0 && (
-                                  <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/40 rounded-lg">
-                                    📷 {review.photosCount}
+                          <div className="flex items-start gap-3">
+                            {productPhoto && (
+                              <img
+                                src={productPhoto}
+                                alt={productName}
+                                className="w-10 h-10 rounded-md object-cover border border-slate-200 bg-white shrink-0 mt-0.5"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                }}
+                              />
+                            )}
+                            <div>
+                              <h3 className="font-bold text-lg text-slate-900">
+                                {review.userName
+                                  ? `${review.userName} • ${productName}`
+                                  : productName}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-2 mt-2">
+                                <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/40 rounded-lg">
+                                  ⭐ {review.rating}
+                                </span>
+                                {review.photosCount !== undefined &&
+                                  review.photosCount > 0 && (
+                                    <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/40 rounded-lg">
+                                      📷 {review.photosCount}
+                                    </span>
+                                  )}
+                                {review.hasVideo && (
+                                  <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200/40 rounded-lg">
+                                    🎥 1
                                   </span>
                                 )}
-                              {review.hasVideo && (
-                                <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200/40 rounded-lg">
-                                  🎥 1
+                                {review.isEditedFeedback && (
+                                  <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/40 rounded-lg">
+                                    {t("reviews.editedFeedback")}
+                                  </span>
+                                )}
+                                <span className="text-xs font-semibold text-slate-400 ml-1">
+                                  {formatDateTime(review.date)}
                                 </span>
-                              )}
-                              {review.isEditedFeedback && (
-                                <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/40 rounded-lg">
-                                  {t("reviews.editedFeedback")}
-                                </span>
-                              )}
-                              <span className="text-xs font-semibold text-slate-400 ml-1">
-                                {formatDateTime(review.date)}
-                              </span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -971,7 +1080,10 @@ export default function ReviewsPage() {
                           <span
                             className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getStatusBadgeClass(review.status, review.autoAnswerText)}`}
                           >
-                            {getStatusLabel(review.status, review.autoAnswerText)}
+                            {getStatusLabel(
+                              review.status,
+                              review.autoAnswerText,
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1046,65 +1158,67 @@ export default function ReviewsPage() {
                       {((getNormalizedStatus(review.status) !== "auto" &&
                         !review.autoAnswerText) ||
                         isEditingAnswer[review.id]) && (
-                          <div className="flex gap-3 mt-4">
-                            <textarea
-                              rows={1}
-                              ref={(el) => {
-                                replyTextareaRefs.current[review.id] = el;
-                                if (el) {
-                                  resizeReplyTextarea(review.id);
-                                }
-                              }}
-                              value={replyText[review.id] || ""}
-                              onChange={(e) => {
-                                setReplyText((prev) => ({
-                                  ...prev,
-                                  [review.id]: e.target.value,
-                                }));
-                                requestAnimationFrame(() =>
-                                  resizeReplyTextarea(review.id),
-                                );
-                              }}
-                              placeholder={
-                                isReviewEditable
-                                  ? t("reviews.typeReply")
-                                  : t("reviews.replyUnavailable")
+                        <div className="flex gap-3 mt-4">
+                          <textarea
+                            rows={1}
+                            ref={(el) => {
+                              replyTextareaRefs.current[review.id] = el;
+                              if (el) {
+                                resizeReplyTextarea(review.id);
                               }
-                              className="reviews-reply-textarea flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
-                              disabled={!isReviewEditable}
-                            />
+                            }}
+                            value={replyText[review.id] || ""}
+                            onChange={(e) => {
+                              setReplyText((prev) => ({
+                                ...prev,
+                                [review.id]: e.target.value,
+                              }));
+                              requestAnimationFrame(() =>
+                                resizeReplyTextarea(review.id),
+                              );
+                            }}
+                            placeholder={
+                              isReviewEditable
+                                ? t("reviews.typeReply")
+                                : t("reviews.replyUnavailable")
+                            }
+                            className="reviews-reply-textarea flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                            disabled={!isReviewEditable}
+                          />
+                          <Button
+                            variant="outline"
+                            onClick={() => handleGenerateReply(review.id)}
+                            disabled={
+                              !isReviewEditable || isGeneratingReply[review.id]
+                            }
+                          >
+                            {isGeneratingReply[review.id]
+                              ? t("reviews.generatingReply")
+                              : t("reviews.generateReply")}
+                          </Button>
+                          <Button
+                            onClick={() => handleReply(review.id)}
+                            disabled={
+                              !replyText[review.id] || !isReviewEditable
+                            }
+                          >
+                            {t("reviews.sendReply")}
+                          </Button>
+                          {isEditingAnswer[review.id] && (
                             <Button
                               variant="outline"
-                              onClick={() => handleGenerateReply(review.id)}
-                              disabled={!isReviewEditable || isGeneratingReply[review.id]}
-                            >
-                              {isGeneratingReply[review.id]
-                                ? t("reviews.generatingReply")
-                                : t("reviews.generateReply")}
-                            </Button>
-                            <Button
-                              onClick={() => handleReply(review.id)}
-                              disabled={
-                                !replyText[review.id] || !isReviewEditable
+                              onClick={() =>
+                                setIsEditingAnswer((prev) => ({
+                                  ...prev,
+                                  [review.id]: false,
+                                }))
                               }
                             >
-                              {t("reviews.sendReply")}
+                              {t("common.cancel")}
                             </Button>
-                            {isEditingAnswer[review.id] && (
-                              <Button
-                                variant="outline"
-                                onClick={() =>
-                                  setIsEditingAnswer((prev) => ({
-                                    ...prev,
-                                    [review.id]: false,
-                                  }))
-                                }
-                              >
-                                {t("common.cancel")}
-                              </Button>
-                            )}
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );

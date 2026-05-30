@@ -46,6 +46,7 @@ type TriFilter = "all" | "yes" | "no";
 
 export default function QuestionsPage() {
   const jwtToken = useAppStore((state) => state.jwtToken);
+  const products = useAppStore((state) => state.products);
   const { t } = useTranslation();
 
   const [allQuestions, setAllQuestions] = useState<QuestionItem[]>([]);
@@ -61,11 +62,17 @@ export default function QuestionsPage() {
   const [dateTo, setDateTo] = useState("");
 
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
-  const [replyState, setReplyState] = useState<{ [key: string]: "none" | "wbRu" }>({});
+  const [replyState, setReplyState] = useState<{
+    [key: string]: "none" | "wbRu";
+  }>({});
   const [isReplying, setIsReplying] = useState<{ [key: string]: boolean }>({});
-  const [isEditingAnswer, setIsEditingAnswer] = useState<{ [key: string]: boolean }>({});
+  const [isEditingAnswer, setIsEditingAnswer] = useState<{
+    [key: string]: boolean;
+  }>({});
 
-  const replyTextareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
+  const replyTextareaRefs = useRef<{
+    [key: string]: HTMLTextAreaElement | null;
+  }>({});
 
   const resizeReplyTextarea = useCallback((id: string) => {
     const el = replyTextareaRefs.current[id];
@@ -98,12 +105,16 @@ export default function QuestionsPage() {
       }
 
       const updatedQuestion = await res.json();
-      
+
       setAllQuestions((prev) =>
-        prev.map((q) => (q.id === id ? {
-          ...updatedQuestion,
-          is_answered: true
-        } : q))
+        prev.map((q) =>
+          q.id === id
+            ? {
+                ...updatedQuestion,
+                is_answered: true,
+              }
+            : q,
+        ),
       );
 
       setReplyText((prev) => ({ ...prev, [id]: "" }));
@@ -116,9 +127,16 @@ export default function QuestionsPage() {
     }
   };
 
-  const handleEditAnswer = (id: string, currentAnswerText: string, currentState: string) => {
+  const handleEditAnswer = (
+    id: string,
+    currentAnswerText: string,
+    currentState: string,
+  ) => {
     setReplyText((prev) => ({ ...prev, [id]: currentAnswerText }));
-    setReplyState((prev) => ({ ...prev, [id]: (currentState as "none" | "wbRu") || "none" }));
+    setReplyState((prev) => ({
+      ...prev,
+      [id]: (currentState as "none" | "wbRu") || "none",
+    }));
     setIsEditingAnswer((prev) => ({ ...prev, [id]: true }));
   };
 
@@ -201,11 +219,36 @@ export default function QuestionsPage() {
     return !value;
   };
 
+  const productNamesByNmId = useMemo(() => {
+    const map: Record<string, string> = {};
+
+    if (Array.isArray(products)) {
+      products.forEach((product: any) => {
+        const nmId = String(product?.nmId || "").trim();
+        if (!nmId) return;
+        map[nmId] = String(product?.name || `WB #${nmId}`);
+      });
+      return map;
+    }
+
+    Object.entries(products as Record<string, any>).forEach(([nmId, value]) => {
+      const key = String(value?.nmId || nmId || "").trim();
+      if (!key) return;
+      map[key] = String(value?.name || value?.title || `WB #${key}`);
+    });
+
+    return map;
+  }, [products]);
+
   const filteredQuestions = useMemo(() => {
     const fromDate = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null;
     const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null;
 
     return allQuestions.filter((question) => {
+      const resolvedProductName =
+        productNamesByNmId[String(question.nm_id || "")] ||
+        question.product_name ||
+        "";
       const hasAnswer = Boolean((question.answer_text || "").trim());
       const questionDate = parseDate(question.date);
 
@@ -223,8 +266,7 @@ export default function QuestionsPage() {
       if (statusFilter === "unanswered" && question.is_answered) return false;
 
       if (productFilter !== "all") {
-        const productName = question.product_name || "";
-        if (productName !== productFilter) return false;
+        if (resolvedProductName !== productFilter) return false;
       }
 
       if (!matchesTriFilter(hasAnswer, withAnswerFilter)) return false;
@@ -244,6 +286,7 @@ export default function QuestionsPage() {
     withAnswerFilter,
     dateFrom,
     dateTo,
+    productNamesByNmId,
   ]);
 
   const totalPages = Math.max(
@@ -266,10 +309,15 @@ export default function QuestionsPage() {
   const productOptions = useMemo(() => {
     return Array.from(
       new Set(
-        allQuestions.map((q) => q.product_name).filter(Boolean) as string[],
+        allQuestions
+          .map(
+            (q) =>
+              productNamesByNmId[String(q.nm_id || "")] || q.product_name || "",
+          )
+          .filter(Boolean) as string[],
       ),
     ).sort((a, b) => a.localeCompare(b));
-  }, [allQuestions]);
+  }, [allQuestions, productNamesByNmId]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -328,7 +376,8 @@ export default function QuestionsPage() {
     if (withAnswerFilter !== "all") {
       tags.push({
         id: "with-answer",
-        label: withAnswerFilter === "yes" ? t("questions.yes") : t("questions.no"),
+        label:
+          withAnswerFilter === "yes" ? t("questions.yes") : t("questions.no"),
         onClear: () => {
           setWithAnswerFilter("all");
           setCurrentPage(1);
@@ -406,9 +455,7 @@ export default function QuestionsPage() {
                   onClick={() => setIsFilterMenuOpen(false)}
                   className="questions-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
                 />
-                <div
-                  className="questions-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]"
-                >
+                <div className="questions-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]">
                   <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
                     <h2 className="text-xl font-black text-slate-900">
                       {t("questions.filters")}
@@ -443,13 +490,24 @@ export default function QuestionsPage() {
                           className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
                         >
                           <option value="all">{t("questions.all")}</option>
-                          <option value="answered">{t("questions.answered")}</option>
-                          <option value="answeredGlobal">{t("questions.answeredGlobal")}</option>
-                          <option value="answeredPrivate">{t("questions.answeredPrivate")}</option>
-                          <option value="unanswered">{t("questions.unanswered")}</option>
+                          <option value="answered">
+                            {t("questions.answered")}
+                          </option>
+                          <option value="answeredGlobal">
+                            {t("questions.answeredGlobal")}
+                          </option>
+                          <option value="answeredPrivate">
+                            {t("questions.answeredPrivate")}
+                          </option>
+                          <option value="unanswered">
+                            {t("questions.unanswered")}
+                          </option>
                         </select>
                         <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                          <svg
+                            className="h-4 w-4 fill-current"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                           </svg>
                         </div>
@@ -482,7 +540,10 @@ export default function QuestionsPage() {
                           ))}
                         </select>
                         <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                          <svg
+                            className="h-4 w-4 fill-current"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                           </svg>
                         </div>
@@ -513,7 +574,10 @@ export default function QuestionsPage() {
                             <option value="no">{t("questions.no")}</option>
                           </select>
                           <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                            <svg
+                              className="h-3 w-3 fill-current"
+                              viewBox="0 0 20 20"
+                            >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                             </svg>
                           </div>
@@ -635,6 +699,10 @@ export default function QuestionsPage() {
             <div className="space-y-5">
               {paginatedQuestions.map((question) => {
                 const hasAnswer = Boolean((question.answer_text || "").trim());
+                const resolvedProductName =
+                  productNamesByNmId[String(question.nm_id || "")] ||
+                  question.product_name ||
+                  "-";
 
                 return (
                   <Card key={question.id}>
@@ -643,8 +711,8 @@ export default function QuestionsPage() {
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">
                             {question.user_name
-                              ? `${question.user_name} • ${question.product_name || "-"}`
-                              : question.product_name || "-"}
+                              ? `${question.user_name} • ${resolvedProductName}`
+                              : resolvedProductName}
                           </h3>
                           <span className="text-xs font-semibold text-slate-400 mt-2 inline-block">
                             {question.date

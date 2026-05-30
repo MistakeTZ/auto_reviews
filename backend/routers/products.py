@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Dict
 import crud
 import database
 from routers.auth import check_active_subscription
@@ -14,19 +14,35 @@ router = APIRouter()
 class Product(BaseModel):
     nmId: str
     name: str
+    photo: str | None = None
 
 
-@router.get("/", response_model=List[Product])
+@router.get("/", response_model=Dict[str, Product])
 async def read_products(
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
     rows = crud.get_nm_ids(db, current_user.id)
     if not rows:
-        return await sync_user_products(
+        synced = await sync_user_products(
             db=db,
             user=current_user,
             replace_existing=False,
         )
+        return {
+            item["nmId"]: {
+                "nmId": item["nmId"],
+                "name": item["name"],
+                "photo": None,
+            }
+            for item in synced
+        }
 
-    return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]
+    return {
+        row.nm_id: {
+            "nmId": row.nm_id,
+            "name": row.product_name,
+            "photo": row.photo_url,
+        }
+        for row in rows
+    }

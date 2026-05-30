@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
@@ -35,6 +35,7 @@ type QuestionItem = {
 export default function Dashboard() {
   const reviews = useAppStore((state) => state.reviews);
   const rules = useAppStore((state) => state.rules);
+  const products = useAppStore((state) => state.products);
   const jwtToken = useAppStore((state) => state.jwtToken);
   const syncReviews = useAppStore((state) => state.syncReviews);
   const { t } = useTranslation();
@@ -132,6 +133,27 @@ export default function Dashboard() {
     if (normalized === "manually") return "bg-violet-500 shadow-violet-200";
     return "bg-amber-500 shadow-amber-200";
   };
+
+  const productNamesByNmId = useMemo(() => {
+    const map: Record<string, string> = {};
+
+    if (Array.isArray(products)) {
+      products.forEach((product: any) => {
+        const nmId = String(product?.nmId || "").trim();
+        if (!nmId) return;
+        map[nmId] = String(product?.name || `WB #${nmId}`);
+      });
+      return map;
+    }
+
+    Object.entries(products as Record<string, any>).forEach(([nmId, value]) => {
+      const key = String(value?.nmId || nmId || "").trim();
+      if (!key) return;
+      map[key] = String(value?.name || value?.title || `WB #${key}`);
+    });
+
+    return map;
+  }, [products]);
 
   const totalReviews = reviews.length;
   const autoAnswered = reviews.filter(
@@ -277,20 +299,25 @@ export default function Dashboard() {
                     .slice()
                     .sort((a, b) => Number(b.date) - Number(a.date))
                     .slice(0, 5)
-                    .map((review) => (
-                      <div
-                        key={review.id}
-                        className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
-                      >
+                    .map((review) => {
+                      const resolvedProductName =
+                        productNamesByNmId[String(review.nmId || "")] ||
+                        review.productName ||
+                        "-";
+                      return (
                         <div
-                          className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-slate-800">
-                            {review.userName
-                              ? `${review.userName} • ${review.productName}`
-                              : review.productName}
-                          </p>
+                          key={review.id}
+                          className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
+                        >
+                          <div
+                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-800">
+                              {review.userName
+                                ? `${review.userName} • ${resolvedProductName}`
+                                : resolvedProductName}
+                            </p>
 
                           {/* Multi-line comment formatting matching screenshot */}
                           {!review.text && !review.pros && !review.cons ? (
@@ -326,7 +353,7 @@ export default function Dashboard() {
                             </div>
                           )}
 
-                          <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                            <div className="flex flex-wrap items-center gap-2 mt-2.5">
                             <span className="inline-flex items-center text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/40 rounded-lg">
                               ⭐ {review.rating}
                             </span>
@@ -344,10 +371,11 @@ export default function Dashboard() {
                             <span className="text-xs font-semibold text-slate-400 ml-1">
                               {formatDateTime(review.date)}
                             </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>
@@ -377,24 +405,29 @@ export default function Dashboard() {
                     .slice()
                     .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
                     .slice(0, 5)
-                    .map((question) => (
-                      <div
-                        key={question.id}
-                        className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
-                      >
+                    .map((question) => {
+                      const resolvedProductName =
+                        productNamesByNmId[String(question.nm_id || "")] ||
+                        question.product_name ||
+                        "-";
+                      return (
                         <div
-                          className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${
-                            question.is_answered
-                              ? "bg-emerald-500 shadow-emerald-200"
-                              : "bg-amber-500 shadow-amber-200"
-                          } shadow-sm`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-slate-800">
-                            {question.user_name
-                              ? `${question.user_name} • ${question.product_name || "-"}`
-                              : question.product_name || "-"}
-                          </p>
+                          key={question.id}
+                          className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
+                        >
+                          <div
+                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${
+                              question.is_answered
+                                ? "bg-emerald-500 shadow-emerald-200"
+                                : "bg-amber-500 shadow-amber-200"
+                            } shadow-sm`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-800">
+                              {question.user_name
+                                ? `${question.user_name} • ${resolvedProductName}`
+                                : resolvedProductName}
+                            </p>
                           <p className="text-sm text-slate-500 mt-1 line-clamp-2">
                             {question.text || "-"}
                           </p>
@@ -417,8 +450,9 @@ export default function Dashboard() {
                             </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   {questions.length === 0 && (
                     <p className="text-sm font-medium text-slate-500 text-center py-6">
                       {t("dashboard.noRecentQuestions")}
