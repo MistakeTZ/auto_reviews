@@ -56,6 +56,15 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
             <p className="text-slate-600 font-medium text-sm md:text-base leading-relaxed mb-8">
               {t('subscription.trialNotStartedDesc')}
             </p>
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <Button
+                onClick={() => router.push('/settings')}
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/25 transition-all active:scale-95 text-sm"
+              >
+                <Sparkles size={18} />
+                {t('subscription.buyPlanBtn')}
+              </Button>
+            </div>
           </>
         ) : isTrialExpired ? (
           <>
@@ -72,13 +81,6 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
               >
                 <Sparkles size={18} />
                 {t('subscription.buyPlanBtn')}
-              </Button>
-              <Button
-                onClick={() => router.push('/referrals')}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 font-bold px-6 py-3.5 rounded-2xl transition-all active:scale-95 text-sm"
-              >
-                <Gift size={18} />
-                {t('subscription.goToReferrals')}
               </Button>
             </div>
           </>

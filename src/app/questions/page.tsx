@@ -1,13 +1,23 @@
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { Loader2, RotateCw } from "lucide-react";
+import {
+  Loader2,
+  RotateCw,
+  X,
+  Filter,
+  MessageSquare,
+  ShoppingBag,
+  Reply,
+  Calendar,
+} from "lucide-react";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/store/useAppStore";
 import { formatDateTime } from "@/lib/formatDateTime";
+import "./questions.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 const PAGE_SIZE = 10;
@@ -217,9 +227,79 @@ export default function QuestionsPage() {
     setCurrentPage(1);
   };
 
+  const activeTags = useMemo(() => {
+    const tags: { id: string; label: string; onClear: () => void }[] = [];
+
+    if (statusFilter !== "all") {
+      tags.push({
+        id: "status",
+        label:
+          statusFilter === "answered"
+            ? t("questions.answered")
+            : statusFilter === "answeredGlobal"
+              ? t("questions.answeredGlobal")
+              : statusFilter === "answeredPrivate"
+                ? t("questions.answeredPrivate")
+                : t("questions.unanswered"),
+        onClear: () => {
+          setStatusFilter("all");
+          setCurrentPage(1);
+        },
+      });
+    }
+
+    if (productFilter !== "all") {
+      tags.push({
+        id: "product",
+        label:
+          productFilter.length > 15
+            ? `${productFilter.slice(0, 15)}...`
+            : productFilter,
+        onClear: () => {
+          setProductFilter("all");
+          setCurrentPage(1);
+        },
+      });
+    }
+
+    if (withAnswerFilter !== "all") {
+      tags.push({
+        id: "with-answer",
+        label: withAnswerFilter === "yes" ? t("questions.yes") : t("questions.no"),
+        onClear: () => {
+          setWithAnswerFilter("all");
+          setCurrentPage(1);
+        },
+      });
+    }
+
+    if (dateFrom || dateTo) {
+      let dateLabel = "";
+      if (dateFrom && dateTo) {
+        dateLabel = `${dateFrom} - ${dateTo}`;
+      } else if (dateFrom) {
+        dateLabel = `С ${dateFrom}`;
+      } else {
+        dateLabel = `По ${dateTo}`;
+      }
+
+      tags.push({
+        id: "date",
+        label: dateLabel,
+        onClear: () => {
+          setDateFrom("");
+          setDateTo("");
+          setCurrentPage(1);
+        },
+      });
+    }
+
+    return tags;
+  }, [statusFilter, productFilter, withAnswerFilter, dateFrom, dateTo, t]);
+
   return (
     <SubscriptionGuard>
-      <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
+      <div className="questions-page pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-3xl font-black tracking-tight text-slate-900">
@@ -242,13 +322,14 @@ export default function QuestionsPage() {
             </Button>
           </div>
 
-          <div className="relative">
+          <div className="relative shrink-0">
             <Button
               variant="outline"
-              onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-              className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2"
+              onClick={() => setIsFilterMenuOpen(true)}
+              className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 active:scale-98 transition-all shrink-0 cursor-pointer"
             >
-              {t("questions.filters")}
+              <Filter size={15} className="text-indigo-600" />
+              <span>{t("questions.filters")}</span>
               {activeFiltersCount > 0 && (
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] font-black text-white">
                   {activeFiltersCount}
@@ -257,129 +338,226 @@ export default function QuestionsPage() {
             </Button>
 
             {isFilterMenuOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-[22rem] rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-2xl backdrop-blur sm:w-[28rem]">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-black tracking-wide text-slate-800">
-                    {t("questions.filters")}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {t("questions.filterStatus")}
-                    </label>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value as StatusFilter);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
+              <>
+                <div
+                  onClick={() => setIsFilterMenuOpen(false)}
+                  className="questions-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
+                />
+                <div
+                  className="questions-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]"
+                >
+                  <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
+                    <h2 className="text-xl font-black text-slate-900">
+                      {t("questions.filters")}
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterMenuOpen(false)}
+                      className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      title={t("questions.closeFilters")}
                     >
-                      <option value="all">{t("questions.all")}</option>
-                      <option value="answered">
-                        {t("questions.answered")}
-                      </option>
-                      <option value="answeredGlobal">
-                        {t("questions.answeredGlobal")}
-                      </option>
-                      <option value="answeredPrivate">
-                        {t("questions.answeredPrivate")}
-                      </option>
-                      <option value="unanswered">
-                        {t("questions.unanswered")}
-                      </option>
-                    </select>
+                      <X size={18} />
+                    </button>
                   </div>
 
-                  {/* <div>
-                    <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {t("questions.filterWithAnswer")}
-                    </label>
-                    <select
-                      value={withAnswerFilter}
-                      onChange={(e) => {
-                        setWithAnswerFilter(e.target.value as TriFilter);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
+                  <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                    <div className="mb-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-1 rounded bg-emerald-50 text-emerald-600">
+                          <MessageSquare size={16} />
+                        </div>
+                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                          {t("questions.filterStatus")}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value as StatusFilter);
+                            setCurrentPage(1);
+                          }}
+                          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
+                        >
+                          <option value="all">{t("questions.all")}</option>
+                          <option value="answered">{t("questions.answered")}</option>
+                          <option value="answeredGlobal">{t("questions.answeredGlobal")}</option>
+                          <option value="answeredPrivate">{t("questions.answeredPrivate")}</option>
+                          <option value="unanswered">{t("questions.unanswered")}</option>
+                        </select>
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mb-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-1 rounded bg-indigo-50 text-indigo-600">
+                          <ShoppingBag size={16} />
+                        </div>
+                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                          {t("questions.filterProduct")}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <select
+                          value={productFilter}
+                          onChange={(e) => {
+                            setProductFilter(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
+                        >
+                          <option value="all">{t("questions.all")}</option>
+                          {productOptions.map((product) => (
+                            <option key={product} value={product}>
+                              {product}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <div className="p-1 rounded bg-sky-50 text-sky-600">
+                            <Reply size={14} className="scale-x-[-1]" />
+                          </div>
+                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                            {t("questions.filterWithAnswer")}
+                          </span>
+                        </div>
+                        <div className="relative">
+                          <select
+                            value={withAnswerFilter}
+                            onChange={(e) => {
+                              setWithAnswerFilter(e.target.value as TriFilter);
+                              setCurrentPage(1);
+                            }}
+                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                          >
+                            <option value="all">{t("questions.all")}</option>
+                            <option value="yes">{t("questions.yes")}</option>
+                            <option value="no">{t("questions.no")}</option>
+                          </select>
+                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <div className="p-1 rounded bg-sky-50 text-sky-600">
+                            <Calendar size={14} />
+                          </div>
+                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
+                            {t("questions.filterDateFrom").replace(" с", "")}
+                          </span>
+                        </div>
+                        <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                          <div className="relative flex-1 min-w-0">
+                            <input
+                              type={dateFrom ? "date" : "text"}
+                              placeholder="От"
+                              onFocus={(e) => (e.target.type = "date")}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                              }}
+                              value={dateFrom}
+                              onChange={(e) => {
+                                setDateFrom(e.target.value);
+                                setCurrentPage(1);
+                              }}
+                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                            />
+                          </div>
+                          <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
+                          <div className="relative flex-1 min-w-0">
+                            <input
+                              type={dateTo ? "date" : "text"}
+                              placeholder="до"
+                              onFocus={(e) => (e.target.type = "date")}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                              }}
+                              value={dateTo}
+                              onChange={(e) => {
+                                setDateTo(e.target.value);
+                                setCurrentPage(1);
+                              }}
+                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {activeTags.length > 0 && (
+                      <div className="mt-6 pt-6 border-t border-slate-100">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                            {t("questions.activeFilters")}
+                          </span>
+                          <span className="inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-[10px] font-black text-indigo-600 border border-indigo-100">
+                            {activeTags.length}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {activeTags.map((tag) => (
+                            <span
+                              key={tag.id}
+                              className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                            >
+                              <span>{tag.label}</span>
+                              <button
+                                type="button"
+                                onClick={tag.onClear}
+                                className="p-0.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                title="Remove"
+                              >
+                                <X size={12} />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="flex-1 flex items-center justify-center gap-1.5 h-11 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-slate-800 active:scale-98 transition-all text-xs font-bold cursor-pointer bg-white"
                     >
-                      <option value="all">{t("questions.all")}</option>
-                      <option value="yes">{t("questions.yes")}</option>
-                      <option value="no">{t("questions.no")}</option>
-                    </select>
-                  </div> */}
-
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {t("questions.filterProduct")}
-                    </label>
-                    <select
-                      value={productFilter}
-                      onChange={(e) => {
-                        setProductFilter(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
+                      <RotateCw size={14} className="text-slate-500" />
+                      <span>{t("questions.resetFilters")}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterMenuOpen(false)}
+                      className="flex-[2] flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-bold shadow-md shadow-indigo-100 active:scale-98 transition-all text-xs cursor-pointer"
                     >
-                      <option value="all">{t("questions.all")}</option>
-                      {productOptions.map((product) => (
-                        <option key={product} value={product}>
-                          {product}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {t("questions.filterDateFrom")}
-                    </label>
-                    <input
-                      type="date"
-                      value={dateFrom}
-                      onChange={(e) => {
-                        setDateFrom(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs font-bold text-slate-600">
-                      {t("questions.filterDateTo")}
-                    </label>
-                    <input
-                      type="date"
-                      value={dateTo}
-                      onChange={(e) => {
-                        setDateTo(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-indigo-500/40 transition focus:ring-2"
-                    />
+                      <span>{t("questions.showQuestionsBtn")}</span>
+                      <span className="bg-indigo-500/80 px-2 py-0.5 rounded-full text-[10px] font-black text-white">
+                        {filteredQuestions.length}
+                      </span>
+                    </button>
                   </div>
                 </div>
-
-                <div className="mt-4 flex justify-between gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={resetFilters}
-                    className="h-8 px-3 text-xs font-bold"
-                  >
-                    {t("questions.resetFilters")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsFilterMenuOpen(false)}
-                    className="h-8 px-3 text-xs font-bold"
-                  >
-                    {t("questions.closeFilters")}
-                  </Button>
-                </div>
-              </div>
+              </>
             )}
           </div>
         </div>

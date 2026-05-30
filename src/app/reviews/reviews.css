@@ -1,0 +1,43 @@
+@keyframes reviewsFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes reviewsSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.reviews-page input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.reviews-filter-backdrop {
+  animation: reviewsFadeIn 0.2s ease-out forwards;
+}
+
+.reviews-filter-drawer {
+  animation: reviewsSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.reviews-reply-textarea {
+  max-width: calc(100% - 130px);
+}

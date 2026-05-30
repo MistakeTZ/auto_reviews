@@ -1,0 +1,39 @@
+@keyframes questionsFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes questionsSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.questions-page input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.questions-filter-backdrop {
+  animation: questionsFadeIn 0.2s ease-out forwards;
+}
+
+.questions-filter-drawer {
+  animation: questionsSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

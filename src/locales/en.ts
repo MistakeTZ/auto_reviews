@@ -197,6 +197,8 @@ export const en = {
     filterWithAnswer: 'With answer',
     filterDateFrom: 'Date from',
     filterDateTo: 'Date to',
+    activeFilters: 'Active filters',
+    showQuestionsBtn: 'Show questions',
     resetFilters: 'Reset',
     closeFilters: 'Close',
     loading: 'Loading questions...',

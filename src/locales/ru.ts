@@ -197,6 +197,8 @@ export const ru = {
     filterWithAnswer: 'С ответом',
     filterDateFrom: 'Дата с',
     filterDateTo: 'Дата по',
+    activeFilters: 'Активные фильтры',
+    showQuestionsBtn: 'Показать вопросы',
     resetFilters: 'Сбросить',
     closeFilters: 'Закрыть',
     loading: 'Загрузка вопросов...',

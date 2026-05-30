@@ -8,6 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { formatDateTime } from "@/lib/formatDateTime";
 import { Loader2, Pencil, RotateCw, X, MessageSquare, Star, ShoppingBag, Reply, Image, Video, Calendar, Filter } from "lucide-react";
+import "./reviews.css";
 
 export default function ReviewsPage() {
   const fetchReviews = useAppStore((state) => state.fetchReviews);
@@ -457,7 +458,7 @@ export default function ReviewsPage() {
 
   return (
     <SubscriptionGuard>
-      <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
+      <div className="reviews-page pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-3xl font-black tracking-tight text-slate-900">
@@ -495,35 +496,12 @@ export default function ReviewsPage() {
             {/* Custom high-performance sliding drawer */}
             {isFilterMenuOpen && (
               <>
-                <style>{`
-                  @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                  }
-                  @keyframes slideIn {
-                    from { transform: translateX(100%); }
-                    to { transform: translateX(0); }
-                  }
-                  input[type="date"]::-webkit-calendar-picker-indicator {
-                    opacity: 0;
-                    cursor: pointer;
-                    position: absolute;
-                    right: 0;
-                    top: 0;
-                    bottom: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                  }
-                `}</style>
                 <div
                   onClick={() => setIsFilterMenuOpen(false)}
-                  className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
-                  style={{ animation: "fadeIn 0.2s ease-out forwards" }}
+                  className="reviews-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
                 />
                 <div
-                  className="fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]"
-                  style={{ animation: "slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
+                  className="reviews-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]"
                 >
                   {/* Sticky Header */}
                   <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
@@ -1092,8 +1070,7 @@ export default function ReviewsPage() {
                                   ? t("reviews.typeReply")
                                   : t("reviews.replyUnavailable")
                               }
-                              className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
-                              style={{ maxWidth: "calc(100% - 130px)" }}
+                              className="reviews-reply-textarea flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                               disabled={!isReviewEditable}
                             />
                             <Button
