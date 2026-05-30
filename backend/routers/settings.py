@@ -81,7 +81,7 @@ def check_token(token: str, db: Session) -> bool:
 
 
 @router.post("/token")
-def update_token(
+async def update_token(
     token_data: TokenUpdate,
     db: Session = Depends(database.get_db),
     current_user: User = Depends(get_current_user),
@@ -98,7 +98,7 @@ def update_token(
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    sync_user_products(db=db, user=updated_user, replace_existing=True)
+    await sync_user_products(db=db, user=updated_user, replace_existing=True)
 
     return {"ok": True, "message": "Token updated successfully"}
 

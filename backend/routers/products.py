@@ -17,12 +17,16 @@ class Product(BaseModel):
 
 
 @router.get("/", response_model=List[Product])
-def read_products(
+async def read_products(
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
     rows = crud.get_nm_ids(db, current_user.id)
     if not rows:
-        return sync_user_products(db=db, user=current_user, replace_existing=False)
+        return await sync_user_products(
+            db=db,
+            user=current_user,
+            replace_existing=False,
+        )
 
     return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]

@@ -40,7 +40,7 @@ def _normalize_characteristics(raw_characteristics: object) -> List[Dict]:
     return normalized
 
 
-def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
+async def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
     """Fetch all products via WB content cards endpoint using cursor pagination."""
     if not api_token:
         return []
@@ -49,9 +49,9 @@ def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
     seen_nm_ids: set[str] = set()
     cursor: Dict = {"limit": limit}
 
-    with httpx.Client(timeout=20.0) as client:
+    async with httpx.AsyncClient(timeout=20.0) as client:
         while True:
-            response = client.post(
+            response = await client.post(
                 WB_CONTENT_CARDS_API_URL,
                 headers={"Authorization": api_token},
                 json={
@@ -65,8 +65,7 @@ def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
             response.raise_for_status()
 
             payload = response.json() if response.content else {}
-            data = payload.get("data", {}) if isinstance(payload, dict) else {}
-            cards = data.get("cards", []) if isinstance(data, dict) else []
+            cards = payload.get("cards", []) if isinstance(payload, dict) else []
             if not cards:
                 break
 
@@ -104,7 +103,7 @@ def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
                 if photo_url:
                     products[-1]["photo_url"] = str(photo_url).strip()
 
-            response_cursor = data.get("cursor", {}) if isinstance(data, dict) else {}
+            response_cursor = payload.get("cursor", {}) if isinstance(payload, dict) else {}
             if len(cards) < limit or not isinstance(response_cursor, dict):
                 break
 
@@ -123,7 +122,7 @@ def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
     return products
 
 
-def sync_user_products(
+async def sync_user_products(
     db: Session,
     user: User,
     replace_existing: bool,
@@ -139,7 +138,7 @@ def sync_user_products(
     products: List[Dict] = []
 
     try:
-        products = fetch_wb_products(token, limit=100)
+        products = await fetch_wb_products(token, limit=100)
     except httpx.HTTPError as exc:
         logger.warning("WB content cards fetch failed: %s", exc)
 

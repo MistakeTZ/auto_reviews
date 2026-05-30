@@ -71,7 +71,7 @@ class MainController:
                 db = self.db_factory()
                 user = db.query(User).filter(User.id == self.user_id).first()
                 if user:
-                    sync_user_products(db, user, False)
+                    await sync_user_products(db, user, False)
             except Exception as exc:
                 logger.exception("[controller] fetch_all_products error: %s", exc)
             finally:

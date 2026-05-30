@@ -3,7 +3,7 @@
 import { useAppStore, Rule } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Trash2, Plus, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubscriptionGuard from '@/components/layout/SubscriptionGuard';
@@ -14,7 +14,6 @@ export default function RulesPage() {
   const addRule = useAppStore(state => state.addRule);
   const updateRule = useAppStore(state => state.updateRule);
   const deleteRule = useAppStore(state => state.deleteRule);
-  const fetchProducts = useAppStore(state => state.fetchProducts);
   const { t } = useTranslation();
 
   const [isAdding, setIsAdding] = useState(false);
@@ -128,13 +127,6 @@ export default function RulesPage() {
       textarea.setSelectionRange(start + 6, start + 6);
     }, 0);
   };
-
-  useEffect(() => {
-    const run = async () => {
-      await fetchProducts(true, false);
-    };
-    void run();
-  }, [fetchProducts]);
 
   // Sort rules strictly by priority DESC (highest priority has biggest priority)
   const sortedRules = [...rules].sort((a, b) => {
