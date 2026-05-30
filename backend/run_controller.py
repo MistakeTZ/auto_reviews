@@ -27,6 +27,7 @@ async def run_controllers():
     gpt_client = AsyncOpenAIClient(api_key=openai_api_key)
 
     controllers = {}
+    cycle_count = 0
 
     while True:
         try:
@@ -57,7 +58,9 @@ async def run_controllers():
                 logger.info(f"Polling for user {user.id}...")
                 controller = controllers[user.id]
                 try:
-                    await controller.poll_once()
+                    await controller.poll_once(
+                        cycle_count % controller.full_check_cycles == 0
+                    )
                 except Exception as e:
                     logger.exception(f"Error polling for user {user.id}: {e}")
 
@@ -69,7 +72,10 @@ async def run_controllers():
         except Exception as e:
             logger.exception(f"Main loop error: {e}")
 
-        logger.info("Sleeping for 60 seconds before next poll...")
+        cycle_count += 1
+        logger.info(
+            f"Sleeping for 60 seconds before next poll... (Cycle {cycle_count})"
+        )
         await asyncio.sleep(60)
 
 

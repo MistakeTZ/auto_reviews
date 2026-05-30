@@ -408,7 +408,7 @@ class MainController:
                         db.close()
                 continue
 
-            if not has_rules or existing:
+            if not has_rules:
                 continue
 
             matched_rule = self._match_rule(rules, feedback)
