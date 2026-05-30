@@ -153,7 +153,7 @@ export default function Dashboard() {
             {t("dashboard.overview")}
           </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardContent className="flex items-center p-6">
                 <div className="p-3 bg-blue-50 rounded-xl text-blue-600 mr-4">

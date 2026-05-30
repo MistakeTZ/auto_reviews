@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Optional
 from email.mime.text import MIMEText
+from datetime import datetime, timezone
 
 import aiosmtplib
 import httpx
@@ -127,7 +128,7 @@ def build_feedback_notification_text(review: models.Review) -> str:
     return "\n".join(body).strip("\n")
 
 
-async def _send_email(email: str, text: str) -> None:
+async def _send_email(email: str, text: str, subject: str = "Новый отзыв на Wildberries") -> None:
     smtp_host = os.getenv("SMTP_HOST", "localhost")
     smtp_port = int(os.getenv("SMTP_PORT", "25"))
     smtp_user = (os.getenv("SMTP_USER") or "").strip()
@@ -145,7 +146,7 @@ async def _send_email(email: str, text: str) -> None:
     message = MIMEText(email_html, "html", "utf-8")
     message["From"] = smtp_from
     message["To"] = email
-    message["Subject"] = "Новый отзыв на Wildberries"
+    message["Subject"] = subject
 
     smtp_kwargs: dict = {
         "port": smtp_port,
@@ -234,6 +235,55 @@ async def _send_max_message(destination: str, text: str) -> None:
             raise RuntimeError(f"Max API error: {data}")
 
 
+async def _send_notification_to_method(
+    method: models.NotificationMethod,
+    text: str,
+    user_id: int,
+    email_subject: str,
+) -> None:
+    method_type = (method.type or "").strip().lower()
+    destination = (method.value or "").strip()
+    if not destination:
+        return
+
+    if method_type == "telegram":
+        try:
+            await _send_telegram_message(destination, text)
+        except Exception as exc:
+            logger.exception(
+                "[notify] telegram send failed user_id=%s chat_id=%s: %s",
+                user_id,
+                destination,
+                exc,
+            )
+    elif method_type == "email":
+        try:
+            await _send_email(destination, text, subject=email_subject)
+        except Exception as exc:
+            logger.exception(
+                "[notify] email send failed user_id=%s email=%s: %s",
+                user_id,
+                destination,
+                exc,
+            )
+    elif method_type == "max":
+        try:
+            await _send_max_message(destination, text)
+        except Exception as exc:
+            logger.exception(
+                "[notify] max send failed user_id=%s destination=%s: %s",
+                user_id,
+                destination,
+                exc,
+            )
+    else:
+        logger.warning(
+            "[notify] unsupported notification type user_id=%s type=%s",
+            user_id,
+            method.type,
+        )
+
+
 async def notify_review_processed(
     db: Session, user_id: int, review: models.Review
 ) -> None:
@@ -251,44 +301,53 @@ async def notify_review_processed(
     message_text = build_feedback_notification_text(review)
 
     for method in methods:
-        method_type = (method.type or "").strip().lower()
-        destination = (method.value or "").strip()
-        if not destination:
-            continue
+        await _send_notification_to_method(
+            method,
+            message_text,
+            user_id=user_id,
+            email_subject="Новый отзыв на Wildberries",
+        )
 
-        if method_type == "telegram":
-            try:
-                await _send_telegram_message(destination, message_text)
-            except Exception as exc:
-                logger.exception(
-                    "[notify] telegram send failed user_id=%s chat_id=%s: %s",
-                    user_id,
-                    destination,
-                    exc,
-                )
-        elif method_type == "email":
-            try:
-                await _send_email(destination, message_text)
-            except Exception as exc:
-                logger.exception(
-                    "[notify] email send failed user_id=%s email=%s: %s",
-                    user_id,
-                    destination,
-                    exc,
-                )
-        elif method_type == "max":
-            try:
-                await _send_max_message(destination, message_text)
-            except Exception as exc:
-                logger.exception(
-                    "[notify] max send failed user_id=%s destination=%s: %s",
-                    user_id,
-                    destination,
-                    exc,
-                )
-        else:
-            logger.warning(
-                "[notify] unsupported notification type user_id=%s type=%s",
-                user_id,
-                method.type,
-            )
+
+def _format_expiration_dt(expires_at: Optional[datetime]) -> str:
+    if not expires_at:
+        return "не указана"
+
+    dt = expires_at
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    local_dt = dt.astimezone()
+    return local_dt.strftime("%d.%m.%Y %H:%M")
+
+
+async def notify_subscription_expiring_tomorrow(
+    db: Session,
+    user: models.User,
+) -> None:
+    methods = (
+        db.query(models.NotificationMethod)
+        .filter(
+            models.NotificationMethod.user_id == user.id,
+            models.NotificationMethod.is_active == True,
+        )
+        .all()
+    )
+    if not methods:
+        return
+
+    expires_text = _format_expiration_dt(user.subscription_expires_at)
+    message_text = (
+        "<b>Напоминание о подписке</b>\n"
+        "Ваша подписка истекает завтра.\n"
+        f"⏰ Дата окончания: <b>{expires_text}</b>\n"
+        "Продлите подписку заранее, чтобы не прерывать автоматизацию."
+    )
+
+    for method in methods:
+        await _send_notification_to_method(
+            method,
+            message_text,
+            user_id=user.id,
+            email_subject="Подписка истекает завтра",
+        )

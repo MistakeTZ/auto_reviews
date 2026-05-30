@@ -59,6 +59,10 @@ class MainController:
             self._handle_feedbacks(full_check),
         )
 
+    async def fetch_all_products(self):
+        """Placeholder for daily full products sync task."""
+        logger.info("[controller] fetch_all_products placeholder user_id=%s", self.user_id)
+
     async def _handle_chats(self):
         chats = await self.processor.get_chat_messages(take=50)
         for chat in chats:

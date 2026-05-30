@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 import database
 import crud
 import schemas
-from models import User
+from models import User, Question
 from processor.chat_processor import ChatProcessor
 from routers.auth import check_active_subscription
 
@@ -153,3 +153,61 @@ async def sync_questions(
     ]
     normalized.sort(key=lambda item: item.date or "", reverse=True)
     return normalized
+
+
+class QuestionReplyRequest(BaseModel):
+    text: str
+    state: str = "none"
+
+
+@router.post("/{question_id}/reply", response_model=QuestionOut)
+@router.patch("/{question_id}/reply", response_model=QuestionOut)
+async def reply_to_question(
+    question_id: int,
+    request: QuestionReplyRequest,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(check_active_subscription),
+):
+    if not current_user.wb_api_token:
+        raise HTTPException(
+            status_code=400, detail="Wildberries API token not set for user"
+        )
+
+    db_question = (
+        db.query(Question)
+        .filter(Question.id == question_id, Question.user_id == current_user.id)
+        .first()
+    )
+
+    if not db_question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    reply_text = request.text
+    state = request.state
+
+    async with ChatProcessor(current_user.wb_api_token) as processor:
+        res = await processor.answer_question(
+            question_id=db_question.wb_question_id,
+            text=reply_text,
+            state=state,
+        )
+        if isinstance(res, dict) and (res.get("error") or res.get("errors") or res.get("status", 200) >= 400):
+            error_msg = (
+                res.get("errorText")
+                or res.get("detail")
+                or res.get("error")
+                or "Failed to reply to question on WB"
+            )
+            raise HTTPException(
+                status_code=400,
+                detail=str(error_msg),
+            )
+
+    # Update DB values on success
+    db_question.answer_text = reply_text
+    db_question.state = state
+    db.commit()
+    db.refresh(db_question)
+
+    return _to_question_out_from_model(schemas.Question.model_validate(db_question))
+

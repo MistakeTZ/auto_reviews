@@ -44,6 +44,7 @@ def check_token(token: str, db: Session) -> bool:
 
     s_bit_payload = decoded_data.get("s", 0)
     need_scopes = {
+        1: "Контент",
         7: "Вопросы и отзывы",
         # 9: "Чат с покупателем",
         # 11: "Возвраты",

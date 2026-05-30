@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone, timedelta
 import logging
 import os
 
@@ -12,6 +13,34 @@ from models import User
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
 from processor.controller import build_controller
+from services.notifications import notify_subscription_expiring_tomorrow
+
+
+def _normalize_dt(dt: datetime | None) -> datetime | None:
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _has_active_subscription(user: User, now_utc: datetime) -> bool:
+    expires_at = _normalize_dt(user.subscription_expires_at)
+    if not expires_at:
+        return False
+    return expires_at > now_utc
+
+
+def _expires_tomorrow(user: User, now_utc: datetime) -> bool:
+    expires_at = _normalize_dt(user.subscription_expires_at)
+    if not expires_at:
+        return False
+
+    if expires_at <= now_utc:
+        return False
+
+    tomorrow_date = (now_utc + timedelta(days=1)).date()
+    return expires_at.date() == tomorrow_date
 
 
 async def run_controllers():
@@ -28,9 +57,25 @@ async def run_controllers():
 
     controllers = {}
     cycle_count = 0
+    controll_hour = int(os.getenv("CONTROLLER_DAILY_HOUR", "1"))
+    once_in_a_day = datetime.now().hour < controll_hour
 
     while True:
         try:
+            now = datetime.now()
+            now_utc = datetime.now(timezone.utc)
+            run_this_cycle = False
+            full_check = cycle_count % 60 == 0
+
+            if now.hour == 0 and once_in_a_day:
+                once_in_a_day = False
+                logger.info("Resetting daily controller tasks...")
+
+            elif now.hour >= controll_hour and not once_in_a_day:
+                once_in_a_day = True
+                run_this_cycle = True
+                logger.info("Running daily controller tasks...")
+
             db = SessionLocal()
             users = db.query(User).filter(User.wb_api_token.isnot(None)).all()
             db.close()
@@ -43,6 +88,20 @@ async def run_controllers():
                     continue
 
                 current_user_ids.add(user.id)
+
+                # On every iteration, skip expired subscriptions.
+                if full_check and not _has_active_subscription(user, now_utc):
+                    logger.info(
+                        "Skipping user %s: subscription is expired or inactive",
+                        user.id,
+                    )
+                    if user.id in controllers:
+                        logger.info(
+                            "Removing controller for user %s due to expired subscription",
+                            user.id,
+                        )
+                        del controllers[user.id]
+                    continue
 
                 if user.id not in controllers:
                     logger.info(f"Initializing controller for user {user.id}")
@@ -58,9 +117,18 @@ async def run_controllers():
                 logger.info(f"Polling for user {user.id}...")
                 controller = controllers[user.id]
                 try:
-                    await controller.poll_once(
-                        cycle_count % controller.full_check_cycles == 0
-                    )
+                    if run_this_cycle:
+                        await controller.fetch_all_products()
+                        if _expires_tomorrow(user, now_utc):
+                            db_notify = SessionLocal()
+                            try:
+                                await notify_subscription_expiring_tomorrow(
+                                    db_notify, user
+                                )
+                            finally:
+                                db_notify.close()
+
+                    await controller.poll_once(full_check)
                 except Exception as e:
                     logger.exception(f"Error polling for user {user.id}: {e}")
 
