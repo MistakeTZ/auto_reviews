@@ -23,6 +23,8 @@ class QuestionOut(BaseModel):
     date: Optional[str] = None
     is_answered: bool = False
     user_name: Optional[str] = None
+    state: Optional[str] = None
+    editable: Optional[bool] = None
 
 
 def _extract_answer_text(question: Dict) -> Optional[str]:
@@ -45,6 +47,8 @@ def _to_question_out_from_model(question: schemas.Question) -> QuestionOut:
         answer_text=answer_text,
         date=question.date,
         is_answered=bool(answer_text),
+        state=question.state,
+        editable=question.editable,
         user_name=question.user_name,
     )
 
@@ -63,13 +67,12 @@ def _to_question_create(question: Dict) -> schemas.QuestionCreate:
         wb_question_id=question_id,
         nm_id=str(product_details.get("nmId") or ""),
         product_name=str(product_details.get("productName") or "Unknown Product"),
-        text=str(
-            question.get("text")
-            or question.get("questionText")
-            or question.get("question")
-            or ""
-        ),
+        text=str(question.get("text") or ""),
         date=str(question.get("createdDate") or question.get("createdAt") or ""),
+        state=question.get("state") or "none",
+        editable=(
+            question.get("editable") if question.get("editable") is not None else True
+        ),
         answer_text=answer_text,
         user_name=user_name,
     )
@@ -87,7 +90,9 @@ async def _fetch_questions_from_wb(
         unanswered = await processor.get_questions(is_answered=False, take=take, skip=0)
         questions = unanswered
         if include_answered:
-            answered = await processor.get_questions(is_answered=True, take=take, skip=0)
+            answered = await processor.get_questions(
+                is_answered=True, take=take, skip=0
+            )
             questions = unanswered + answered
 
     deduped: Dict[str, Dict] = {}
@@ -109,7 +114,10 @@ def read_questions(
         user_id=current_user.id,
         include_answered=include_answered,
     )
-    normalized = [_to_question_out_from_model(schemas.Question.model_validate(row)) for row in rows]
+    normalized = [
+        _to_question_out_from_model(schemas.Question.model_validate(row))
+        for row in rows
+    ]
     normalized.sort(key=lambda item: item.date or "", reverse=True)
     return normalized
 
@@ -135,6 +143,9 @@ async def sync_questions(
         user_id=current_user.id,
         include_answered=include_answered,
     )
-    normalized = [_to_question_out_from_model(schemas.Question.model_validate(row)) for row in rows]
+    normalized = [
+        _to_question_out_from_model(schemas.Question.model_validate(row))
+        for row in rows
+    ]
     normalized.sort(key=lambda item: item.date or "", reverse=True)
     return normalized
