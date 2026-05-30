@@ -179,7 +179,7 @@ class MainController:
 
     def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Rule]:
         """Return the first rule that matches this feedback, or None."""
-        nm_id = str(feedback.get("nmId") or "").strip()
+        nm_id = str(feedback.get("productDetails", {}).get("nmId") or "")
         rating = feedback.get("productValuation")
         text = (feedback.get("text") or "").lower()
         cons = (feedback.get("cons") or "").lower()
@@ -211,9 +211,9 @@ class MainController:
                 op = rule.condition_rating_operator
                 if op == "exact" and r != cr:
                     continue
-                elif op == "less_than" and r >= cr:
+                elif op == "less_than" and r > cr:
                     continue
-                elif op == "more_than" and r <= cr:
+                elif op == "more_than" and r < cr:
                     continue
 
             # Check keyword condition
