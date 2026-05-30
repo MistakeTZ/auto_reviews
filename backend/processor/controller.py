@@ -105,11 +105,10 @@ class MainController:
                 )
 
     async def _handle_questions(self, full_check: bool = False):
-        if not full_check:
-            count = await self.processor.get_count_unanswered_questions()
-            if count == 0:
-                logger.debug("[questions] no unanswered questions, skipping")
-                return
+        count = await self.processor.get_count_unanswered_questions()
+        if not full_check and count == 0:
+            logger.debug("[questions] no unanswered questions, skipping")
+            return
 
         logger.info("[questions] %d unanswered question(s) found", count)
         questions = await self.processor.get_questions(is_answered=False, take=50)
