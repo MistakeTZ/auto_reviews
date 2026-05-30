@@ -9,7 +9,7 @@ logging.basicConfig(
 logger = logging.getLogger("controller_runner")
 
 from database import SessionLocal, Base, engine
-from models import User
+from models import NmIDs, User
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
 from processor.controller import build_controller
@@ -41,6 +41,20 @@ def _expires_tomorrow(user: User, now_utc: datetime) -> bool:
 
     tomorrow_date = (now_utc + timedelta(days=1)).date()
     return expires_at.date() == tomorrow_date
+
+
+def _user_has_saved_products(user_id: int) -> bool:
+    db = SessionLocal()
+    try:
+        return (
+            db.query(NmIDs.id)
+            .filter(NmIDs.user_d_id == user_id)
+            .limit(1)
+            .first()
+            is not None
+        )
+    finally:
+        db.close()
 
 
 async def run_controllers():
@@ -113,6 +127,14 @@ async def run_controllers():
                         user_id=user.id,
                         db_factory=SessionLocal,
                     )
+
+                    # Sync once when user appears with no persisted products (new registration flow).
+                    if not _user_has_saved_products(user.id):
+                        logger.info(
+                            "Initial product sync for user %s (no saved products found)",
+                            user.id,
+                        )
+                        await controllers[user.id].fetch_all_products()
 
                 logger.info(f"Polling for user {user.id}...")
                 controller = controllers[user.id]

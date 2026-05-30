@@ -10,116 +10,117 @@ from models import User
 logger = logging.getLogger(__name__)
 
 
-WB_PRICES_API_URL = (
-    "https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter"
+WB_CONTENT_CARDS_API_URL = (
+    "https://content-api.wildberries.ru/content/v2/get/cards/list"
 )
-WB_FEEDBACKS_API_URL = "https://feedbacks-api.wildberries.ru/api/v1/feedbacks"
 
 
-def fetch_wb_products(api_token: str, limit: int = 1000) -> List[Dict]:
-    """Fetch all products via WB prices endpoint using offset pagination."""
+def _normalize_characteristics(raw_characteristics: object) -> List[Dict]:
+    normalized: List[Dict] = []
+    if not isinstance(raw_characteristics, list):
+        return normalized
+
+    for item in raw_characteristics:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip()
+        if not name:
+            continue
+
+        values_raw = item.get("value")
+        if isinstance(values_raw, list):
+            values = [str(v).strip() for v in values_raw if v is not None]
+        elif values_raw is None:
+            values = []
+        else:
+            values = [str(values_raw).strip()]
+
+        normalized.append({"name": name, "value": values})
+
+    return normalized
+
+
+def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
+    """Fetch all products via WB content cards endpoint using cursor pagination."""
     if not api_token:
         return []
 
     products: List[Dict] = []
-    offset = 0
+    seen_nm_ids: set[str] = set()
+    cursor: Dict = {"limit": limit}
 
     with httpx.Client(timeout=20.0) as client:
         while True:
-            response = client.get(
-                WB_PRICES_API_URL,
+            response = client.post(
+                WB_CONTENT_CARDS_API_URL,
                 headers={"Authorization": api_token},
-                params={"limit": limit, "offset": offset},
+                json={
+                    "settings": {
+                        "sort": {"ascending": True},
+                        "cursor": cursor,
+                        "filter": {"withPhoto": -1},
+                    }
+                },
             )
             response.raise_for_status()
 
             payload = response.json() if response.content else {}
             data = payload.get("data", {}) if isinstance(payload, dict) else {}
-            list_goods = data.get("listGoods", []) if isinstance(data, dict) else []
-            if not list_goods:
+            cards = data.get("cards", []) if isinstance(data, dict) else []
+            if not cards:
                 break
 
-            for item in list_goods:
-                nm_id = item.get("nmID")
-                vendor_code = item.get("vendorCode")
+            for item in cards:
+                if not isinstance(item, dict):
+                    continue
+
+                nm_id = item.get("nmID") or item.get("nmId")
                 if nm_id is None:
                     continue
+                nm_id_str = str(nm_id)
+                if nm_id_str in seen_nm_ids:
+                    continue
+                seen_nm_ids.add(nm_id_str)
+
+                title = str(item.get("title") or f"WB #{nm_id_str}")
+                description = item.get("description")
+
+                photo_url = None
+                photos = item.get("photos")
+                if isinstance(photos, list) and photos and isinstance(photos[0], dict):
+                    photo_url = photos[0].get("c246x328")
+
+                characteristics = _normalize_characteristics(item.get("characteristics"))
+
                 products.append(
                     {
-                        "nmId": str(nm_id),
-                        "name": str(vendor_code or f"WB #{nm_id}"),
+                        "nmId": nm_id_str,
+                        "name": title,
+                        "title": title,
+                        "description": str(description or "").strip(),
+                        "characteristics": characteristics,
                     }
                 )
+                if photo_url:
+                    products[-1]["photo_url"] = str(photo_url).strip()
 
-            offset += limit
+            response_cursor = data.get("cursor", {}) if isinstance(data, dict) else {}
+            if len(cards) < limit or not isinstance(response_cursor, dict):
+                break
+
+            next_cursor: Dict = {"limit": limit}
+            updated_at = response_cursor.get("updatedAt")
+            nm_id_cursor = response_cursor.get("nmID")
+            if updated_at is not None:
+                next_cursor["updatedAt"] = updated_at
+            if nm_id_cursor is not None:
+                next_cursor["nmID"] = nm_id_cursor
+
+            if cursor == next_cursor:
+                break
+            cursor = next_cursor
 
     return products
-
-
-def fetch_wb_products_from_feedbacks(api_token: str, take: int = 100) -> List[Dict]:
-    """Fetch products from feedbacks endpoint (works without prices API access)."""
-    if not api_token:
-        return []
-
-    products_by_nm_id: Dict[str, Dict] = {}
-
-    with httpx.Client(timeout=20.0) as client:
-        for is_answered in (False, True):
-            skip = 0
-            for _ in range(200):
-                response = client.get(
-                    WB_FEEDBACKS_API_URL,
-                    headers={"Authorization": api_token},
-                    params={
-                        "isAnswered": str(is_answered).lower(),
-                        "take": take,
-                        "skip": skip,
-                    },
-                )
-
-                # If token has no access or endpoint is unavailable, stop this branch.
-                if response.status_code >= 400:
-                    logger.warning(
-                        "WB feedbacks fetch failed (isAnswered=%s, skip=%s, status=%s)",
-                        is_answered,
-                        skip,
-                        response.status_code,
-                    )
-                    break
-
-                payload = response.json() if response.content else {}
-                data = payload.get("data", {}) if isinstance(payload, dict) else {}
-                feedbacks = data.get("feedbacks", []) if isinstance(data, dict) else []
-                if not feedbacks:
-                    break
-
-                for fb in feedbacks:
-                    if not isinstance(fb, dict):
-                        continue
-                    product_details = fb.get("productDetails") or {}
-                    nm_id = product_details.get("nmId")
-                    if nm_id is None:
-                        continue
-
-                    nm_id_str = str(nm_id)
-                    if nm_id_str in products_by_nm_id:
-                        continue
-
-                    product_name = str(
-                        product_details.get("productName")
-                        or fb.get("productName")
-                        or f"WB #{nm_id_str}"
-                    )
-                    products_by_nm_id[nm_id_str] = {
-                        "nmId": nm_id_str,
-                        "name": product_name,
-                    }
-
-                if len(feedbacks) < take:
-                    break
-                skip += take
-
-    return list(products_by_nm_id.values())
 
 
 def sync_user_products(
@@ -138,12 +139,9 @@ def sync_user_products(
     products: List[Dict] = []
 
     try:
-        products = fetch_wb_products(token, limit=1000)
+        products = fetch_wb_products(token, limit=100)
     except httpx.HTTPError as exc:
-        logger.warning("WB prices API fetch failed, fallback to feedbacks: %s", exc)
-
-    if not products:
-        products = fetch_wb_products_from_feedbacks(token, take=100)
+        logger.warning("WB content cards fetch failed: %s", exc)
 
     if not products:
         rows = crud.get_nm_ids(db, user.id)

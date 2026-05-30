@@ -145,7 +145,16 @@ class QuestionAdmin(ModelView, model=Question):
 
 
 class NmIDsAdmin(ModelView, model=NmIDs):
-    column_list = [NmIDs.id, NmIDs.nm_id, NmIDs.product_name, NmIDs.user_d_id]
+    column_list = [
+        NmIDs.id,
+        NmIDs.nm_id,
+        NmIDs.product_name,
+        NmIDs.title,
+        NmIDs.description,
+        NmIDs.photo_url,
+        NmIDs.characteristics,
+        NmIDs.user_d_id,
+    ]
     name = "Product"
     name_plural = "Products"
 

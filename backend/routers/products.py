@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import crud
 import database
-from routers.auth import get_current_user, check_active_subscription
+from routers.auth import check_active_subscription
 from models import User
 from pydantic import BaseModel
 from services.wb_products import sync_user_products
@@ -18,13 +18,11 @@ class Product(BaseModel):
 
 @router.get("/", response_model=List[Product])
 def read_products(
-    refresh: bool = False,
-    replace: bool = False,
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
-    if refresh:
-        return sync_user_products(db=db, user=current_user, replace_existing=replace)
-
     rows = crud.get_nm_ids(db, current_user.id)
+    if not rows:
+        return sync_user_products(db=db, user=current_user, replace_existing=False)
+
     return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]

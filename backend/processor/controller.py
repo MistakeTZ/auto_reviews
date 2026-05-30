@@ -1,3 +1,4 @@
+from backend.services.wb_products import sync_user_products
 from models import Rule
 import asyncio
 import json
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
 from crud import get_reviews, get_rules, upsert_question, upsert_review
-from schemas import QuestionCreate, ReviewCreate
+from schemas import QuestionCreate, ReviewCreate, User
 from services.notifications import notify_review_processed
 
 
@@ -61,7 +62,21 @@ class MainController:
 
     async def fetch_all_products(self):
         """Placeholder for daily full products sync task."""
-        logger.info("[controller] fetch_all_products placeholder user_id=%s", self.user_id)
+        logger.info(
+            "[controller] fetch_all_products placeholder user_id=%s", self.user_id
+        )
+        if self.db_factory and self.user_id:
+            db = None
+            try:
+                db = self.db_factory()
+                user = db.query(User).filter(User.id == self.user_id).first()
+                if user:
+                    sync_user_products(db, user, False)
+            except Exception as exc:
+                logger.exception("[controller] fetch_all_products error: %s", exc)
+            finally:
+                if "db" in locals() and db:
+                    db.close()
 
     async def _handle_chats(self):
         chats = await self.processor.get_chat_messages(take=50)

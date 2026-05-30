@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -470,6 +471,20 @@ def clear_nm_ids(db: Session, user_id: int):
 
 
 def upsert_nm_ids_bulk(db: Session, user_id: int, products: list[dict]):
+    def apply_product_payload(row: models.NmIDs, product: dict):
+        row.product_name = str(product.get("name") or "").strip()
+        row.title = str(product.get("title") or row.product_name or "").strip() or None
+
+        description = product.get("description")
+        row.description = str(description).strip() if description is not None else None
+
+        if "photo_url" in product and product.get("photo_url"):
+            row.photo_url = str(product.get("photo_url")).strip()
+
+        characteristics = product.get("characteristics")
+        if isinstance(characteristics, list):
+            row.characteristics = json.dumps(characteristics, ensure_ascii=False)
+
     existing_for_user = {
         row.nm_id: row
         for row in db.query(models.NmIDs)
@@ -482,18 +497,35 @@ def upsert_nm_ids_bulk(db: Session, user_id: int, products: list[dict]):
         nm_id = str(product.get("nmId") or "").strip()
         if not nm_id:
             continue
-        name = str(product.get("name") or "").strip()
 
         if nm_id in existing_for_user:
-            existing_for_user[nm_id].product_name = name
+            apply_product_payload(existing_for_user[nm_id], product)
         elif nm_id in existing_global:
-            existing_global[nm_id].product_name = name
             existing_global[nm_id].user_d_id = user_id
+            apply_product_payload(existing_global[nm_id], product)
         else:
+            name = str(product.get("name") or "").strip()
+            characteristics = product.get("characteristics")
             db.add(
                 models.NmIDs(
                     nm_id=nm_id,
                     product_name=name,
+                    title=str(product.get("title") or name or "").strip() or None,
+                    description=(
+                        str(product.get("description")).strip()
+                        if product.get("description") is not None
+                        else None
+                    ),
+                    photo_url=(
+                        str(product.get("photo_url")).strip()
+                        if product.get("photo_url")
+                        else None
+                    ),
+                    characteristics=(
+                        json.dumps(characteristics, ensure_ascii=False)
+                        if isinstance(characteristics, list)
+                        else None
+                    ),
                     user_d_id=user_id,
                 )
             )

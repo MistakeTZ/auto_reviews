@@ -209,9 +209,7 @@ export const useAppStore = create<AppState>()(
         const { jwtToken } = get();
         if (!jwtToken) return;
         try {
-          const qs = refresh
-            ? `?refresh=true&replace=${replace ? "true" : "false"}`
-            : "";
+          const qs = "";
           const res = await fetch(`${API_URL}/products/${qs}`, {
             headers: { Authorization: `Bearer ${jwtToken}` },
           });

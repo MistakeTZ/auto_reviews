@@ -34,21 +34,37 @@ logging.basicConfig(level=logging.INFO)
 
 def run_migrations():
     db_url = os.getenv("DATABASE_URL", "sqlite:///./autoreviews.db")
-    if db_url.startswith("postgresql"):
-        try:
-            inspector = inspect(engine)
-            with engine.connect() as conn:
-                user_columns = {
-                    col.get("name") for col in inspector.get_columns("users")
-                }
-                if "registration_bonus_days" not in user_columns:
-                    conn.exec_driver_sql(
-                        "ALTER TABLE users ADD COLUMN registration_bonus_days INTEGER NOT NULL DEFAULT 0"
-                    )
-                    conn.commit()
+    try:
+        inspector = inspect(engine)
+        with engine.connect() as conn:
+            user_columns = {col.get("name") for col in inspector.get_columns("users")}
+            if "registration_bonus_days" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN registration_bonus_days INTEGER NOT NULL DEFAULT 0"
+                )
 
-        except Exception as e:
-            logger.warning("Automatic PostgreSQL migrations warning:", exc_info=e)
+            nm_ids_columns = {
+                col.get("name") for col in inspector.get_columns("nm_ids")
+            }
+            if "title" not in nm_ids_columns:
+                conn.exec_driver_sql("ALTER TABLE nm_ids ADD COLUMN title VARCHAR")
+            if "description" not in nm_ids_columns:
+                conn.exec_driver_sql("ALTER TABLE nm_ids ADD COLUMN description TEXT")
+            if "photo_url" not in nm_ids_columns:
+                conn.exec_driver_sql("ALTER TABLE nm_ids ADD COLUMN photo_url VARCHAR")
+            if "characteristics" not in nm_ids_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE nm_ids ADD COLUMN characteristics TEXT"
+                )
+
+            conn.commit()
+
+    except Exception as e:
+        logger.warning(
+            "Automatic startup migrations warning (db=%s):",
+            db_url,
+            exc_info=e,
+        )
 
 
 run_migrations()

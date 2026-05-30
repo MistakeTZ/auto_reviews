@@ -4,6 +4,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     Boolean,
     DateTime,
     func,
@@ -136,6 +137,10 @@ class NmIDs(Base):
     id = Column(Integer, primary_key=True, index=True)
     nm_id = Column(String, unique=True, index=True)
     product_name = Column(String)
+    title = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    photo_url = Column(String, nullable=True)
+    characteristics = Column(Text, nullable=True)
     user_d_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="nm_ids")
@@ -148,7 +153,9 @@ class PromoCode(Base):
     code = Column(String, unique=True, index=True)
     days_on_registration = Column(Integer, default=0)  # Days added on registration
     topup_days = Column(Integer, default=0)  # Days added on subscription top-up
-    expires_at = Column(DateTime(timezone=True), nullable=True) # Null means no expiration
+    expires_at = Column(
+        DateTime(timezone=True), nullable=True
+    )  # Null means no expiration
     max_uses = Column(Integer, nullable=True)  # Null means unlimited
     used_count = Column(Integer, default=0)
 
