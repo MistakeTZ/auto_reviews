@@ -397,6 +397,8 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
         db_question.product_name = question_data.product_name
         db_question.text = question_data.text
         db_question.date = question_data.date
+        db_question.state = question_data.state
+        db_question.editable = question_data.editable
         db_question.answer_text = question_data.answer_text
         db_question.user_name = question_data.user_name
     else:
