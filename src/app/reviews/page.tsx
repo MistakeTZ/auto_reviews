@@ -504,6 +504,17 @@ export default function ReviewsPage() {
                     from { transform: translateX(100%); }
                     to { transform: translateX(0); }
                   }
+                  input[type="date"]::-webkit-calendar-picker-indicator {
+                    opacity: 0;
+                    cursor: pointer;
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                  }
                 `}</style>
                 <div
                   onClick={() => setIsFilterMenuOpen(false)}
@@ -818,34 +829,41 @@ export default function ReviewsPage() {
                             {t("reviews.filterDateFrom").replace(" с", "")}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
                           <div className="relative flex-1">
                             <input
-                              type="date"
+                              type={dateFrom ? "date" : "text"}
+                              placeholder="От"
+                              onFocus={(e) => (e.target.type = "date")}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                              }}
                               value={dateFrom}
                               onChange={(e) => {
                                 setDateFrom(e.target.value);
                                 setCurrentPage(1);
                               }}
-                              className="w-full h-10 pl-5 pr-1 py-1.5 text-[10px] border border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all bg-white font-semibold text-slate-800 [color-scheme:light]"
+                              className="w-full h-10 pl-3 pr-8 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
                             />
-                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 font-bold">
-                              От
-                            </span>
+                            <Calendar size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                           </div>
+                          <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
                           <div className="relative flex-1">
                             <input
-                              type="date"
+                              type={dateTo ? "date" : "text"}
+                              placeholder="до"
+                              onFocus={(e) => (e.target.type = "date")}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                              }}
                               value={dateTo}
                               onChange={(e) => {
                                 setDateTo(e.target.value);
                                 setCurrentPage(1);
                               }}
-                              className="w-full h-10 pl-5 pr-1 py-1.5 text-[10px] border border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all bg-white font-semibold text-slate-800 [color-scheme:light]"
+                              className="w-full h-10 pl-3 pr-8 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
                             />
-                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 font-bold">
-                              до
-                            </span>
+                            <Calendar size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                           </div>
                         </div>
                       </div>
