@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import {
   Loader2,
   RotateCw,
@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   Reply,
   Calendar,
+  Pencil,
 } from "lucide-react";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { Button } from "@/components/ui/Button";
@@ -58,6 +59,68 @@ export default function QuestionsPage() {
   const [withAnswerFilter, setWithAnswerFilter] = useState<TriFilter>("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+
+  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
+  const [replyState, setReplyState] = useState<{ [key: string]: "none" | "wbRu" }>({});
+  const [isReplying, setIsReplying] = useState<{ [key: string]: boolean }>({});
+  const [isEditingAnswer, setIsEditingAnswer] = useState<{ [key: string]: boolean }>({});
+
+  const replyTextareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
+
+  const resizeReplyTextarea = useCallback((id: string) => {
+    const el = replyTextareaRefs.current[id];
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, []);
+
+  const handleReply = async (id: string) => {
+    const text = replyText[id];
+    if (!text || !text.trim()) return;
+
+    const state = replyState[id] || "none";
+
+    setIsReplying((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(`${API_URL}/questions/${id}/reply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({ text, state }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to submit reply");
+      }
+
+      const updatedQuestion = await res.json();
+      
+      setAllQuestions((prev) =>
+        prev.map((q) => (q.id === id ? {
+          ...updatedQuestion,
+          is_answered: true
+        } : q))
+      );
+
+      setReplyText((prev) => ({ ...prev, [id]: "" }));
+      setIsEditingAnswer((prev) => ({ ...prev, [id]: false }));
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "An error occurred while sending reply");
+    } finally {
+      setIsReplying((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const handleEditAnswer = (id: string, currentAnswerText: string, currentState: string) => {
+    setReplyText((prev) => ({ ...prev, [id]: currentAnswerText }));
+    setReplyState((prev) => ({ ...prev, [id]: (currentState as "none" | "wbRu") || "none" }));
+    setIsEditingAnswer((prev) => ({ ...prev, [id]: true }));
+  };
 
   const loadQuestions = useCallback(async () => {
     if (!jwtToken) {
@@ -611,16 +674,136 @@ export default function QuestionsPage() {
                         </p>
                       </div>
 
-                      {hasAnswer && (
+                      {hasAnswer && !isEditingAnswer[question.id] && (
                         <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
-                          <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-1.5">
-                            {question.state === "wbRu"
-                              ? t("questions.answerLabelGlobal")
-                              : t("questions.answerLabelPrivate")}
-                          </p>
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">
+                              {question.state === "wbRu"
+                                ? t("questions.answerLabelGlobal")
+                                : t("questions.answerLabelPrivate")}
+                            </p>
+                            {question.editable !== false && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleEditAnswer(
+                                    question.id,
+                                    String(question.answer_text || ""),
+                                    String(question.state || "none"),
+                                  )
+                                }
+                                className="inline-flex items-center justify-center h-7 w-7 rounded-lg border border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                                aria-label="Edit answer"
+                                title="Edit answer"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
                           <p className="text-sm text-slate-800 font-medium">
                             {question.answer_text}
                           </p>
+                        </div>
+                      )}
+
+                      {(!hasAnswer || isEditingAnswer[question.id]) && (
+                        <div className="mt-5 pt-4 border-t border-slate-100 space-y-4">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                              {t("questions.replyStateLabel")}
+                            </span>
+                            <div className="flex rounded-xl bg-slate-100 p-1 max-w-md">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setReplyState((prev) => ({
+                                    ...prev,
+                                    [question.id]: "none",
+                                  }))
+                                }
+                                className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                  (replyState[question.id] || "none") === "none"
+                                    ? "bg-white text-slate-800 shadow-sm border border-slate-200/50"
+                                    : "text-slate-500 hover:text-slate-800"
+                                }`}
+                              >
+                                {t("questions.replyStatePrivate")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setReplyState((prev) => ({
+                                    ...prev,
+                                    [question.id]: "wbRu",
+                                  }))
+                                }
+                                className={`flex-1 text-center py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                  replyState[question.id] === "wbRu"
+                                    ? "bg-white text-indigo-600 shadow-sm border border-slate-200/50"
+                                    : "text-slate-500 hover:text-indigo-600"
+                                }`}
+                              >
+                                {t("questions.replyStateGlobal")}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <textarea
+                              rows={1}
+                              ref={(el) => {
+                                replyTextareaRefs.current[question.id] = el;
+                                if (el) {
+                                  resizeReplyTextarea(question.id);
+                                }
+                              }}
+                              value={replyText[question.id] || ""}
+                              onChange={(e) => {
+                                setReplyText((prev) => ({
+                                  ...prev,
+                                  [question.id]: e.target.value,
+                                }));
+                                requestAnimationFrame(() =>
+                                  resizeReplyTextarea(question.id),
+                                );
+                              }}
+                              placeholder={t("questions.typeReply")}
+                              className="questions-reply-textarea flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                              disabled={isReplying[question.id]}
+                            />
+                            <Button
+                              onClick={() => handleReply(question.id)}
+                              disabled={
+                                !(replyText[question.id] || "").trim() ||
+                                isReplying[question.id]
+                              }
+                              className="h-11 px-5 rounded-xl font-bold cursor-pointer shrink-0"
+                            >
+                              {isReplying[question.id] ? (
+                                <span className="flex items-center gap-1.5">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  {t("questions.replying")}
+                                </span>
+                              ) : (
+                                t("questions.sendReply")
+                              )}
+                            </Button>
+                            {isEditingAnswer[question.id] && (
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setIsEditingAnswer((prev) => ({
+                                    ...prev,
+                                    [question.id]: false,
+                                  }))
+                                }
+                                className="h-11 rounded-xl cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50"
+                                disabled={isReplying[question.id]}
+                              >
+                                {t("common.cancel")}
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </CardContent>
