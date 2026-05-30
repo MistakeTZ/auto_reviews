@@ -148,6 +148,8 @@ export const ru = {
     filterDateTo: 'Дата по',
     resetFilters: 'Сбросить',
     closeFilters: 'Закрыть',
+    activeFilters: 'Активные фильтры',
+    showReviewsBtn: 'Показать отзывы',
     loading: 'Загрузка отзывов...',
     all: 'Все',
     yes: 'Да',

@@ -148,6 +148,8 @@ export const en = {
     filterDateTo: 'Date to',
     resetFilters: 'Reset',
     closeFilters: 'Close',
+    activeFilters: 'Active filters',
+    showReviewsBtn: 'Show reviews',
     loading: 'Loading reviews...',
     all: 'All',
     yes: 'Yes',
