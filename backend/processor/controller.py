@@ -1,5 +1,5 @@
 from backend.services.wb_products import sync_user_products
-from models import Rule
+from models import Question, Rule
 import asyncio
 import json
 import logging
@@ -16,7 +16,7 @@ from prompts import (
     build_question_system_prompt,
 )
 from schemas import QuestionCreate, ReviewCreate, User
-from services.notifications import notify_review_processed
+from services.notifications import notify_question_processed, notify_review_processed
 
 
 class MainController:
@@ -147,11 +147,21 @@ class MainController:
             if not question_id:
                 continue
 
-            saved = await self._upsert_question_in_db(question)
+            exists, saved = await self._upsert_question_in_db(question)
             if saved:
                 logger.info("[questions] synced question_id=%s to db", question_id)
+                if not exists:
+                    await notify_question_processed(
+                        self.db_factory, self.user_id, saved
+                    )
+            else:
+                logger.warning(
+                    "[questions] failed to sync question_id=%s to db", question_id
+                )
 
-    async def _upsert_question_in_db(self, question: Dict) -> QuestionCreate | None:
+    async def _upsert_question_in_db(
+        self, question: Dict
+    ) -> tuple[Optional[bool], Optional[Question]]:
         """Persist/update a question record in the questions table without answering it."""
         if not self.db_factory or not self.user_id:
             return
@@ -188,8 +198,8 @@ class MainController:
         db = None
         try:
             db = self.db_factory()
-            upsert_question(db, question_data, self.user_id)
-            return question_data
+            exists, question_model = upsert_question(db, question_data, self.user_id)
+            return exists, question_model
         except Exception as exc:
             logger.exception(
                 "[questions] failed to upsert question %s: %s", question_id, exc
@@ -198,7 +208,7 @@ class MainController:
             if "db" in locals() and db:
                 db.close()
 
-        return None
+        return None, None
 
     def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Rule]:
         """Return the first rule that matches this feedback, or None."""

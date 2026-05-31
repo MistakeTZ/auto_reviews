@@ -456,6 +456,7 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
         )
         .first()
     )
+    question_exists = bool(db_question)
 
     if db_question:
         db_question.nm_id = question_data.nm_id
@@ -476,7 +477,7 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
 
     db.commit()
     db.refresh(db_question)
-    return db_question
+    return question_exists, db_question
 
 
 def get_nm_ids(db: Session, user_id: int):

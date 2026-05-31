@@ -128,6 +128,30 @@ def build_feedback_notification_text(review: models.Review) -> str:
     return "\n".join(body).strip("\n")
 
 
+def build_question_notification_text(question: models.Question) -> str:
+    user_name = _trim_text(question.user_name)
+    product_name = _trim_text(question.product_name)
+    question_text = _trim_text(question.text)
+    answer_text = _trim_optional_text(question.answer_text)
+    nm_id = _trim_optional_text(question.nm_id)
+
+    body = [
+        "<b>НОВЫЙ ВОПРОС</b>",
+        f"<b>Предмет:</b> <a href='https://www.wildberries.ru/catalog/{nm_id}/detail.aspx'>{product_name}</a>"
+        if nm_id
+        else f"<b>Предмет:</b> {product_name}",
+        f"🆔 <code>{nm_id}</code>" if nm_id else "",
+        f"👤 <b>Пользователь:</b> {user_name}",
+        "",
+        f"❓ <b>Вопрос:</b> {question_text}",
+    ]
+
+    if answer_text:
+        body.extend(["", f"🤖 <b>Ответ:</b> <i>{answer_text}</i>"])
+
+    return "\n".join(part for part in body if part).strip("\n")
+
+
 async def _send_email(email: str, text: str, subject: str = "Новый отзыв на Wildberries") -> None:
     smtp_host = os.getenv("SMTP_HOST", "localhost")
     smtp_port = int(os.getenv("SMTP_PORT", "25"))
@@ -306,6 +330,31 @@ async def notify_review_processed(
             message_text,
             user_id=user_id,
             email_subject="Новый отзыв на Wildberries",
+        )
+
+
+async def notify_question_processed(
+    db: Session, user_id: int, question: models.Question
+) -> None:
+    methods = (
+        db.query(models.NotificationMethod)
+        .filter(
+            models.NotificationMethod.user_id == user_id,
+            models.NotificationMethod.is_active == True,
+        )
+        .all()
+    )
+    if not methods:
+        return
+
+    message_text = build_question_notification_text(question)
+
+    for method in methods:
+        await _send_notification_to_method(
+            method,
+            message_text,
+            user_id=user_id,
+            email_subject="Новый вопрос на Wildberries",
         )
 
 
