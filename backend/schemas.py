@@ -25,6 +25,8 @@ class User(UserBase):
     registration_bonus_days: int = 0
     referral_code: Optional[str] = None
     referred_by_id: Optional[int] = None
+    question_answer_mode: str = "manual"
+    question_answer_prompt: Optional[str] = None
     has_active_subscription: bool = False
     rules_count: int = 0
     notification_methods_count: int = 0
@@ -43,6 +45,8 @@ class UserPublic(UserBase):
     registration_bonus_days: int = 0
     referral_code: Optional[str] = None
     referred_by_id: Optional[int] = None
+    question_answer_mode: str = "manual"
+    question_answer_prompt: Optional[str] = None
     has_active_subscription: bool = False
     rules_count: int = 0
     notification_methods_count: int = 0
@@ -173,3 +177,13 @@ class NotificationMethod(NotificationMethodBase):
 
     class Config:
         from_attributes = True
+
+
+class QuestionAnswerSettingsUpdate(BaseModel):
+    question_answer_mode: Optional[str] = None
+    question_answer_prompt: Optional[str] = None
+
+
+class QuestionAnswerSettings(BaseModel):
+    question_answer_mode: str = "manual"
+    question_answer_prompt: Optional[str] = None

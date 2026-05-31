@@ -155,6 +155,31 @@ def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] 
     return db_user
 
 
+def update_user_question_answer_settings(
+    db: Session,
+    user_id: int,
+    question_answer_mode: Optional[str] = None,
+    question_answer_prompt: Optional[str] = None,
+):
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return None
+
+    if question_answer_mode is not None:
+        normalized_mode = str(question_answer_mode).strip().lower()
+        allowed_modes = {"manual", "confirm", "auto"}
+        if normalized_mode not in allowed_modes:
+            raise ValueError("Invalid question answer mode")
+        db_user.question_answer_mode = normalized_mode
+
+    if question_answer_prompt is not None:
+        db_user.question_answer_prompt = str(question_answer_prompt).strip() or None
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
 def apply_referral_code(db: Session, user_id: int, code: str):
     db_user = get_user(db, user_id)
     if not db_user:

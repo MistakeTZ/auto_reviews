@@ -26,6 +26,7 @@ import FlagSwitcher from "@/components/ui/FlagSwitcher";
 import { trackMetrikaGoal } from "@/lib/metrika";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+type QuestionAnswerMode = "manual" | "confirm" | "auto";
 const DEFAULT_BOTS_CONFIG = {
   tg_bot: process.env.TG_BOT_NAME || "none",
   max_bot: process.env.MAX_BOT_NAME || "none",
@@ -46,6 +47,7 @@ export default function SettingsPage() {
   );
   const userUuid = useAppStore((state) => state.userUuid);
   const fetchMe = useAppStore((state) => state.fetchMe);
+  const jwtToken = useAppStore((state) => state.jwtToken);
 
   const { t, language, setLanguage } = useTranslation();
   const [tokenInput, setTokenInput] = useState(apiToken || "");
@@ -61,11 +63,47 @@ export default function SettingsPage() {
   const [newMethodValue, setNewMethodValue] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [botsConfig, setBotsConfig] = useState(DEFAULT_BOTS_CONFIG);
+  const [questionAnswerMode, setQuestionAnswerMode] =
+    useState<QuestionAnswerMode>("manual");
+  const [questionAnswerPrompt, setQuestionAnswerPrompt] = useState("");
+  const [isLoadingQuestionSettings, setIsLoadingQuestionSettings] =
+    useState(false);
+  const [isSavingQuestionSettings, setIsSavingQuestionSettings] =
+    useState(false);
+  const [questionSettingsError, setQuestionSettingsError] = useState<
+    string | null
+  >(null);
+  const [questionSettingsSaved, setQuestionSettingsSaved] = useState(false);
 
   // Initial load
   useEffect(() => {
     fetchNotificationMethods();
     fetchMe();
+
+    if (jwtToken) {
+      setIsLoadingQuestionSettings(true);
+      fetch(`${API_URL}/settings/question-answer-settings`, {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      })
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((data) => {
+          const mode = String(data?.question_answer_mode || "manual").toLowerCase();
+          if (mode === "manual" || mode === "confirm" || mode === "auto") {
+            setQuestionAnswerMode(mode);
+          } else {
+            setQuestionAnswerMode("manual");
+          }
+          setQuestionAnswerPrompt(data?.question_answer_prompt || "");
+          setQuestionSettingsError(null);
+          setQuestionSettingsSaved(false);
+        })
+        .catch(() => {
+          setQuestionSettingsError(t("settings.questionAnswerSettingsErrorFallback"));
+        })
+        .finally(() => {
+          setIsLoadingQuestionSettings(false);
+        });
+    }
 
     // Fetch bots configuration
     fetch(`${API_URL}/settings/bots-config`)
@@ -76,7 +114,7 @@ export default function SettingsPage() {
         }
       })
       .catch((err) => console.error("Error loading bots config:", err));
-  }, [fetchNotificationMethods, fetchMe]);
+  }, [fetchNotificationMethods, fetchMe, jwtToken, t]);
 
   // Live polling for instant bot connection verification
   useEffect(() => {
@@ -135,6 +173,44 @@ export default function SettingsPage() {
 
   const toggleLanguage = () => {
     setLanguage(language === "en" ? "ru" : "en");
+  };
+
+  const handleSaveQuestionSettings = async () => {
+    if (!jwtToken) return;
+    setIsSavingQuestionSettings(true);
+    setQuestionSettingsError(null);
+    setQuestionSettingsSaved(false);
+
+    try {
+      const res = await fetch(`${API_URL}/settings/question-answer-settings`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+          question_answer_mode: questionAnswerMode,
+          question_answer_prompt: questionAnswerPrompt,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data.detail ||
+            data.message ||
+            t("settings.questionAnswerSettingsErrorFallback"),
+        );
+      }
+
+      setQuestionSettingsSaved(true);
+    } catch (e: any) {
+      setQuestionSettingsError(
+        e?.message || t("settings.questionAnswerSettingsErrorFallback"),
+      );
+    } finally {
+      setIsSavingQuestionSettings(false);
+    }
   };
 
   return (
@@ -360,6 +436,78 @@ export default function SettingsPage() {
                   : t("settings.updateToken")}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Notification Methods Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.questionAnswersSectionTitle")}</CardTitle>
+          <p className="text-xs text-slate-500 mt-1">
+            {t("settings.questionAnswersSectionDesc")}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-slate-700">
+              {t("settings.questionAnswerModeLabel")}
+            </label>
+            <select
+              value={questionAnswerMode}
+              onChange={(e) => {
+                setQuestionAnswerMode(e.target.value as QuestionAnswerMode);
+                setQuestionSettingsSaved(false);
+              }}
+              disabled={isLoadingQuestionSettings || isSavingQuestionSettings}
+              className="w-full max-w-lg px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="manual">
+                {t("settings.questionAnswerModeManual")}
+              </option>
+              <option value="confirm">
+                {t("settings.questionAnswerModeConfirm")}
+              </option>
+              <option value="auto">{t("settings.questionAnswerModeAuto")}</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-slate-700">
+              {t("settings.questionAnswerPromptLabel")}
+            </label>
+            <textarea
+              value={questionAnswerPrompt}
+              onChange={(e) => {
+                setQuestionAnswerPrompt(e.target.value);
+                setQuestionSettingsSaved(false);
+              }}
+              rows={5}
+              disabled={isLoadingQuestionSettings || isSavingQuestionSettings}
+              placeholder={t("settings.questionAnswerPromptPlaceholder")}
+              className="w-full max-w-2xl px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          {questionSettingsError && (
+            <div className="bg-red-50/50 border border-red-100 text-red-800 p-3 rounded-lg text-sm">
+              {questionSettingsError}
+            </div>
+          )}
+
+          {questionSettingsSaved && (
+            <div className="bg-green-50/50 border border-green-100 text-green-800 p-3 rounded-lg text-sm">
+              {t("settings.questionAnswerSettingsSaved")}
+            </div>
+          )}
+
+          <Button
+            onClick={handleSaveQuestionSettings}
+            disabled={isLoadingQuestionSettings || isSavingQuestionSettings}
+          >
+            {isSavingQuestionSettings
+              ? t("settings.questionAnswerSettingsSaving")
+              : t("settings.questionAnswerSettingsSave")}
+          </Button>
         </CardContent>
       </Card>
 

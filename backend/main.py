@@ -42,6 +42,14 @@ def run_migrations():
                 conn.exec_driver_sql(
                     "ALTER TABLE users ADD COLUMN registration_bonus_days INTEGER NOT NULL DEFAULT 0"
                 )
+            if "question_answer_mode" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN question_answer_mode VARCHAR NOT NULL DEFAULT 'manual'"
+                )
+            if "question_answer_prompt" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN question_answer_prompt TEXT NOT NULL DEFAULT ''"
+                )
 
             nm_ids_columns = {
                 col.get("name") for col in inspector.get_columns("nm_ids")

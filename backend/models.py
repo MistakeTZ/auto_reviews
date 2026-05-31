@@ -31,6 +31,14 @@ class User(Base):
     registration_bonus_days = Column(Integer, default=0, nullable=False)
     referred_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_code = Column(String, unique=True, index=True, nullable=True)
+    question_answer_mode = Column(String, default="manual", nullable=False)
+    question_answer_prompt = Column(Text, nullable=False, default="""
+Вы являетесь помощником службы поддержки для продавца Wildberries.
+Сгенерируйте короткий, вежливый и полезный ответ на этот вопрос клиента.
+Возвращайте только текст ответа без кавычек, разметки, меток или объяснений.
+Не используй переносы строк и не пиши слишком длинные ответы.
+Используйте тот же язык, что и в вопросе.
+""")
 
     rules = relationship("Rule", back_populates="owner")
     reviews = relationship("Review", back_populates="owner")

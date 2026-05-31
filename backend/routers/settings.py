@@ -155,6 +155,48 @@ def get_bots_config():
     }
 
 
+@router.get("/question-answer-settings", response_model=schemas.QuestionAnswerSettings)
+def get_question_answer_settings(
+    current_user: User = Depends(get_current_user),
+):
+    return {
+        "question_answer_mode": current_user.question_answer_mode or "manual",
+        "question_answer_prompt": current_user.question_answer_prompt,
+    }
+
+
+@router.patch("/question-answer-settings", response_model=schemas.QuestionAnswerSettings)
+def update_question_answer_settings(
+    payload: schemas.QuestionAnswerSettingsUpdate,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(get_current_user),
+):
+    values = payload.model_dump(exclude_unset=True)
+    if not values:
+        return {
+            "question_answer_mode": current_user.question_answer_mode or "manual",
+            "question_answer_prompt": current_user.question_answer_prompt,
+        }
+
+    try:
+        updated_user = crud.update_user_question_answer_settings(
+            db,
+            user_id=current_user.id,
+            question_answer_mode=values.get("question_answer_mode"),
+            question_answer_prompt=values.get("question_answer_prompt"),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "question_answer_mode": updated_user.question_answer_mode or "manual",
+        "question_answer_prompt": updated_user.question_answer_prompt,
+    }
+
+
 class ReferralCodeRequest(BaseModel):
     code: str
 
