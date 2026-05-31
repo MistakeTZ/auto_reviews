@@ -113,9 +113,11 @@ def build_feedback_notification_text(review: models.Review) -> str:
         stars,
         f"<b>Предмет:</b> <a href='https://www.wildberries.ru/catalog/{nm_id}/detail.aspx'>{product_name}</a>",
         f"🆔 <code>{nm_id}</code>",
-        f"👤 <b>Пользователь:</b> {user_name}",
-        "",
     ]
+    if user_name:
+        body.extend([f"👤 <b>Пользователь:</b> {user_name}", ""])
+    else:
+        body.append("")
 
     if media_line:
         body.append(media_line)
@@ -239,9 +241,7 @@ def _build_question_attachment(
                     {
                         "type": "link",
                         "text": "Открыть на reAnswer",
-                        "url": _question_action_url(
-                            question.id, question.state or "none", safe_answer
-                        ),
+                        "url": QUESTION_WEB_URL,
                     }
                 ],
             ]
