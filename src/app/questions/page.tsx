@@ -875,7 +875,7 @@ export default function QuestionsPage() {
                                 );
                               }}
                               placeholder={t("questions.typeReply")}
-                              className="questions-reply-textarea w-full p-0 pr-14 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                              className="questions-reply-textarea w-full p-0.5 pr-14 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[135px]"
                               disabled={isReplying[question.id]}
                             />
                             <div className="absolute right-1.5 top-1.5 flex shrink-0 flex-col items-center gap-1.5">

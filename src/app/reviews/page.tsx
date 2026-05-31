@@ -56,6 +56,7 @@ export default function ReviewsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isReplying, setIsReplying] = useState<{ [key: string]: boolean }>({});
   const [isGeneratingReply, setIsGeneratingReply] = useState<{
     [key: string]: boolean;
   }>({});
@@ -137,21 +138,27 @@ export default function ReviewsPage() {
   };
 
   const handleReply = async (id: string) => {
-    if (replyText[id]) {
-      await markAsAnswered(id, replyText[id]);
+    const text = replyText[id];
+    if (!text || !text.trim()) return;
+
+    setIsReplying((prev) => ({ ...prev, [id]: true }));
+    try {
+      await markAsAnswered(id, text);
       setAllReviews((prev) =>
         prev.map((review) =>
           String(review.id) === String(id)
             ? {
                 ...review,
                 status: "manual-review",
-                autoAnswerText: replyText[id],
+                autoAnswerText: text,
               }
             : review,
         ),
       );
       setReplyText((prev) => ({ ...prev, [id]: "" }));
       setIsEditingAnswer((prev) => ({ ...prev, [id]: false }));
+    } finally {
+      setIsReplying((prev) => ({ ...prev, [id]: false }));
     }
   };
 
@@ -1184,7 +1191,7 @@ export default function ReviewsPage() {
                                 ? t("reviews.typeReply")
                                 : t("reviews.replyUnavailable")
                             }
-                            className="reviews-reply-textarea w-full p-0 pr-14 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                            className="reviews-reply-textarea w-full p-0.5 pr-14 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[135px]"
                             disabled={!isReviewEditable}
                           />
                           <div className="absolute right-1.5 top-1.5 flex shrink-0 flex-col items-center gap-1.5">
@@ -1192,9 +1199,11 @@ export default function ReviewsPage() {
                               variant="outline"
                               onClick={() => handleGenerateReply(review.id)}
                               disabled={
-                                !isReviewEditable || isGeneratingReply[review.id]
+                                  !isReviewEditable ||
+                                  isReplying[review.id] ||
+                                  isGeneratingReply[review.id]
                               }
-                              className="h-9 w-9 rounded-lg p-0"
+                              className="h-9 w-9 rounded-lg cursor-pointer p-0"
                               aria-label={t("reviews.generateReply")}
                               title={t("reviews.generateReply")}
                             >
@@ -1205,13 +1214,20 @@ export default function ReviewsPage() {
                             <Button
                               onClick={() => handleReply(review.id)}
                               disabled={
-                                !replyText[review.id] || !isReviewEditable
+                                  !(replyText[review.id] || "").trim() ||
+                                  !isReviewEditable ||
+                                  isReplying[review.id] ||
+                                  isGeneratingReply[review.id]
                               }
-                              className="h-9 w-9 rounded-lg p-0"
+                              className="h-9 w-9 rounded-lg font-bold cursor-pointer p-0"
                               aria-label={t("reviews.sendReply")}
                               title={t("reviews.sendReply")}
                             >
-                              <SendHorizontal className="h-4 w-4" />
+                                {isReplying[review.id] ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <SendHorizontal className="h-4 w-4" />
+                                )}
                             </Button>
                             {isEditingAnswer[review.id] && (
                               <Button
@@ -1222,7 +1238,11 @@ export default function ReviewsPage() {
                                     [review.id]: false,
                                   }))
                                 }
-                                className="h-9 w-9 rounded-lg p-0"
+                                className="h-9 w-9 rounded-lg cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50 p-0"
+                                disabled={
+                                  isReplying[review.id] ||
+                                  isGeneratingReply[review.id]
+                                }
                                 aria-label={t("common.cancel")}
                                 title={t("common.cancel")}
                               >
