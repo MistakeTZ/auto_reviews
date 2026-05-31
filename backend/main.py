@@ -12,6 +12,8 @@ from bot import (
     MaxBotClient,
     TelegramBotClient,
     configure_webhook,
+    handle_max_callback_query,
+    handle_tg_callback_query,
     parse_max_update,
     parse_tg_update,
     process_update,
@@ -168,10 +170,12 @@ async def bot_webhook(bot_type: str, secret: str, request: Request):
         async with httpx.AsyncClient(timeout=30.0) as http_client:
             if bot_type == "telegram":
                 client = TelegramBotClient(http_client, token)
-                ctx = parse_tg_update(payload, client)
+                callback_handled = await handle_tg_callback_query(payload, client)
+                ctx = None if callback_handled else parse_tg_update(payload, client)
             else:
                 client = MaxBotClient(http_client, token)
-                ctx = parse_max_update(payload, client)
+                callback_handled = await handle_max_callback_query(payload, client)
+                ctx = None if callback_handled else parse_max_update(payload, client)
 
             # Some updates do not carry link/start payload and can be ignored.
             if ctx:

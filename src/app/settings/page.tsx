@@ -802,7 +802,7 @@ export default function SettingsPage() {
         </div>
 
         <a
-          href="https://t.me/reanswer_support"
+          href="https://t.me/+375259863436"
           target="_blank"
           rel="noreferrer"
           className="mt-6 md:mt-0 w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 font-extrabold text-xs shadow-sm hover:shadow-md transition-all shrink-0 active:scale-95"

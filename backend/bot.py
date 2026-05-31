@@ -9,11 +9,14 @@ from typing import Any, Optional, Protocol
 from database import SessionLocal
 import models
 import httpx
+from processor.chat_processor import ChatProcessor
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+QUESTION_CALLBACK_PREFIX = "qreply"
 
 
 class BotType(enum.StrEnum):
@@ -50,7 +53,7 @@ class TelegramBotClient:
             json={
                 "url": url,
                 "secret_token": secret,
-                "allowed_updates": ["message"],
+                "allowed_updates": ["message", "callback_query"],
                 "drop_pending_updates": True,
             },
         )
@@ -58,6 +61,37 @@ class TelegramBotClient:
 
     async def delete_webhook(self) -> None:
         await self.client.get(f"{self.base_url}/deleteWebhook")
+
+    async def answer_callback_query(
+        self, callback_query_id: str, text: Optional[str] = None
+    ) -> None:
+        payload: dict[str, Any] = {"callback_query_id": callback_query_id}
+        if text:
+            payload["text"] = text
+        try:
+            res = await self.client.post(f"{self.base_url}/answerCallbackQuery", json=payload)
+            res.raise_for_status()
+        except Exception as e:
+            logger.warning("[Telegram] Failed to answer callback query %s: %s", callback_query_id, e)
+
+    async def edit_message_reply_markup(self, chat_id: str, message_id: int) -> None:
+        payload = {
+            "chat_id": int(chat_id),
+            "message_id": message_id,
+            "reply_markup": {"inline_keyboard": []},
+        }
+        try:
+            res = await self.client.post(
+                f"{self.base_url}/editMessageReplyMarkup", json=payload
+            )
+            res.raise_for_status()
+        except Exception as e:
+            logger.warning(
+                "[Telegram] Failed to clear inline keyboard chat_id=%s message_id=%s: %s",
+                chat_id,
+                message_id,
+                e,
+            )
 
 
 class MaxBotClient:
@@ -82,7 +116,7 @@ class MaxBotClient:
             headers=self.headers,
             json={
                 "url": url,
-                "update_types": ["message_created", "bot_started"],
+                "update_types": ["message_created", "bot_started", "message_callback"],
                 "secret": secret,
             },
         )
@@ -124,6 +158,252 @@ def parse_tg_update(update: dict[str, Any], client: BotClient) -> Optional[BotCo
         start_code = parts[1].strip() if len(parts) > 1 else ""
 
     return BotContext(BotType.TELEGRAM, chat_id, start_code, client)
+
+
+def _parse_question_callback_data(data: str) -> tuple[Optional[int], Optional[str]]:
+    parts = (data or "").strip().split(":")
+    if len(parts) != 3 or parts[0] != QUESTION_CALLBACK_PREFIX:
+        return None, None
+
+    question_id_raw = parts[1].strip()
+    reply_state = parts[2].strip()
+    if not question_id_raw.isdigit():
+        return None, None
+    if reply_state not in {"none", "wbRu"}:
+        return None, None
+    return int(question_id_raw), reply_state
+
+
+def _is_wb_error_response(response: Any) -> bool:
+    return isinstance(response, dict) and (
+        response.get("error")
+        or response.get("errors")
+        or response.get("status", 200) >= 400
+    )
+
+
+async def handle_tg_callback_query(
+    update: dict[str, Any], client: TelegramBotClient
+) -> bool:
+    callback = update.get("callback_query")
+    if not isinstance(callback, dict):
+        return False
+
+    callback_id = str(callback.get("id") or "").strip()
+    callback_data = str(callback.get("data") or "").strip()
+    message = callback.get("message") or {}
+    chat_id = str((message.get("chat") or {}).get("id") or "").strip()
+    message_id = message.get("message_id")
+
+    question_id, reply_state = _parse_question_callback_data(callback_data)
+    if question_id is None or reply_state is None:
+        if callback_id:
+            await client.answer_callback_query(callback_id, "Неизвестная команда")
+        return True
+
+    if not chat_id:
+        if callback_id:
+            await client.answer_callback_query(callback_id, "Не удалось определить чат")
+        return True
+
+    with SessionLocal() as db:
+        method = (
+            db.query(models.NotificationMethod)
+            .filter(
+                models.NotificationMethod.type == BotType.TELEGRAM,
+                models.NotificationMethod.value == chat_id,
+                models.NotificationMethod.is_active == True,
+            )
+            .first()
+        )
+        if not method:
+            if callback_id:
+                await client.answer_callback_query(callback_id, "Чат не привязан к аккаунту")
+            return True
+
+        user = db.query(models.User).filter(models.User.id == method.user_id).first()
+        if not user or not (user.wb_api_token or "").strip():
+            if callback_id:
+                await client.answer_callback_query(callback_id, "WB токен не настроен")
+            return True
+
+        question = (
+            db.query(models.Question)
+            .filter(
+                models.Question.id == question_id,
+                models.Question.user_id == user.id,
+            )
+            .first()
+        )
+        if not question:
+            if callback_id:
+                await client.answer_callback_query(callback_id, "Вопрос не найден")
+            return True
+
+        reply_text = (question.proposed_answer_text or "").strip()
+        if not reply_text:
+            if callback_id:
+                await client.answer_callback_query(callback_id, "Предложенный ответ пуст")
+            return True
+
+        try:
+            async with ChatProcessor(user.wb_api_token) as processor:
+                res = await processor.answer_question(
+                    question_id=question.wb_question_id,
+                    text=reply_text,
+                    state=reply_state,
+                )
+                if _is_wb_error_response(res):
+                    error_msg = (
+                        str(res.get("errorText") or res.get("detail") or res.get("error") or "")
+                        if isinstance(res, dict)
+                        else ""
+                    )
+                    if callback_id:
+                        await client.answer_callback_query(
+                            callback_id,
+                            error_msg[:180] or "WB вернул ошибку при публикации ответа",
+                        )
+                    return True
+
+            question.answer_text = reply_text
+            question.state = reply_state
+            db.commit()
+
+            if isinstance(message_id, int):
+                await client.edit_message_reply_markup(chat_id, message_id)
+
+            if callback_id:
+                await client.answer_callback_query(callback_id, "Ответ отправлен")
+            await client.send_message(chat_id, "Ответ на вопрос успешно отправлен в Wildberries.")
+            logger.info(
+                "[Telegram] Processed callback question_id=%s user_id=%s state=%s",
+                question_id,
+                user.id,
+                reply_state,
+            )
+            return True
+        except Exception as exc:
+            logger.exception(
+                "[Telegram] Failed callback processing question_id=%s user_id=%s: %s",
+                question_id,
+                user.id,
+                exc,
+            )
+            if callback_id:
+                await client.answer_callback_query(
+                    callback_id,
+                    "Не удалось отправить ответ. Попробуйте позже.",
+                )
+            return True
+
+
+async def handle_max_callback_query(update: dict[str, Any], client: MaxBotClient) -> bool:
+    if str(update.get("update_type") or "").strip() != "message_callback":
+        return False
+
+    callback = update.get("callback") or {}
+    callback_data = str(callback.get("payload") or "").strip()
+
+    chat_id = str(update.get("chat_id") or "").strip()
+    if not chat_id:
+        chat_id = str(callback.get("chat_id") or "").strip()
+    if not chat_id:
+        chat_id = str((callback.get("chat") or {}).get("chat_id") or "").strip()
+
+    question_id, reply_state = _parse_question_callback_data(callback_data)
+    if question_id is None or reply_state is None:
+        if chat_id:
+            await client.send_message(chat_id, "Неизвестная команда")
+        return True
+
+    if not chat_id:
+        return True
+
+    with SessionLocal() as db:
+        method = (
+            db.query(models.NotificationMethod)
+            .filter(
+                models.NotificationMethod.type == BotType.MAX,
+                models.NotificationMethod.value == chat_id,
+                models.NotificationMethod.is_active == True,
+            )
+            .first()
+        )
+        if not method:
+            await client.send_message(chat_id, "Чат не привязан к аккаунту")
+            return True
+
+        user = db.query(models.User).filter(models.User.id == method.user_id).first()
+        if not user or not (user.wb_api_token or "").strip():
+            await client.send_message(chat_id, "WB токен не настроен")
+            return True
+
+        question = (
+            db.query(models.Question)
+            .filter(
+                models.Question.id == question_id,
+                models.Question.user_id == user.id,
+            )
+            .first()
+        )
+        if not question:
+            await client.send_message(chat_id, "Вопрос не найден")
+            return True
+
+        reply_text = (question.proposed_answer_text or "").strip()
+        if not reply_text:
+            await client.send_message(chat_id, "Предложенный ответ пуст")
+            return True
+
+        try:
+            async with ChatProcessor(user.wb_api_token) as processor:
+                res = await processor.answer_question(
+                    question_id=question.wb_question_id,
+                    text=reply_text,
+                    state=reply_state,
+                )
+                if _is_wb_error_response(res):
+                    error_msg = (
+                        str(
+                            res.get("errorText")
+                            or res.get("detail")
+                            or res.get("error")
+                            or ""
+                        )
+                        if isinstance(res, dict)
+                        else ""
+                    )
+                    await client.send_message(
+                        chat_id,
+                        error_msg[:250] or "WB вернул ошибку при публикации ответа",
+                    )
+                    return True
+
+            question.answer_text = reply_text
+            question.state = reply_state
+            db.commit()
+
+            await client.send_message(chat_id, "Ответ на вопрос успешно отправлен в Wildberries.")
+            logger.info(
+                "[Max] Processed callback question_id=%s user_id=%s state=%s",
+                question_id,
+                user.id,
+                reply_state,
+            )
+            return True
+        except Exception as exc:
+            logger.exception(
+                "[Max] Failed callback processing question_id=%s user_id=%s: %s",
+                question_id,
+                user.id,
+                exc,
+            )
+            await client.send_message(
+                chat_id,
+                "Не удалось отправить ответ. Попробуйте позже.",
+            )
+            return True
 
 
 def parse_max_update(update: dict[str, Any], client: BotClient) -> Optional[BotContext]:
@@ -274,6 +554,8 @@ async def _run_tg_loop(client: TelegramBotClient):
 
             for update in res.json().get("result", []):
                 offset = update["update_id"] + 1
+                if await handle_tg_callback_query(update, client):
+                    continue
                 ctx = parse_tg_update(update, client)
                 if ctx:
                     await process_update(ctx)
@@ -305,6 +587,8 @@ async def _run_max_loop(client: MaxBotClient):
             updates = res.json()
             if isinstance(updates, list):
                 for update in updates:
+                    if await handle_max_callback_query(update, client):
+                        continue
                     ctx = parse_max_update(update, client)
                     if ctx:
                         await process_update(ctx)

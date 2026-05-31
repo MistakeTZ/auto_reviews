@@ -145,7 +145,6 @@ def build_question_notification_text(
     proposed_answer: Optional[str] = None,
     is_auto_answer: bool = False,
 ) -> str:
-    user_name = _trim_text(question.user_name)
     product_name = _trim_text(question.product_name)
     question_text = _trim_text(question.text)
     answer_text = _trim_optional_text(question.answer_text)
@@ -156,11 +155,12 @@ def build_question_notification_text(
 
     body = [
         "<b>НОВЫЙ ВОПРОС</b>",
-        f"<b>Предмет:</b> <a href='https://www.wildberries.ru/catalog/{nm_id}/detail.aspx'>{product_name}</a>"
-        if nm_id
-        else f"<b>Предмет:</b> {product_name}",
+        (
+            f"<b>Предмет:</b> <a href='https://www.wildberries.ru/catalog/{nm_id}/detail.aspx'>{product_name}</a>"
+            if nm_id
+            else f"<b>Предмет:</b> {product_name}"
+        ),
         f"🆔 <code>{nm_id}</code>" if nm_id else "",
-        f"👤 <b>Пользователь:</b> {user_name}",
         "",
         f"❓ <b>Вопрос:</b> {question_text}",
     ]
@@ -173,12 +173,16 @@ def build_question_notification_text(
             ]
         )
     elif proposed_answer_text:
-        body.extend(["", f"🤖 <b>Предложенный ответ:</b> <i>{proposed_answer_text}</i>"])
+        body.extend(
+            ["", f"\n🤖 <b>Предложенный ответ:</b> <i>{proposed_answer_text}</i>"]
+        )
 
-    return "\n".join(part for part in body if part).strip("\n")
+    return "\n".join(part for part in body).strip("\n")
 
 
-def _build_question_reply_markup(question: models.Question, proposed_answer: str) -> dict:
+def _build_question_reply_markup(
+    question: models.Question, proposed_answer: str
+) -> dict:
     safe_answer = proposed_answer.strip()
     if not safe_answer:
         return {}
@@ -187,17 +191,17 @@ def _build_question_reply_markup(question: models.Question, proposed_answer: str
         "inline_keyboard": [
             [
                 {
-                    "text": "Answer privately",
-                    "url": _question_action_url(question.id, "none", safe_answer),
+                    "text": "Ответить лично",
+                    "callback_data": f"qreply:{question.id}:none",
                 },
                 {
-                    "text": "Post answer",
-                    "url": _question_action_url(question.id, "wbRu", safe_answer),
+                    "text": "Опубликовать ответ",
+                    "callback_data": f"qreply:{question.id}:wbRu",
                 },
             ],
             [
                 {
-                    "text": "Open in reAnswer",
+                    "text": "Открыть на reAnswer",
                     "url": _question_action_url(
                         question.id, question.state or "none", safe_answer
                     ),
@@ -207,7 +211,47 @@ def _build_question_reply_markup(question: models.Question, proposed_answer: str
     }
 
 
-async def _send_email(email: str, text: str, subject: str = "Новый отзыв на Wildberries") -> None:
+def _build_question_attachment(
+    question: models.Question,
+    proposed_answer: str,
+) -> dict:
+    safe_answer = proposed_answer.strip()
+    if not safe_answer:
+        return {}
+
+    return {
+        "type": "inline_keyboard",
+        "payload": {
+            "buttons": [
+                [
+                    {
+                        "type": "callback",
+                        "text": "Ответить лично",
+                        "payload": f"qreply:{question.id}:none",
+                    },
+                    {
+                        "type": "callback",
+                        "text": "Опубликовать ответ",
+                        "payload": f"qreply:{question.id}:wbRu",
+                    },
+                ],
+                [
+                    {
+                        "type": "link",
+                        "text": "Открыть на reAnswer",
+                        "url": _question_action_url(
+                            question.id, question.state or "none", safe_answer
+                        ),
+                    }
+                ],
+            ]
+        },
+    }
+
+
+async def _send_email(
+    email: str, text: str, subject: str = "Новый отзыв на Wildberries"
+) -> None:
     smtp_host = os.getenv("SMTP_HOST", "localhost")
     smtp_port = int(os.getenv("SMTP_PORT", "25"))
     smtp_user = (os.getenv("SMTP_USER") or "").strip()
@@ -217,7 +261,9 @@ async def _send_email(email: str, text: str, subject: str = "Новый отзы
     smtp_use_tls = _env_flag("SMTP_USE_TLS", False)
 
     if not smtp_from:
-        logger.warning("[notify] SMTP_FROM/SMTP_USER is empty, email notification skipped")
+        logger.warning(
+            "[notify] SMTP_FROM/SMTP_USER is empty, email notification skipped"
+        )
         return
 
     # Keep existing HTML tags from notification text and preserve line breaks.
@@ -287,7 +333,11 @@ async def _send_telegram_message(
             raise RuntimeError(f"Telegram API error: {data}")
 
 
-async def _send_max_message(destination: str, text: str) -> None:
+async def _send_max_message(
+    destination: str,
+    text: str,
+    attachments: Optional[list] = None,
+) -> None:
     token = (os.getenv("MAX_BOT_TOKEN") or "").strip()
     if not token:
         logger.warning("[notify] MAX_BOT_TOKEN is empty, max notification skipped")
@@ -298,6 +348,8 @@ async def _send_max_message(destination: str, text: str) -> None:
         "text": text,
         "format": "html",
     }
+    if attachments:
+        payload["attachments"] = attachments
     headers = {
         "Authorization": token,
         "Content-Type": "application/json",
@@ -352,7 +404,11 @@ async def _send_notification_to_method(
             )
     elif method_type == "max":
         try:
-            await _send_max_message(destination, text)
+            await _send_max_message(
+                destination,
+                text,
+                attachments=[reply_markup] if reply_markup else None,
+            )
         except Exception as exc:
             logger.exception(
                 "[notify] max send failed user_id=%s destination=%s: %s",
@@ -440,6 +496,11 @@ async def notify_question_processed(
                 if proposed_answer
                 else None
             )
+            attachment = (
+                _build_question_attachment(question, proposed_answer)
+                if proposed_answer
+                else None
+            )
 
             for method in methods:
                 await _send_notification_to_method(
@@ -447,7 +508,11 @@ async def notify_question_processed(
                     message_text,
                     user_id=user_id,
                     email_subject="Новый вопрос на Wildberries",
-                    reply_markup=reply_markup if method.type == "telegram" else None,
+                    reply_markup=(
+                        reply_markup
+                        if method.type == "telegram"
+                        else (attachment if method.type == "max" else None)
+                    ),
                 )
             return
 
