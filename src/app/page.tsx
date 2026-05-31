@@ -8,6 +8,7 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
+import ScenariosSection from '@/components/landing/ScenariosSection';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense, type CSSProperties } from 'react';
 import './landing.css';
@@ -23,6 +24,8 @@ function LandingPageContent() {
   const pricingFeatureGroups = t('landing.pricingFeatureIncluded')
     .split('\n\n')
     .map((group) => group.split('\n').map((line) => line.trim()).filter(Boolean));
+
+  const [totalAnswers, setTotalAnswers] = useState<number | null>(null);
 
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -94,6 +97,52 @@ function LandingPageContent() {
     }
     localStorage.setItem('pendingReferralCode', referralCodeFromUrl);
   }, [referralCodeFromUrl]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchLandingReviews = async () => {
+      try {
+        const response = await fetch('/api/landing/reviews', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data: { total_answers?: unknown } = await response.json();
+        if (typeof data.total_answers === 'number' && Number.isFinite(data.total_answers)) {
+          setTotalAnswers(Math.max(0, Math.trunc(data.total_answers)));
+        }
+      } catch {
+        // Keep localized fallback metric if the request fails.
+      }
+    };
+
+    const onWindowLoad = () => {
+      void fetchLandingReviews();
+    };
+
+    if (document.readyState === 'complete') {
+      onWindowLoad();
+    } else {
+      window.addEventListener('load', onWindowLoad, { once: true });
+    }
+
+    return () => {
+      controller.abort();
+      window.removeEventListener('load', onWindowLoad);
+    };
+  }, []);
+
+  const stat1Value = totalAnswers === null
+    ? t('landing.stat1')
+    : new Intl.NumberFormat(language === 'ru' ? 'ru-RU' : 'en-US').format(totalAnswers);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -180,7 +229,7 @@ function LandingPageContent() {
         <section className="trust-bar-section">
           <div className="trust-bar-container">
             <div className="trust-metric" data-reveal="up" style={revealDelay(90)}>
-              <strong>{t('landing.stat1')}</strong>
+              <strong>{stat1Value}</strong>
               <span>{t('landing.stat1Desc')}</span>
             </div>
             <div className="trust-divider" />
@@ -218,6 +267,13 @@ function LandingPageContent() {
             ))}
           </div>
         </section>
+
+        <ScenariosSection
+          t={t}
+          language={language}
+          isAuthenticated={isAuthenticated}
+          registerHref={registerHref}
+        />
 
         {/* How it Works Section */}
         <section className="why-choose-section">

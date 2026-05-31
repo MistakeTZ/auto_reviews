@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect
 
 from admin import setup_admin
+from backend.routers import landing
 from bot import (
     BotType,
     MaxBotClient,
@@ -126,6 +127,7 @@ app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
 app.include_router(questions.router, prefix="/api/questions", tags=["questions"])
 app.include_router(payments.router, prefix="/api/payments", tags=["payments"])
+app.include_router(landing.router, prefix="/api/landing", tags=["landing"])
 
 setup_admin(app)
 
