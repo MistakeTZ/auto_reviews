@@ -11,7 +11,7 @@ import schemas
 from models import User, Question, NmIDs
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
-from prompts import QUESTION_REPLY_SYSTEM_PROMPT
+from services.question_replies import generate_question_reply_text
 from routers.auth import check_active_subscription
 
 router = APIRouter()
@@ -23,6 +23,7 @@ class QuestionOut(BaseModel):
     product_name: Optional[str] = None
     text: str
     answer_text: Optional[str] = None
+    proposed_answer_text: Optional[str] = None
     date: Optional[str] = None
     is_answered: bool = False
     user_name: Optional[str] = None
@@ -52,6 +53,7 @@ def _to_question_out_from_model(question: schemas.Question) -> QuestionOut:
         product_name=question.product_name,
         text=question.text,
         answer_text=answer_text,
+        proposed_answer_text=(question.proposed_answer_text or "").strip() or None,
         date=question.date,
         is_answered=bool(answer_text),
         state=question.state,
@@ -293,22 +295,19 @@ async def generate_reply_for_question(
             pass
 
     client = AsyncOpenAIClient(api_key=api_key)
-    generated = await client.chat_completion(
-        messages=[
-            {
-                "role": "system",
-                "content": QUESTION_REPLY_SYSTEM_PROMPT,
-            },
-            {"role": "user", "content": product_data[:3000]},
-            {"role": "user", "content": question_summary},
-        ],
-        model="gpt-5-nano",
-        temperature=0.4,
-        max_tokens=4000,
+    generated = await generate_question_reply_text(
+        client,
+        question_summary=question_summary,
+        product_data=product_data,
+        custom_prompt=current_user.question_answer_prompt or "",
     )
 
     reply_text = str(generated or "").strip()
     if not reply_text:
         raise HTTPException(status_code=502, detail="Не удалось сгенерировать ответ")
+
+    db_question.proposed_answer_text = reply_text
+    db.commit()
+    db.refresh(db_question)
 
     return {"text": reply_text}

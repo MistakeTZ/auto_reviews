@@ -32,13 +32,11 @@ class User(Base):
     referred_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_code = Column(String, unique=True, index=True, nullable=True)
     question_answer_mode = Column(String, default="manual", nullable=False)
-    question_answer_prompt = Column(Text, nullable=False, default="""
-Вы являетесь помощником службы поддержки для продавца Wildberries.
+    question_answer_prompt = Column(Text, nullable=False, default="""Вы являетесь помощником службы поддержки для продавца Wildberries.
 Сгенерируйте короткий, вежливый и полезный ответ на этот вопрос клиента.
 Возвращайте только текст ответа без кавычек, разметки, меток или объяснений.
 Не используй переносы строк и не пиши слишком длинные ответы.
-Используйте тот же язык, что и в вопросе.
-""")
+Используйте тот же язык, что и в вопросе.""")
 
     rules = relationship("Rule", back_populates="owner")
     reviews = relationship("Review", back_populates="owner")
@@ -131,6 +129,7 @@ class Question(Base):
     text = Column(String)
     date = Column(String)
     answer_text = Column(String, nullable=True)
+    proposed_answer_text = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user_name = Column(String, nullable=True)
     editable = Column(Boolean, default=True, nullable=True)

@@ -1,5 +1,7 @@
 import logging
 import os
+from typing import Callable
+from urllib.parse import urlencode
 from typing import Optional
 from email.mime.text import MIMEText
 from datetime import datetime, timezone
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 MAX_TEXT_LENGTH = 3500
+QUESTION_WEB_URL = "https://reanswer.ru/questions"
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -83,6 +86,15 @@ def _trim_optional_text(value: Optional[str]) -> Optional[str]:
     return normalized[:MAX_TEXT_LENGTH] + "..."
 
 
+def _question_action_url(question_id: int, reply_state: str, reply_text: str) -> str:
+    params = {
+        "questionId": str(question_id),
+        "replyState": reply_state,
+        "replyText": reply_text,
+    }
+    return f"{QUESTION_WEB_URL}?{urlencode(params)}"
+
+
 def build_feedback_notification_text(review: models.Review) -> str:
     stars = _build_stars(review.rating)
     user_name = _trim_text(review.user_name)
@@ -128,11 +140,18 @@ def build_feedback_notification_text(review: models.Review) -> str:
     return "\n".join(body).strip("\n")
 
 
-def build_question_notification_text(question: models.Question) -> str:
+def build_question_notification_text(
+    question: models.Question,
+    proposed_answer: Optional[str] = None,
+    is_auto_answer: bool = False,
+) -> str:
     user_name = _trim_text(question.user_name)
     product_name = _trim_text(question.product_name)
     question_text = _trim_text(question.text)
     answer_text = _trim_optional_text(question.answer_text)
+    proposed_answer_text = _trim_optional_text(
+        proposed_answer or question.proposed_answer_text
+    )
     nm_id = _trim_optional_text(question.nm_id)
 
     body = [
@@ -147,9 +166,45 @@ def build_question_notification_text(question: models.Question) -> str:
     ]
 
     if answer_text:
-        body.extend(["", f"🤖 <b>Ответ:</b> <i>{answer_text}</i>"])
+        body.extend(
+            [
+                "",
+                f"🤖 <b>{'Ответ' if is_auto_answer else 'Предложенный ответ'}:</b> <i>{answer_text}</i>",
+            ]
+        )
+    elif proposed_answer_text:
+        body.extend(["", f"🤖 <b>Предложенный ответ:</b> <i>{proposed_answer_text}</i>"])
 
     return "\n".join(part for part in body if part).strip("\n")
+
+
+def _build_question_reply_markup(question: models.Question, proposed_answer: str) -> dict:
+    safe_answer = proposed_answer.strip()
+    if not safe_answer:
+        return {}
+
+    return {
+        "inline_keyboard": [
+            [
+                {
+                    "text": "Answer privately",
+                    "url": _question_action_url(question.id, "none", safe_answer),
+                },
+                {
+                    "text": "Post answer",
+                    "url": _question_action_url(question.id, "wbRu", safe_answer),
+                },
+            ],
+            [
+                {
+                    "text": "Open in reAnswer",
+                    "url": _question_action_url(
+                        question.id, question.state or "none", safe_answer
+                    ),
+                }
+            ],
+        ]
+    }
 
 
 async def _send_email(email: str, text: str, subject: str = "Новый отзыв на Wildberries") -> None:
@@ -207,7 +262,9 @@ async def _send_email(email: str, text: str, subject: str = "Новый отзы
     raise RuntimeError(f"Failed to send email: {last_exc}") from last_exc
 
 
-async def _send_telegram_message(chat_id: str, text: str) -> None:
+async def _send_telegram_message(
+    chat_id: str, text: str, reply_markup: Optional[dict] = None
+) -> None:
     token = (os.getenv("TG_BOT_TOKEN") or "").strip()
     if not token:
         logger.warning("[notify] TG_BOT_TOKEN is empty, telegram notification skipped")
@@ -220,6 +277,8 @@ async def _send_telegram_message(chat_id: str, text: str) -> None:
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
     async with httpx.AsyncClient(timeout=20.0) as client:
         response = await client.post(url, json=payload)
         data = response.json()
@@ -264,6 +323,7 @@ async def _send_notification_to_method(
     text: str,
     user_id: int,
     email_subject: str,
+    reply_markup: Optional[dict] = None,
 ) -> None:
     method_type = (method.type or "").strip().lower()
     destination = (method.value or "").strip()
@@ -272,7 +332,7 @@ async def _send_notification_to_method(
 
     if method_type == "telegram":
         try:
-            await _send_telegram_message(destination, text)
+            await _send_telegram_message(destination, text, reply_markup=reply_markup)
         except Exception as exc:
             logger.exception(
                 "[notify] telegram send failed user_id=%s chat_id=%s: %s",
@@ -334,28 +394,75 @@ async def notify_review_processed(
 
 
 async def notify_question_processed(
-    db: Session, user_id: int, question: models.Question
+    db_factory: Callable[[], Session], user_id: int, question: models.Question
 ) -> None:
-    methods = (
-        db.query(models.NotificationMethod)
-        .filter(
-            models.NotificationMethod.user_id == user_id,
-            models.NotificationMethod.is_active == True,
-        )
-        .all()
-    )
-    if not methods:
-        return
+    with db_factory() as db:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        if not user:
+            return
 
-    message_text = build_question_notification_text(question)
-
-    for method in methods:
-        await _send_notification_to_method(
-            method,
-            message_text,
-            user_id=user_id,
-            email_subject="Новый вопрос на Wildberries",
+        methods = (
+            db.query(models.NotificationMethod)
+            .filter(
+                models.NotificationMethod.user_id == user_id,
+                models.NotificationMethod.is_active == True,
+            )
+            .all()
         )
+        if not methods:
+            return
+
+        mode = (user.question_answer_mode or "manual").strip().lower()
+        proposed_answer = (question.proposed_answer_text or "").strip()
+        actual_answer = (question.answer_text or "").strip()
+
+        if mode == "none":
+            return
+
+        if mode == "manual":
+            message_text = build_question_notification_text(question)
+            for method in methods:
+                await _send_notification_to_method(
+                    method,
+                    message_text,
+                    user_id=user_id,
+                    email_subject="Новый вопрос на Wildberries",
+                )
+            return
+
+        if mode == "confirm":
+            message_text = build_question_notification_text(
+                question,
+                proposed_answer=proposed_answer or actual_answer,
+            )
+            reply_markup = (
+                _build_question_reply_markup(question, proposed_answer)
+                if proposed_answer
+                else None
+            )
+
+            for method in methods:
+                await _send_notification_to_method(
+                    method,
+                    message_text,
+                    user_id=user_id,
+                    email_subject="Новый вопрос на Wildberries",
+                    reply_markup=reply_markup if method.type == "telegram" else None,
+                )
+            return
+
+        message_text = build_question_notification_text(
+            question,
+            proposed_answer=actual_answer or proposed_answer,
+            is_auto_answer=True,
+        )
+        for method in methods:
+            await _send_notification_to_method(
+                method,
+                message_text,
+                user_id=user_id,
+                email_subject="Новый вопрос на Wildberries",
+            )
 
 
 def _format_expiration_dt(expires_at: Optional[datetime]) -> str:

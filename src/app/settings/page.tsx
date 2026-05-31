@@ -26,7 +26,7 @@ import FlagSwitcher from "@/components/ui/FlagSwitcher";
 import { trackMetrikaGoal } from "@/lib/metrika";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
-type QuestionAnswerMode = "manual" | "confirm" | "auto";
+type QuestionAnswerMode = "none" | "manual" | "confirm" | "auto";
 const DEFAULT_BOTS_CONFIG = {
   tg_bot: process.env.TG_BOT_NAME || "none",
   max_bot: process.env.MAX_BOT_NAME || "none",
@@ -88,7 +88,12 @@ export default function SettingsPage() {
         .then((res) => (res.ok ? res.json() : Promise.reject()))
         .then((data) => {
           const mode = String(data?.question_answer_mode || "manual").toLowerCase();
-          if (mode === "manual" || mode === "confirm" || mode === "auto") {
+          if (
+            mode === "none" ||
+            mode === "manual" ||
+            mode === "confirm" ||
+            mode === "auto"
+          ) {
             setQuestionAnswerMode(mode);
           } else {
             setQuestionAnswerMode("manual");
@@ -461,13 +466,18 @@ export default function SettingsPage() {
               disabled={isLoadingQuestionSettings || isSavingQuestionSettings}
               className="w-full max-w-lg px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
+              <option value="none">
+                {t("settings.questionAnswerModeNoNotifications")}
+              </option>
               <option value="manual">
                 {t("settings.questionAnswerModeManual")}
               </option>
               <option value="confirm">
                 {t("settings.questionAnswerModeConfirm")}
               </option>
-              <option value="auto">{t("settings.questionAnswerModeAuto")}</option>
+              <option value="auto">
+                {t("settings.questionAnswerModeAuto")}
+              </option>
             </select>
           </div>
 

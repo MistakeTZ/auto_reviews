@@ -146,6 +146,7 @@ class QuestionBase(BaseModel):
     editable: bool = True
     state: Optional[str] = None
     answer_text: Optional[str] = None
+    proposed_answer_text: Optional[str] = None
     user_name: Optional[str] = None
 
 

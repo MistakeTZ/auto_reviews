@@ -1,5 +1,5 @@
 from backend.services.wb_products import sync_user_products
-from models import Question, Rule
+from models import Question, Rule, User as DbUser
 import asyncio
 import json
 import logging
@@ -15,7 +15,11 @@ from prompts import (
     FEEDBACK_REPLY_SUFFIX,
     build_question_system_prompt,
 )
-from schemas import QuestionCreate, ReviewCreate, User
+from schemas import QuestionCreate, ReviewCreate
+from services.question_replies import (
+    classify_question_reply_state,
+    generate_question_reply_text,
+)
 from services.notifications import notify_question_processed, notify_review_processed
 
 
@@ -76,7 +80,7 @@ class MainController:
             token = ""
             try:
                 db = self.db_factory()
-                user = db.query(User).filter(User.id == self.user_id).first()
+                user = db.query(DbUser).filter(DbUser.id == self.user_id).first()
                 if user:
                     user_id = user.id
                     token = str(user.wb_api_token or "")
@@ -135,6 +139,9 @@ class MainController:
                 )
 
     async def _handle_questions(self, full_check: bool = False):
+        question_mode = "manual"
+        question_prompt = ""
+
         count = await self.processor.get_count_unanswered_questions()
         if not full_check and count == 0:
             logger.debug("[questions] no unanswered questions, skipping")
@@ -148,6 +155,28 @@ class MainController:
             )
             questions.extend(answered_questions)
 
+        if not questions:
+            logger.debug("[questions] no questions fetched, skipping")
+            return
+
+        if self.db_factory and self.user_id:
+            db = None
+            try:
+                db = self.db_factory()
+                user = db.query(DbUser).filter(DbUser.id == self.user_id).first()
+                if user:
+                    question_mode = (
+                        str(user.question_answer_mode or "manual").strip().lower()
+                    )
+                    question_prompt = str(user.question_answer_prompt or "").strip()
+            except Exception as exc:
+                logger.exception(
+                    "[questions] failed to load question settings: %s", exc
+                )
+            finally:
+                if "db" in locals() and db:
+                    db.close()
+
         for question in questions:
             question_id = str(question.get("id", ""))
             if not question_id:
@@ -155,6 +184,57 @@ class MainController:
 
             exists, saved = await self._upsert_question_in_db(question)
             if saved:
+                proposed_answer = ""
+                proposed_state = "none"
+
+                if (
+                    question_mode in {"confirm", "auto"}
+                    and not (saved.answer_text or "").strip()
+                ):
+                    proposed_answer, proposed_state = (
+                        await self._build_question_proposed_answer(
+                            question,
+                            question_prompt,
+                        )
+                    )
+                    if proposed_answer:
+                        db = None
+                        try:
+                            db = self.db_factory()
+                            db_question = (
+                                db.query(Question)
+                                .filter(
+                                    Question.id == saved.id,
+                                    Question.user_id == self.user_id,
+                                )
+                                .first()
+                            )
+                            if db_question:
+                                db_question.proposed_answer_text = proposed_answer
+                                db_question.state = (
+                                    proposed_state or db_question.state or "none"
+                                )
+                                db.commit()
+                                db.refresh(db_question)
+                                saved = db_question
+                        except Exception as exc:
+                            logger.exception(
+                                "[questions] failed to persist proposed answer for question_id=%s: %s",
+                                question_id,
+                                exc,
+                            )
+                        finally:
+                            if "db" in locals() and db:
+                                db.close()
+
+                if question_mode == "auto" and proposed_answer:
+                    await self._reply_question_automatically(
+                        saved, proposed_answer, proposed_state
+                    )
+                    saved.answer_text = proposed_answer
+                    saved.proposed_answer_text = proposed_answer
+                    saved.state = proposed_state or saved.state or "none"
+
                 logger.info("[questions] synced question_id=%s to db", question_id)
                 if not exists:
                     await notify_question_processed(
@@ -215,6 +295,105 @@ class MainController:
                 db.close()
 
         return None, None
+
+    async def _build_question_proposed_answer(
+        self, question: Dict, question_prompt: str
+    ) -> tuple[str, str]:
+        user_name = (question.get("userName") or "").strip()
+        if user_name and user_name.startswith("Покупатель"):
+            user_name = ""
+
+        product_details = question.get("productDetails") or {}
+        product_name = str(product_details.get("productName") or "Unknown Product")
+        nm_id = str(product_details.get("nmId") or "").strip()
+        question_text = str(question.get("text") or "")
+
+        product_data = ""
+        if product_name:
+            product_data += f"Название продукта: {product_name}\n"
+        if nm_id:
+            product_data += f"ID товара: {nm_id}\n"
+
+        question_summary_parts = []
+
+        if user_name:
+            question_summary_parts.append(f"Имя пользователя: {user_name}")
+        if product_name:
+            question_summary_parts.append(f"Название продукта: {product_name}")
+        if question_text:
+            question_summary_parts.append(f"Вопрос: {question_text}")
+
+        question_summary = "\n".join(question_summary_parts)
+
+        reply_text = await generate_question_reply_text(
+            self.gpt,
+            question_summary=question_summary,
+            product_data=product_data,
+            custom_prompt=question_prompt,
+        )
+        if not reply_text:
+            return "", "none"
+
+        state = await classify_question_reply_state(
+            self.gpt,
+            question_summary=question_summary,
+            reply_text=reply_text,
+        )
+
+        return reply_text, state
+
+    async def _reply_question_automatically(
+        self, question: Question, text: str, state: str
+    ) -> None:
+        if not self.user_id or not self.db_factory:
+            return
+
+        db = None
+        try:
+            db = self.db_factory()
+            user = db.query(DbUser).filter(DbUser.id == self.user_id).first()
+            if not user or not user.wb_api_token:
+                return
+
+            async with ChatProcessor(user.wb_api_token) as processor:
+                response = await processor.answer_question(
+                    question_id=question.wb_question_id,
+                    text=text,
+                    state=state or "none",
+                )
+
+            if isinstance(response, dict) and (
+                response.get("error")
+                or response.get("errors")
+                or response.get("status", 200) >= 400
+            ):
+                logger.warning(
+                    "[questions] auto-answer failed question_id=%s response=%s",
+                    question.wb_question_id,
+                    response,
+                )
+                return
+
+            db_question = (
+                db.query(Question)
+                .filter(Question.id == question.id, Question.user_id == self.user_id)
+                .first()
+            )
+            if db_question:
+                db_question.answer_text = text
+                db_question.proposed_answer_text = text
+                db_question.state = state or db_question.state or "none"
+                db.commit()
+                db.refresh(db_question)
+        except Exception as exc:
+            logger.exception(
+                "[questions] auto-answer error question_id=%s: %s",
+                question.wb_question_id,
+                exc,
+            )
+        finally:
+            if "db" in locals() and db:
+                db.close()
 
     def _match_rule(self, rules: List[Any], feedback: Dict) -> Optional[Rule]:
         """Return the first rule that matches this feedback, or None."""
@@ -627,58 +806,6 @@ class MainController:
             max_tokens=300,
         )
         return self._safe_parse_json_response(raw)
-
-    async def _build_question_answer(self, question: Dict) -> Dict:
-        examples_json = ""
-        if self._question_examples:
-            examples = [
-                {
-                    "question": ex["text"],
-                    "answer": ex["answer"],
-                    "global_answer": ex["global_answer"],
-                }
-                for ex in self._question_examples[:15]
-            ]
-            examples_json = (
-                "\n\nExamples (learn tone, style, and when global_answer is true vs false):\n"
-                + json.dumps(examples, ensure_ascii=False, indent=2)
-            )
-
-        prompt = build_question_system_prompt(examples_json)
-
-        raw = await self.gpt.chat_completion(
-            messages=[
-                {"role": "system", "content": prompt},
-                {
-                    "role": "user",
-                    "content": json.dumps(question, ensure_ascii=False),
-                },
-            ],
-            model="gpt-4o-mini",
-            temperature=0.3,
-            max_tokens=300,
-        )
-
-        text_val = ""
-        global_answer = False
-        raw_str = str(raw).strip()
-        start = raw_str.find("{")
-        end = raw_str.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            try:
-                data = json.loads(raw_str[start : end + 1])
-                if isinstance(data, dict):
-                    text_val = str(data.get("answer", "")).strip()
-                    global_answer = bool(data.get("global_answer", False))
-            except json.JSONDecodeError:
-                text_val = raw_str
-        else:
-            text_val = raw_str
-
-        return {
-            "text": text_val,
-            "state": "wbRu" if global_answer else "none",
-        }
 
     async def _build_feedback_answer(self, feedback: Dict, prompt: str) -> str:
         if not self.use_gpt_for_feedbacks:

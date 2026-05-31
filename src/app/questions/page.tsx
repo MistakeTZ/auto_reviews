@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Loader2,
   RotateCw,
@@ -31,6 +32,7 @@ type QuestionItem = {
   product_name?: string | null;
   text: string;
   answer_text?: string | null;
+  proposed_answer_text?: string | null;
   date?: string | null;
   editable?: boolean | null;
   state?: string | null;
@@ -50,6 +52,7 @@ export default function QuestionsPage() {
   const jwtToken = useAppStore((state) => state.jwtToken);
   const products = useAppStore((state) => state.products);
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
 
   const [allQuestions, setAllQuestions] = useState<QuestionItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,6 +77,29 @@ export default function QuestionsPage() {
   const [isEditingAnswer, setIsEditingAnswer] = useState<{
     [key: string]: boolean;
   }>({});
+
+  useEffect(() => {
+    const questionId = searchParams.get("questionId") || searchParams.get("id");
+    const replyTextParam = searchParams.get("replyText");
+    const replyStateParam = searchParams.get("replyState");
+
+    if (!questionId || !replyTextParam) {
+      return;
+    }
+
+    setReplyText((prev) => ({
+      ...prev,
+      [questionId]: replyTextParam,
+    }));
+    setReplyState((prev) => ({
+      ...prev,
+      [questionId]: replyStateParam === "wbRu" ? "wbRu" : "none",
+    }));
+    setIsEditingAnswer((prev) => ({
+      ...prev,
+      [questionId]: true,
+    }));
+  }, [searchParams]);
 
   const replyTextareaRefs = useRef<{
     [key: string]: HTMLTextAreaElement | null;
@@ -738,6 +764,9 @@ export default function QuestionsPage() {
             <div className="space-y-5">
               {paginatedQuestions.map((question) => {
                 const hasAnswer = Boolean((question.answer_text || "").trim());
+                const hasProposedAnswer = Boolean(
+                  (question.proposed_answer_text || "").trim(),
+                );
                 const resolvedProductName =
                   productNamesByNmId[String(question.nm_id || "")] ||
                   question.product_name ||
@@ -813,7 +842,18 @@ export default function QuestionsPage() {
                         </div>
                       )}
 
-                      {(!hasAnswer || isEditingAnswer[question.id]) && (
+                      {hasProposedAnswer && !hasAnswer && !isEditingAnswer[question.id] && (
+                        <div className="bg-amber-50/60 border border-amber-100 p-4 rounded-xl mt-3">
+                          <p className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5">
+                            {t("questions.proposedAnswerLabel")}
+                          </p>
+                          <p className="text-sm text-slate-800 font-medium">
+                            {question.proposed_answer_text}
+                          </p>
+                        </div>
+                      )}
+
+                      {(!hasAnswer || isEditingAnswer[question.id] || hasProposedAnswer) && (
                         <div className="mt-5 pt-4 border-t border-slate-100 space-y-4">
                           <div className="flex flex-col gap-1.5">
                             <span className="text-xs font-black text-slate-700 uppercase tracking-wider">

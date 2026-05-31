@@ -37,32 +37,12 @@ def run_migrations():
     try:
         inspector = inspect(engine)
         with engine.connect() as conn:
-            user_columns = {col.get("name") for col in inspector.get_columns("users")}
-            if "registration_bonus_days" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN registration_bonus_days INTEGER NOT NULL DEFAULT 0"
-                )
-            if "question_answer_mode" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN question_answer_mode VARCHAR NOT NULL DEFAULT 'manual'"
-                )
-            if "question_answer_prompt" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN question_answer_prompt TEXT NOT NULL DEFAULT ''"
-                )
-
-            nm_ids_columns = {
-                col.get("name") for col in inspector.get_columns("nm_ids")
+            question_columns = {
+                col.get("name") for col in inspector.get_columns("questions")
             }
-            if "title" not in nm_ids_columns:
-                conn.exec_driver_sql("ALTER TABLE nm_ids ADD COLUMN title VARCHAR")
-            if "description" not in nm_ids_columns:
-                conn.exec_driver_sql("ALTER TABLE nm_ids ADD COLUMN description TEXT")
-            if "photo_url" not in nm_ids_columns:
-                conn.exec_driver_sql("ALTER TABLE nm_ids ADD COLUMN photo_url VARCHAR")
-            if "characteristics" not in nm_ids_columns:
+            if "proposed_answer_text" not in question_columns:
                 conn.exec_driver_sql(
-                    "ALTER TABLE nm_ids ADD COLUMN characteristics TEXT"
+                    "ALTER TABLE questions ADD COLUMN proposed_answer_text VARCHAR"
                 )
 
             conn.commit()

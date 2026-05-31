@@ -167,7 +167,7 @@ def update_user_question_answer_settings(
 
     if question_answer_mode is not None:
         normalized_mode = str(question_answer_mode).strip().lower()
-        allowed_modes = {"manual", "confirm", "auto"}
+        allowed_modes = {"none", "manual", "confirm", "auto"}
         if normalized_mode not in allowed_modes:
             raise ValueError("Invalid question answer mode")
         db_user.question_answer_mode = normalized_mode
@@ -467,6 +467,7 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
             db_question.state = question_data.state
         db_question.editable = question_data.editable
         db_question.answer_text = question_data.answer_text
+        db_question.proposed_answer_text = question_data.proposed_answer_text
         db_question.user_name = question_data.user_name
     else:
         payload = question_data.model_dump()
