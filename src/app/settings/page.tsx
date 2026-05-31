@@ -243,13 +243,13 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <figure className="space-y-2">
                       <a
-                        href="/api_integration.jpg"
+                        href="/api_integration.webp"
                         target="_blank"
                         rel="noreferrer"
                         className="block overflow-hidden rounded-lg border border-slate-200 bg-white transition-transform hover:scale-[1.01]"
                       >
                         <Image
-                          src="/api_integration.jpg"
+                          src="/api_integration.webp"
                           alt={t("settings.tokenGuideImg1Alt")}
                           width={1200}
                           height={800}
@@ -263,13 +263,13 @@ export default function SettingsPage() {
 
                     <figure className="space-y-2">
                       <a
-                        href="/new_token.jpg"
+                        href="/new_token.webp"
                         target="_blank"
                         rel="noreferrer"
                         className="block overflow-hidden rounded-lg border border-slate-200 bg-white transition-transform hover:scale-[1.01]"
                       >
                         <Image
-                          src="/new_token.jpg"
+                          src="/new_token.webp"
                           alt={t("settings.tokenGuideImg2Alt")}
                           width={1200}
                           height={800}
@@ -283,13 +283,13 @@ export default function SettingsPage() {
 
                     <figure className="space-y-2">
                       <a
-                        href="/token_params.png"
+                        href="/token_params.webp"
                         target="_blank"
                         rel="noreferrer"
                         className="block overflow-hidden rounded-lg border border-slate-200 bg-white transition-transform hover:scale-[1.01]"
                       >
                         <Image
-                          src="/token_params.png"
+                          src="/token_params.webp"
                           alt={t("settings.tokenGuideImg3Alt")}
                           width={1200}
                           height={800}

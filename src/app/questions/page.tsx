@@ -4,6 +4,8 @@ import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import {
   Loader2,
   RotateCw,
+  SendHorizontal,
+  WandSparkles,
   X,
   Filter,
   MessageSquare,
@@ -876,7 +878,7 @@ export default function QuestionsPage() {
                               className="questions-reply-textarea min-w-[65%] basis-[65%] px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                               disabled={isReplying[question.id]}
                             />
-                            <div className="flex shrink-0 flex-nowrap items-center gap-2">
+                            <div className="flex shrink-0 flex-col items-center gap-2">
                               <Button
                                 variant="outline"
                                 onClick={() => handleGenerateReply(question.id)}
@@ -884,11 +886,13 @@ export default function QuestionsPage() {
                                   isReplying[question.id] ||
                                   isGeneratingReply[question.id]
                                 }
-                                className="h-11 rounded-xl cursor-pointer whitespace-nowrap"
+                                className="h-11 w-11 rounded-xl cursor-pointer p-0"
+                                aria-label={t("questions.generateReply")}
+                                title={t("questions.generateReply")}
                               >
                                 {isGeneratingReply[question.id]
-                                  ? t("questions.generatingReply")
-                                  : t("questions.generateReply")}
+                                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                                  : <WandSparkles className="h-4 w-4" />}
                               </Button>
                               <Button
                                 onClick={() => handleReply(question.id)}
@@ -897,15 +901,14 @@ export default function QuestionsPage() {
                                   isReplying[question.id] ||
                                   isGeneratingReply[question.id]
                                 }
-                                className="h-11 px-5 rounded-xl font-bold cursor-pointer whitespace-nowrap"
+                                className="h-11 w-11 rounded-xl font-bold cursor-pointer p-0"
+                                aria-label={t("questions.sendReply")}
+                                title={t("questions.sendReply")}
                               >
                                 {isReplying[question.id] ? (
-                                  <span className="flex items-center gap-1.5">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    {t("questions.replying")}
-                                  </span>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                  t("questions.sendReply")
+                                  <SendHorizontal className="h-4 w-4" />
                                 )}
                               </Button>
                               {isEditingAnswer[question.id] && (
@@ -917,13 +920,15 @@ export default function QuestionsPage() {
                                       [question.id]: false,
                                     }))
                                   }
-                                  className="h-11 rounded-xl cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50 whitespace-nowrap"
+                                  className="h-11 w-11 rounded-xl cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50 p-0"
                                   disabled={
                                     isReplying[question.id] ||
                                     isGeneratingReply[question.id]
                                   }
+                                  aria-label={t("common.cancel")}
+                                  title={t("common.cancel")}
                                 >
-                                  {t("common.cancel")}
+                                  <X className="h-4 w-4" />
                                 </Button>
                               )}
                             </div>

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   description: "Автоматизируйте ответы на отзывы Wildberries с помощью ИИ. Повышайте рейтинг продавца, экономьте время и увеличивайте продажи с помощью умных автоответов на основе правил.",
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.ico",
   },
 };
 
