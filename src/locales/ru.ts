@@ -219,6 +219,8 @@ export const ru = {
     back: 'Назад',
     next: 'Вперед',
     typeReply: 'Введите ответ...',
+    generateReply: 'Сгенерировать с GPT',
+    generatingReply: 'Генерация...',
     sendReply: 'Отправить ответ',
     replyStateLabel: 'Способ отправки:',
     replyStatePrivate: 'Только покупателю (приватно)',

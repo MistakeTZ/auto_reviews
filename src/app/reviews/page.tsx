@@ -1035,7 +1035,7 @@ export default function ReviewsPage() {
                               <img
                                 src={productPhoto}
                                 alt={productName}
-                                className="w-10 h-10 rounded-md object-cover border border-slate-200 bg-white shrink-0 mt-0.5"
+                                className="w-12 h-16 rounded-md object-cover border border-slate-200 bg-white shrink-0 mt-0.5"
                                 loading="lazy"
                                 referrerPolicy="no-referrer"
                                 onError={(e) => {
@@ -1158,7 +1158,7 @@ export default function ReviewsPage() {
                       {((getNormalizedStatus(review.status) !== "auto" &&
                         !review.autoAnswerText) ||
                         isEditingAnswer[review.id]) && (
-                        <div className="flex gap-3 mt-4">
+                        <div className="mt-4 flex flex-nowrap items-start gap-3">
                           <textarea
                             rows={1}
                             ref={(el) => {
@@ -1182,41 +1182,46 @@ export default function ReviewsPage() {
                                 ? t("reviews.typeReply")
                                 : t("reviews.replyUnavailable")
                             }
-                            className="reviews-reply-textarea flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                            className="reviews-reply-textarea min-w-[65%] basis-[65%] px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                             disabled={!isReviewEditable}
                           />
-                          <Button
-                            variant="outline"
-                            onClick={() => handleGenerateReply(review.id)}
-                            disabled={
-                              !isReviewEditable || isGeneratingReply[review.id]
-                            }
-                          >
-                            {isGeneratingReply[review.id]
-                              ? t("reviews.generatingReply")
-                              : t("reviews.generateReply")}
-                          </Button>
-                          <Button
-                            onClick={() => handleReply(review.id)}
-                            disabled={
-                              !replyText[review.id] || !isReviewEditable
-                            }
-                          >
-                            {t("reviews.sendReply")}
-                          </Button>
-                          {isEditingAnswer[review.id] && (
+                          <div className="flex shrink-0 flex-nowrap items-center gap-2">
                             <Button
                               variant="outline"
-                              onClick={() =>
-                                setIsEditingAnswer((prev) => ({
-                                  ...prev,
-                                  [review.id]: false,
-                                }))
+                              onClick={() => handleGenerateReply(review.id)}
+                              disabled={
+                                !isReviewEditable || isGeneratingReply[review.id]
                               }
+                              className="whitespace-nowrap"
                             >
-                              {t("common.cancel")}
+                              {isGeneratingReply[review.id]
+                                ? t("reviews.generatingReply")
+                                : t("reviews.generateReply")}
                             </Button>
-                          )}
+                            <Button
+                              onClick={() => handleReply(review.id)}
+                              disabled={
+                                !replyText[review.id] || !isReviewEditable
+                              }
+                              className="whitespace-nowrap"
+                            >
+                              {t("reviews.sendReply")}
+                            </Button>
+                            {isEditingAnswer[review.id] && (
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setIsEditingAnswer((prev) => ({
+                                    ...prev,
+                                    [review.id]: false,
+                                  }))
+                                }
+                                className="whitespace-nowrap"
+                              >
+                                {t("common.cancel")}
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </CardContent>

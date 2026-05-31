@@ -218,6 +218,8 @@ export const en = {
     back: 'Back',
     next: 'Next',
     typeReply: 'Type a reply...',
+    generateReply: 'Generate with GPT',
+    generatingReply: 'Generating...',
     sendReply: 'Send reply',
     replyStateLabel: 'Publication mode:',
     replyStatePrivate: 'Buyer only (private)',

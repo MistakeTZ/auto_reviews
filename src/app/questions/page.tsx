@@ -66,6 +66,9 @@ export default function QuestionsPage() {
     [key: string]: "none" | "wbRu";
   }>({});
   const [isReplying, setIsReplying] = useState<{ [key: string]: boolean }>({});
+  const [isGeneratingReply, setIsGeneratingReply] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [isEditingAnswer, setIsEditingAnswer] = useState<{
     [key: string]: boolean;
   }>({});
@@ -138,6 +141,40 @@ export default function QuestionsPage() {
       [id]: (currentState as "none" | "wbRu") || "none",
     }));
     setIsEditingAnswer((prev) => ({ ...prev, [id]: true }));
+  };
+
+  const handleGenerateReply = async (id: string) => {
+    setIsGeneratingReply((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(
+        `${API_URL}/questions/${encodeURIComponent(id)}/generate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to generate reply");
+      }
+
+      const data = await res.json();
+      const text = String(data?.text || "").trim();
+      if (!text) {
+        throw new Error("Failed to generate reply");
+      }
+
+      setReplyText((prev) => ({ ...prev, [id]: text }));
+      requestAnimationFrame(() => resizeReplyTextarea(id));
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "An error occurred while generating reply");
+    } finally {
+      setIsGeneratingReply((prev) => ({ ...prev, [id]: false }));
+    }
   };
 
   const loadQuestions = useCallback(async () => {
@@ -816,7 +853,7 @@ export default function QuestionsPage() {
                             </div>
                           </div>
 
-                          <div className="flex gap-3">
+                          <div className="flex flex-nowrap items-start gap-3">
                             <textarea
                               rows={1}
                               ref={(el) => {
@@ -836,41 +873,60 @@ export default function QuestionsPage() {
                                 );
                               }}
                               placeholder={t("questions.typeReply")}
-                              className="questions-reply-textarea flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                              className="questions-reply-textarea min-w-[65%] basis-[65%] px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                               disabled={isReplying[question.id]}
                             />
-                            <Button
-                              onClick={() => handleReply(question.id)}
-                              disabled={
-                                !(replyText[question.id] || "").trim() ||
-                                isReplying[question.id]
-                              }
-                              className="h-11 px-5 rounded-xl font-bold cursor-pointer shrink-0"
-                            >
-                              {isReplying[question.id] ? (
-                                <span className="flex items-center gap-1.5">
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                  {t("questions.replying")}
-                                </span>
-                              ) : (
-                                t("questions.sendReply")
-                              )}
-                            </Button>
-                            {isEditingAnswer[question.id] && (
+                            <div className="flex shrink-0 flex-nowrap items-center gap-2">
                               <Button
                                 variant="outline"
-                                onClick={() =>
-                                  setIsEditingAnswer((prev) => ({
-                                    ...prev,
-                                    [question.id]: false,
-                                  }))
+                                onClick={() => handleGenerateReply(question.id)}
+                                disabled={
+                                  isReplying[question.id] ||
+                                  isGeneratingReply[question.id]
                                 }
-                                className="h-11 rounded-xl cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50"
-                                disabled={isReplying[question.id]}
+                                className="h-11 rounded-xl cursor-pointer whitespace-nowrap"
                               >
-                                {t("common.cancel")}
+                                {isGeneratingReply[question.id]
+                                  ? t("questions.generatingReply")
+                                  : t("questions.generateReply")}
                               </Button>
-                            )}
+                              <Button
+                                onClick={() => handleReply(question.id)}
+                                disabled={
+                                  !(replyText[question.id] || "").trim() ||
+                                  isReplying[question.id] ||
+                                  isGeneratingReply[question.id]
+                                }
+                                className="h-11 px-5 rounded-xl font-bold cursor-pointer whitespace-nowrap"
+                              >
+                                {isReplying[question.id] ? (
+                                  <span className="flex items-center gap-1.5">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    {t("questions.replying")}
+                                  </span>
+                                ) : (
+                                  t("questions.sendReply")
+                                )}
+                              </Button>
+                              {isEditingAnswer[question.id] && (
+                                <Button
+                                  variant="outline"
+                                  onClick={() =>
+                                    setIsEditingAnswer((prev) => ({
+                                      ...prev,
+                                      [question.id]: false,
+                                    }))
+                                  }
+                                  className="h-11 rounded-xl cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50 whitespace-nowrap"
+                                  disabled={
+                                    isReplying[question.id] ||
+                                    isGeneratingReply[question.id]
+                                  }
+                                >
+                                  {t("common.cancel")}
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}

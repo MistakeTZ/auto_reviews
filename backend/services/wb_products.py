@@ -87,7 +87,7 @@ async def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
                 photo_url = None
                 photos = item.get("photos")
                 if isinstance(photos, list) and photos and isinstance(photos[0], dict):
-                    photo_url = photos[0].get("c246x328")
+                    photo_url = photos[0].get("tm")
 
                 characteristics = _normalize_characteristics(item.get("characteristics"))
 

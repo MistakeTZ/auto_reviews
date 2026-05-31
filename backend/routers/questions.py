@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional
+import os
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -7,8 +8,9 @@ from sqlalchemy.orm import Session
 import database
 import crud
 import schemas
-from models import User, Question
+from models import User, Question, NmIDs
 from processor.chat_processor import ChatProcessor
+from processor.gpt import AsyncOpenAIClient
 from routers.auth import check_active_subscription
 
 router = APIRouter()
@@ -25,6 +27,10 @@ class QuestionOut(BaseModel):
     user_name: Optional[str] = None
     state: Optional[str] = None
     editable: Optional[bool] = None
+
+
+class GenerateQuestionReplyResponse(BaseModel):
+    text: str
 
 
 def _extract_answer_text(question: Dict) -> Optional[str]:
@@ -70,9 +76,7 @@ def _to_question_create(question: Dict) -> schemas.QuestionCreate:
         text=str(question.get("text") or ""),
         date=str(question.get("createdDate") or question.get("createdAt") or ""),
         state=(
-            question.get("state")
-            or (question.get("answer") or {}).get("state")
-            or None
+            question.get("state") or (question.get("answer") or {}).get("state") or None
         ),
         editable=(
             question.get("editable") if question.get("editable") is not None else True
@@ -191,7 +195,9 @@ async def reply_to_question(
             text=reply_text,
             state=state,
         )
-        if isinstance(res, dict) and (res.get("error") or res.get("errors") or res.get("status", 200) >= 400):
+        if isinstance(res, dict) and (
+            res.get("error") or res.get("errors") or res.get("status", 200) >= 400
+        ):
             error_msg = (
                 res.get("errorText")
                 or res.get("detail")
@@ -211,3 +217,103 @@ async def reply_to_question(
 
     return _to_question_out_from_model(schemas.Question.model_validate(db_question))
 
+
+@router.post("/{question_id}/generate", response_model=GenerateQuestionReplyResponse)
+async def generate_reply_for_question(
+    question_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: User = Depends(check_active_subscription),
+):
+    db_question = (
+        db.query(Question)
+        .filter(
+            Question.wb_question_id == str(question_id),
+            Question.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not db_question and str(question_id).isdigit():
+        db_question = (
+            db.query(Question)
+            .filter(
+                Question.id == int(question_id),
+                Question.user_id == current_user.id,
+            )
+            .first()
+        )
+
+    if not db_question:
+        raise HTTPException(status_code=404, detail="Вопрос не найден")
+
+    product_meta = None
+    nm_id = str(db_question.nm_id or "").strip()
+    if nm_id:
+        product_meta = (
+            db.query(NmIDs)
+            .filter(
+                NmIDs.nm_id == nm_id,
+                NmIDs.user_d_id == current_user.id,
+            )
+            .first()
+        )
+
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Сервис GPT не настроен")
+
+    user_name = (db_question.user_name or "").strip()
+    if user_name and user_name.startswith("Покупатель"):
+        user_name = ""
+
+    parts = []
+    if user_name:
+        parts.append(f"Имя пользователя: {user_name}")
+    if product_meta.title:
+        parts.append(f"Название продукта: {product_meta.title}")
+    elif db_question.product_name:
+        parts.append(f"Название продукта: {db_question.product_name}")
+    if db_question.text:
+        parts.append(f"Вопрос: {db_question.text}")
+    question_summary = "\n".join(parts)
+
+    product_data = ""
+    if product_meta.description:
+        product_data += f"Описание продукта: {product_meta.description}\n"
+    if product_meta.characteristics:
+        try:
+            characteristics = "\n".join(
+                f"{item['name']}: {[', '.join(item['value']) if isinstance(item['value'], list) else item['value']]}"
+                for item in product_meta.characteristics
+                if isinstance(item, dict) and "name" in item and "value" in item
+            )
+            product_data += f"Характеристики продукта: {characteristics}"
+        except Exception:
+            pass
+
+    client = AsyncOpenAIClient(api_key=api_key)
+    generated = await client.chat_completion(
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Вы являетесь помощником службы поддержки для продавца Wildberries. "
+                    "Сгенерируйте короткий, вежливый и полезный ответ на этот вопрос клиента. "
+                    "Возвращайте только текст ответа без кавычек, разметки, меток или объяснений. "
+                    "Не используй шаблоны вроде [Ваша компания] или [Ваш продукт]."
+                    "Используйте тот же язык, что и в вопросе."
+                ),
+            },
+            {"role": "user", "content": product_data},
+            {"role": "user", "content": question_summary},
+        ],
+        model="gpt-5-nano",
+        temperature=0.4,
+        max_tokens=1000,
+    )
+
+    reply_text = str(generated or "").strip()
+    if not reply_text:
+        raise HTTPException(status_code=502, detail="Не удалось сгенерировать ответ")
+
+    return {"text": reply_text}
