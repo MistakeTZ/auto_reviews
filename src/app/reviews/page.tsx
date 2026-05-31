@@ -11,6 +11,8 @@ import {
   Loader2,
   Pencil,
   RotateCw,
+  SendHorizontal,
+  WandSparkles,
   X,
   MessageSquare,
   Star,
@@ -1158,7 +1160,7 @@ export default function ReviewsPage() {
                       {((getNormalizedStatus(review.status) !== "auto" &&
                         !review.autoAnswerText) ||
                         isEditingAnswer[review.id]) && (
-                        <div className="mt-4 flex flex-nowrap items-start gap-3">
+                        <div className="mt-4 relative w-full">
                           <textarea
                             rows={1}
                             ref={(el) => {
@@ -1182,30 +1184,34 @@ export default function ReviewsPage() {
                                 ? t("reviews.typeReply")
                                 : t("reviews.replyUnavailable")
                             }
-                            className="reviews-reply-textarea min-w-[65%] basis-[65%] px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                            className="reviews-reply-textarea w-full p-0 pr-14 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                             disabled={!isReviewEditable}
                           />
-                          <div className="flex shrink-0 flex-nowrap items-center gap-2">
+                          <div className="absolute right-1.5 top-1.5 flex shrink-0 flex-col items-center gap-1.5">
                             <Button
                               variant="outline"
                               onClick={() => handleGenerateReply(review.id)}
                               disabled={
                                 !isReviewEditable || isGeneratingReply[review.id]
                               }
-                              className="whitespace-nowrap"
+                              className="h-9 w-9 rounded-lg p-0"
+                              aria-label={t("reviews.generateReply")}
+                              title={t("reviews.generateReply")}
                             >
                               {isGeneratingReply[review.id]
-                                ? t("reviews.generatingReply")
-                                : t("reviews.generateReply")}
+                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                : <WandSparkles className="h-4 w-4" />}
                             </Button>
                             <Button
                               onClick={() => handleReply(review.id)}
                               disabled={
                                 !replyText[review.id] || !isReviewEditable
                               }
-                              className="whitespace-nowrap"
+                              className="h-9 w-9 rounded-lg p-0"
+                              aria-label={t("reviews.sendReply")}
+                              title={t("reviews.sendReply")}
                             >
-                              {t("reviews.sendReply")}
+                              <SendHorizontal className="h-4 w-4" />
                             </Button>
                             {isEditingAnswer[review.id] && (
                               <Button
@@ -1216,9 +1222,11 @@ export default function ReviewsPage() {
                                     [review.id]: false,
                                   }))
                                 }
-                                className="whitespace-nowrap"
+                                className="h-9 w-9 rounded-lg p-0"
+                                aria-label={t("common.cancel")}
+                                title={t("common.cancel")}
                               >
-                                {t("common.cancel")}
+                                <X className="h-4 w-4" />
                               </Button>
                             )}
                           </div>

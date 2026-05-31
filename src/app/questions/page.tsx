@@ -855,7 +855,7 @@ export default function QuestionsPage() {
                             </div>
                           </div>
 
-                          <div className="flex flex-nowrap items-start gap-3">
+                          <div className="relative w-full">
                             <textarea
                               rows={1}
                               ref={(el) => {
@@ -875,10 +875,10 @@ export default function QuestionsPage() {
                                 );
                               }}
                               placeholder={t("questions.typeReply")}
-                              className="questions-reply-textarea min-w-[65%] basis-[65%] px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
+                              className="questions-reply-textarea w-full p-0 pr-14 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-shadow resize-none leading-5 min-h-[44px]"
                               disabled={isReplying[question.id]}
                             />
-                            <div className="flex shrink-0 flex-col items-center gap-2">
+                            <div className="absolute right-1.5 top-1.5 flex shrink-0 flex-col items-center gap-1.5">
                               <Button
                                 variant="outline"
                                 onClick={() => handleGenerateReply(question.id)}
@@ -886,7 +886,7 @@ export default function QuestionsPage() {
                                   isReplying[question.id] ||
                                   isGeneratingReply[question.id]
                                 }
-                                className="h-11 w-11 rounded-xl cursor-pointer p-0"
+                                className="h-9 w-9 rounded-lg cursor-pointer p-0"
                                 aria-label={t("questions.generateReply")}
                                 title={t("questions.generateReply")}
                               >
@@ -901,7 +901,7 @@ export default function QuestionsPage() {
                                   isReplying[question.id] ||
                                   isGeneratingReply[question.id]
                                 }
-                                className="h-11 w-11 rounded-xl font-bold cursor-pointer p-0"
+                                className="h-9 w-9 rounded-lg font-bold cursor-pointer p-0"
                                 aria-label={t("questions.sendReply")}
                                 title={t("questions.sendReply")}
                               >
@@ -920,7 +920,7 @@ export default function QuestionsPage() {
                                       [question.id]: false,
                                     }))
                                   }
-                                  className="h-11 w-11 rounded-xl cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50 p-0"
+                                  className="h-9 w-9 rounded-lg cursor-pointer shrink-0 border border-slate-200 text-slate-500 hover:bg-slate-50 p-0"
                                   disabled={
                                     isReplying[question.id] ||
                                     isGeneratingReply[question.id]
