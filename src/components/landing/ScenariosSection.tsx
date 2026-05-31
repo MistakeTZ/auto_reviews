@@ -248,7 +248,7 @@ export default function ScenariosSection({
           <div className="scenarios-text-column" data-reveal="right" style={revealDelay(180)}>
             <h3 className="scenario-detail-title">{scenariosTabs[activeScenarioTab].title}</h3>
             <p className="scenario-detail-description">
-              {t(`landing.scenariosTab${activeScenarioTab}Description`)}
+              {t(`landing.scenariosTab${activeScenarioTab}Desc`)}
             </p>
             <Link href={isAuthenticated ? '/dashboard' : registerHref} className="btn-scenario-primary">
               {t('landing.scenariosBtn')}
