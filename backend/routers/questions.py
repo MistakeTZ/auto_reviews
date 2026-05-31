@@ -279,7 +279,7 @@ async def generate_reply_for_question(
 
     product_data = ""
     if product_meta.description:
-        product_data += f"Описание продукта: {product_meta.description}\n"
+        product_data += f"Описание продукта: {product_meta.description[:1000]}\n"
     if product_meta.characteristics:
         try:
             characteristics = "\n".join(
@@ -304,12 +304,12 @@ async def generate_reply_for_question(
                     "Используйте тот же язык, что и в вопросе."
                 ),
             },
-            {"role": "user", "content": product_data},
+            {"role": "user", "content": product_data[:3000]},
             {"role": "user", "content": question_summary},
         ],
         model="gpt-5-nano",
         temperature=0.4,
-        max_tokens=1000,
+        max_tokens=4000,
     )
 
     reply_text = str(generated or "").strip()
