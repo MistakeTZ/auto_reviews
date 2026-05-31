@@ -222,8 +222,8 @@ export const en = {
     generatingReply: 'Generating...',
     sendReply: 'Send reply',
     replyStateLabel: 'Publication mode:',
-    replyStatePrivate: 'Buyer only (private)',
-    replyStateGlobal: 'Publish on Wildberries',
+    replyStatePrivate: 'Private answer',
+    replyStateGlobal: 'Publish on WB',
     replying: 'Sending...',
   },
   rules: {

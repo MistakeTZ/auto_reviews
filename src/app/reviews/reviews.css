@@ -39,5 +39,5 @@
 }
 
 .reviews-reply-textarea {
-  max-width: calc(100% - 130px);
+  max-width: 100%;
 }

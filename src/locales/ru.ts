@@ -223,8 +223,8 @@ export const ru = {
     generatingReply: 'Генерация...',
     sendReply: 'Отправить ответ',
     replyStateLabel: 'Способ отправки:',
-    replyStatePrivate: 'Только покупателю (приватно)',
-    replyStateGlobal: 'Опубликовать на Wildberries',
+    replyStatePrivate: 'Отправить приватно',
+    replyStateGlobal: 'Опубликовать на WB',
     replying: 'Отправка...',
   },
   rules: {
