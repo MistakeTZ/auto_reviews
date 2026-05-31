@@ -9,7 +9,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import FlagSwitcher from '@/components/ui/FlagSwitcher';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, type CSSProperties } from 'react';
 import './landing.css';
 
 function LandingPageContent() {
@@ -25,6 +25,9 @@ function LandingPageContent() {
     .map((group) => group.split('\n').map((line) => line.trim()).filter(Boolean));
 
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const revealDelay = (ms: number): CSSProperties => ({ '--reveal-delay': `${ms}ms` } as CSSProperties);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +37,54 @@ function LandingPageContent() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const rafId = window.requestAnimationFrame(() => {
+      setIsVisible(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const revealElements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-revealed)'));
+
+    if (revealElements.length === 0) {
+      return;
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      revealElements.forEach((element) => element.classList.add('is-revealed'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          entry.target.classList.add('is-revealed');
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.16,
+        rootMargin: '0px 0px -10% 0px'
+      }
+    );
+
+    revealElements.forEach((element) => {
+      observer.observe(element);
+    });
+
+    return () => {
+      observer.disconnect();
     };
   }, []);
 
@@ -49,7 +100,7 @@ function LandingPageContent() {
   };
 
   return (
-    <div className="landing-page">
+    <div className={`landing-page landing-shell ${isVisible ? 'is-visible' : ''}`}>
       {/* Header */}
       <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
         <div className="header-container">
@@ -89,8 +140,8 @@ function LandingPageContent() {
         <section className="hero-section">
           <div className="hero-container">
             <div className="hero-content">
-              <span className="eyebrow">{t('landing.trustedBanner')}</span>
-              <h2 className="hero-headline">
+              <span className="eyebrow" data-reveal="up" style={revealDelay(120)}>{t('landing.trustedBanner')}</span>
+              <h2 className="hero-headline" data-reveal="up" style={revealDelay(180)}>
                 {t('landing.titlePrefix')}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 relative inline-block">
                   {t('landing.titleHighlight')}
@@ -98,11 +149,11 @@ function LandingPageContent() {
                 {t('landing.titleSuffix')}
               </h2>
 
-              <p className="hero-subheadline">
+              <p className="hero-subheadline" data-reveal="up" style={revealDelay(260)}>
                 {t('landing.subtitle')}
               </p>
 
-              <div className="hero-buttons">
+              <div className="hero-buttons" data-reveal="up" style={revealDelay(340)}>
                 <Link href={isAuthenticated ? "/dashboard" : registerHref} className="btn-primary">
                   {isAuthenticated ? t('common.dashboard') : t('landing.getStarted')}
                   <ArrowRight size={18} className="ml-2" />
@@ -113,7 +164,7 @@ function LandingPageContent() {
               </div>
             </div>
 
-            <div className="hero-visual">
+            <div className="hero-visual" data-reveal="right" style={revealDelay(220)}>
               <div className="image-container">
                 <picture>
                   <source media="(max-width: 769px)" srcSet="/dashboard_sm.webp" />
@@ -128,17 +179,17 @@ function LandingPageContent() {
         {/* Trust Metrics Bar */}
         <section className="trust-bar-section">
           <div className="trust-bar-container">
-            <div className="trust-metric">
+            <div className="trust-metric" data-reveal="up" style={revealDelay(90)}>
               <strong>{t('landing.stat1')}</strong>
               <span>{t('landing.stat1Desc')}</span>
             </div>
             <div className="trust-divider" />
-            <div className="trust-metric">
+            <div className="trust-metric" data-reveal="up" style={revealDelay(170)}>
               <strong>{t('landing.stat2')}</strong>
               <span>{t('landing.stat2Desc')}</span>
             </div>
             <div className="trust-divider" />
-            <div className="trust-metric">
+            <div className="trust-metric" data-reveal="up" style={revealDelay(250)}>
               <strong>{t('landing.stat3')}</strong>
               <span>{t('landing.stat3Desc')}</span>
             </div>
@@ -147,7 +198,7 @@ function LandingPageContent() {
 
         {/* Features Section */}
         <section className="services-section">
-          <div className="services-header">
+          <div className="services-header" data-reveal="up">
             <span className="services-eyebrow">{t('landing.capabilities')}</span>
             <h2 className="services-title">{t('landing.feature1Title') ? t('landing.ourPowerfulFeatures') : t('landing.features')}</h2>
           </div>
@@ -157,7 +208,7 @@ function LandingPageContent() {
               { icon: Settings, title: t('landing.feature2Title'), desc: t('landing.feature2Desc') },
               { icon: ShieldCheck, title: t('landing.feature3Title'), desc: t('landing.feature3Desc') }
             ].map((feature, idx) => (
-              <div key={idx} className="service-card">
+              <div key={idx} className="service-card" data-reveal="zoom" style={revealDelay(120 + (idx * 90))}>
                 <div className="service-card-icon">
                   <feature.icon size={28} />
                 </div>
@@ -171,15 +222,15 @@ function LandingPageContent() {
         {/* How it Works Section */}
         <section className="why-choose-section">
           <div className="why-choose-container">
-            <span className="why-choose-eyebrow">{t('landing.process')}</span>
-            <h2 className="why-choose-title">{t('landing.howItWorks')}</h2>
+            <span className="why-choose-eyebrow" data-reveal="up">{t('landing.process')}</span>
+            <h2 className="why-choose-title" data-reveal="up" style={revealDelay(100)}>{t('landing.howItWorks')}</h2>
             <div className="why-choose-grid">
               {[
                 { step: '01', title: t('landing.step1Title'), desc: t('landing.step1Desc') },
                 { step: '02', title: t('landing.step2Title'), desc: t('landing.step2Desc') },
                 { step: '03', title: t('landing.step3Title'), desc: t('landing.step3Desc') }
               ].map((item, idx) => (
-                <div key={idx} className="why-choose-card">
+                <div key={idx} className="why-choose-card" data-reveal="up" style={revealDelay(110 + (idx * 90))}>
                   <div className="why-choose-card-header">
                     <div className="why-choose-icon">{item.step}</div>
                     <h3>{item.title}</h3>
@@ -194,8 +245,8 @@ function LandingPageContent() {
         {/* Testimonials Section */}
         <section className="about-us-section">
           <div className="about-us-intro">
-            <span className="about-us-eyebrow">{t('landing.reviews')}</span>
-            <h2 className="about-us-headline">{t('landing.testimonialsTitle')}</h2>
+            <span className="about-us-eyebrow" data-reveal="up">{t('landing.reviews')}</span>
+            <h2 className="about-us-headline" data-reveal="up" style={revealDelay(90)}>{t('landing.testimonialsTitle')}</h2>
           </div>
           <div className="about-us-pillars">
             {[
@@ -203,7 +254,7 @@ function LandingPageContent() {
               { text: t('landing.testimonial2Text'), author: t('landing.testimonial2Author'), role: t('landing.testimonial2Role') },
               { text: t('landing.testimonial3Text'), author: t('landing.testimonial3Author'), role: t('landing.testimonial3Role') }
             ].map((testimonial, idx) => (
-              <div key={idx} className="about-us-card">
+              <div key={idx} className="about-us-card" data-reveal="up" style={revealDelay(110 + (idx * 85))}>
                 <p>{testimonial.text}</p>
                 <div className="about-us-card-author">
                   <div className="about-us-card-avatar">
@@ -222,8 +273,8 @@ function LandingPageContent() {
         {/* Pricing Section */}
         <section className="pricing-section">
           <div className="pricing-header">
-            <span className="why-choose-eyebrow">{t('landing.pricing')}</span>
-            <h2 className="why-choose-title">{t('landing.pricingTitle')}</h2>
+            <span className="why-choose-eyebrow" data-reveal="up">{t('landing.pricing')}</span>
+            <h2 className="why-choose-title" data-reveal="up" style={revealDelay(100)}>{t('landing.pricingTitle')}</h2>
           </div>
           <div className="pricing-grid">
             {[
@@ -231,7 +282,7 @@ function LandingPageContent() {
               { title: t('landing.pricingPro'), price: t('landing.pricingProPrice'), desc: t('landing.pricingProDesc'), isPopular: true, period: t('landing.pricingMonth') },
               { title: t('landing.pricingEnterprise'), price: t('landing.pricingEnterprisePrice'), desc: t('landing.pricingEnterpriseDesc'), isPopular: false, period: t('landing.pricingWeek') }
             ].map((plan, idx) => (
-              <div key={idx} className={`pricing-card ${plan.isPopular ? 'is-popular' : ''}`}>
+              <div key={idx} className={`pricing-card ${plan.isPopular ? 'is-popular' : ''}`} data-reveal={plan.isPopular ? 'zoom' : 'up'} style={revealDelay(120 + (idx * 95))}>
                 <h3>{plan.title}</h3>
                 <p className="pricing-card-desc">{plan.desc}</p>
                 <div className="pricing-price-wrap">
