@@ -5,16 +5,9 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from auth import get_password_hash
+from prompts import DEFAULT_GPT_RULE_PROMPT
 import uuid
 from datetime import datetime, timezone, timedelta
-
-
-DEFAULT_GPT_RULE_PROMPT = (
-    "Ты помощник продавца на Wildberries. Составь вежливый и полезный ответ на отзыв "
-    "на русском языке. Учитывай тон и содержание отзыва, не выдумывай факты, "
-    "предлагай решение при негативе. Ответ должен быть коротким, профессиональным "
-    "и готовым к отправке без дополнительных правок."
-)
 
 
 def get_user(db: Session, user_id: int):

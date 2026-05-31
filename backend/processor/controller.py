@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
 from crud import get_reviews, get_rules, upsert_question, upsert_review
+from prompts import (
+    CHAT_REPLY_DECISION_SYSTEM_PROMPT,
+    FEEDBACK_REPLY_SUFFIX,
+    build_question_system_prompt,
+)
 from schemas import QuestionCreate, ReviewCreate, User
 from services.notifications import notify_review_processed
 
@@ -590,18 +595,9 @@ class MainController:
         for message in messages:
             history_lines.append(f"[{message['role']}] {message['text']}")
 
-        prompt = (
-            "You are a support assistant for a Wildberries seller. "
-            "Analyze the dialog and decide whether to send a reply now. "
-            "Return strict JSON only with this schema: "
-            '{"is_send": true/false, "answer": "text"}. '
-            "If no reply is needed, use is_send=false and empty answer. "
-            "Reply language must match customer language."
-        )
-
         raw = await self.gpt.chat_completion(
             messages=[
-                {"role": "system", "content": prompt},
+                {"role": "system", "content": CHAT_REPLY_DECISION_SYSTEM_PROMPT},
                 {
                     "role": "user",
                     "content": (
@@ -632,15 +628,7 @@ class MainController:
                 + json.dumps(examples, ensure_ascii=False, indent=2)
             )
 
-        prompt = (
-            "You are a Wildberries seller support assistant. "
-            "Write a concise and polite reply to the customer question. "
-            "Only RUSSIAN language. "
-            "Set global_answer=true for factual/general product questions suitable for all buyers, "
-            "false for personal issues, complaints, or individual situations. "
-            'Return strict JSON only: {"answer": "...", "global_answer": true/false}.'
-            + examples_json
-        )
+        prompt = build_question_system_prompt(examples_json)
 
         raw = await self.gpt.chat_completion(
             messages=[
@@ -722,9 +710,7 @@ class MainController:
             parts.append(f"Клиент прикрепил {photo_count} фото")
 
         feedback_summary = "\n".join(parts)
-        prompt = (
-            prompt or ""
-        ).strip() + "\n\nНапиши ответ на этот отзыв в том виде, в котором он будет отправлен покупателю без изменений и квадратных скобок. Верни только текст самого отзыва"
+        prompt = ((prompt or "").strip() + FEEDBACK_REPLY_SUFFIX).strip()
 
         raw = await self.gpt.chat_completion(
             messages=[

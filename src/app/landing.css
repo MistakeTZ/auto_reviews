@@ -156,15 +156,6 @@ html[lang='ru'] {
   }
 }
 
-@keyframes glow-slide {
-  0% {
-    transform: translateX(-120%);
-  }
-  100% {
-    transform: translateX(120%);
-  }
-}
-
 /* ── Header ── */
 .site-header {
   position: sticky;
@@ -860,16 +851,6 @@ html[lang='ru'] {
   color: var(--color-white);
   border: none;
   box-shadow: 0 20px 40px rgba(10, 25, 47, 0.2);
-}
-
-.pricing-card.is-popular::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  width: 42%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  pointer-events: none;
-  animation: glow-slide 3.8s ease-in-out infinite;
 }
 
 .pricing-card.is-popular:hover {

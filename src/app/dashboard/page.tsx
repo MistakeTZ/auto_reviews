@@ -210,22 +210,6 @@ export default function Dashboard() {
 
             <Card>
               <CardContent className="flex items-center p-6">
-                <div className="p-3 bg-cyan-50 rounded-xl text-cyan-600 mr-4">
-                  <CircleHelp size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 font-semibold">
-                    {t("dashboard.totalQuestions")}
-                  </p>
-                  <p className="text-2xl font-black text-slate-900">
-                    {totalQuestions}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="flex items-center p-6">
                 <div className="p-3 bg-amber-50 rounded-xl text-amber-600 mr-4">
                   <Clock size={24} />
                 </div>
@@ -251,6 +235,22 @@ export default function Dashboard() {
                   </p>
                   <p className="text-2xl font-black text-slate-900">
                     {autoAnswered}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <div className="p-3 bg-cyan-50 rounded-xl text-cyan-600 mr-4">
+                  <CircleHelp size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">
+                    {t("dashboard.totalQuestions")}
+                  </p>
+                  <p className="text-2xl font-black text-slate-900">
+                    {totalQuestions}
                   </p>
                 </div>
               </CardContent>

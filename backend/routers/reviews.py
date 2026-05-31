@@ -11,6 +11,7 @@ from routers.auth import check_active_subscription
 from models import User, Review
 from pydantic import BaseModel
 from processor.gpt import AsyncOpenAIClient
+from prompts import REVIEW_REPLY_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -305,23 +306,23 @@ async def generate_reply_for_review(
 
     parts = []
     if user_name:
-        parts.append(f"Customer name: {user_name}")
+        parts.append(f"Имя покупателя: {user_name}")
     if db_review.product_name:
-        parts.append(f"Product: {db_review.product_name}")
+        parts.append(f"Продукт: {db_review.product_name}")
     if db_review.rating is not None:
-        parts.append(f"Rating: {db_review.rating}/5")
+        parts.append(f"Рейтинг: {db_review.rating}/5")
     if db_review.text:
-        parts.append(f"Review text: {db_review.text}")
+        parts.append(f"Текст отзыва: {db_review.text}")
     if db_review.pros:
-        parts.append(f"Pros: {db_review.pros}")
+        parts.append(f"Достоинства: {db_review.pros}")
     if db_review.cons:
-        parts.append(f"Cons: {db_review.cons}")
+        parts.append(f"Недостатки: {db_review.cons}")
     if db_review.photos_count:
-        parts.append(f"Photos: {db_review.photos_count}")
+        parts.append(f"Фотографии: {db_review.photos_count}")
     if db_review.has_video:
-        parts.append("Has video: yes")
+        parts.append("Видео: да")
     if getattr(db_review, "is_edited_feedback", False):
-        parts.append("Edited feedback: yes")
+        parts.append("Отредактированный отзыв: да")
 
     review_summary = "\n".join(parts)
 
@@ -330,12 +331,7 @@ async def generate_reply_for_review(
         messages=[
             {
                 "role": "system",
-                "content": (
-                    "You are a customer support assistant for a Wildberries seller. "
-                    "Generate a short, polite, and useful response to this review. "
-                    "Return only the reply text without quotes, markdown, labels, or explanations. "
-                    "Use the same language as the review."
-                ),
+                "content": REVIEW_REPLY_SYSTEM_PROMPT,
             },
             {"role": "user", "content": review_summary},
             

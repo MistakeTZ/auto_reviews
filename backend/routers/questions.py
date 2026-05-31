@@ -11,6 +11,7 @@ import schemas
 from models import User, Question, NmIDs
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
+from prompts import QUESTION_REPLY_SYSTEM_PROMPT
 from routers.auth import check_active_subscription
 
 router = APIRouter()
@@ -296,14 +297,7 @@ async def generate_reply_for_question(
         messages=[
             {
                 "role": "system",
-                "content": (
-                    "Вы являетесь помощником службы поддержки для продавца Wildberries. "
-                    "Сгенерируйте короткий, вежливый и полезный ответ на этот вопрос клиента. "
-                    "Возвращайте только текст ответа без кавычек, разметки, меток или объяснений. "
-                    "Не используй шаблоны вроде [Ваша компания] или [Ваш продукт]. "
-                    "Не используй переносы строк и не пиши слишком длинные ответы. "
-                    "Используйте тот же язык, что и в вопросе."
-                ),
+                "content": QUESTION_REPLY_SYSTEM_PROMPT,
             },
             {"role": "user", "content": product_data[:3000]},
             {"role": "user", "content": question_summary},
