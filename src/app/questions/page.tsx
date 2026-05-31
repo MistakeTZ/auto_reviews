@@ -1,6 +1,13 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import {
+  Suspense,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Loader2,
@@ -48,7 +55,7 @@ type StatusFilter =
   | "unanswered";
 type TriFilter = "all" | "yes" | "no";
 
-export default function QuestionsPage() {
+function QuestionsPageContent() {
   const jwtToken = useAppStore((state) => state.jwtToken);
   const products = useAppStore((state) => state.products);
   const { t } = useTranslation();
@@ -1031,5 +1038,23 @@ export default function QuestionsPage() {
         )}
       </div>
     </SubscriptionGuard>
+  );
+}
+
+function QuestionsPageFallback() {
+  return (
+    <div className="questions-page pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto">
+      <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-2" />
+      </div>
+    </div>
+  );
+}
+
+export default function QuestionsPage() {
+  return (
+    <Suspense fallback={<QuestionsPageFallback />}>
+      <QuestionsPageContent />
+    </Suspense>
   );
 }
