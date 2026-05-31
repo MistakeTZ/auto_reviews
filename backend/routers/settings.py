@@ -98,7 +98,12 @@ async def update_token(
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    await sync_user_products(db=db, user=updated_user, replace_existing=True)
+    await sync_user_products(
+        database.SessionLocal,
+        updated_user.id,
+        token_data.token,
+        True,
+    )
 
     return {"ok": True, "message": "Token updated successfully"}
 

@@ -25,8 +25,9 @@ async def read_products(
     rows = crud.get_nm_ids(db, current_user.id)
     if not rows:
         synced = await sync_user_products(
-            db=db,
-            user=current_user,
+            database.SessionLocal,
+            current_user.id,
+            current_user.wb_api_token or "",
             replace_existing=False,
         )
         return {

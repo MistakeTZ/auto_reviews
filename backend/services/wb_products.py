@@ -1,11 +1,10 @@
 import logging
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 import httpx
 from sqlalchemy.orm import Session
 
 import crud
-from models import User
 
 logger = logging.getLogger(__name__)
 
@@ -123,17 +122,19 @@ async def fetch_wb_products(api_token: str, limit: int = 100) -> List[Dict]:
 
 
 async def sync_user_products(
-    db: Session,
-    user: User,
+    db_factory: Callable[[], Session],
+    user_id: int,
+    token: str,
     replace_existing: bool,
 ) -> List[Dict]:
     """Refresh products from WB and persist them for this user."""
-    token = str(user.wb_api_token or "").strip()
+    token = str(token or "").strip()
     if not token:
-        if replace_existing:
-            crud.clear_nm_ids(db, user.id)
-        rows = crud.get_nm_ids(db, user.id)
-        return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]
+        with db_factory() as db:
+            if replace_existing:
+                crud.clear_nm_ids(db, user_id)
+            rows = crud.get_nm_ids(db, user_id)
+            return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]
 
     products: List[Dict] = []
 
@@ -142,14 +143,15 @@ async def sync_user_products(
     except httpx.HTTPError as exc:
         logger.warning("WB content cards fetch failed: %s", exc)
 
-    if not products:
-        rows = crud.get_nm_ids(db, user.id)
+    with db_factory() as db:
+        if not products:
+            rows = crud.get_nm_ids(db, user_id)
+            return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]
+
+        if replace_existing:
+            crud.clear_nm_ids(db, user_id)
+
+        crud.upsert_nm_ids_bulk(db, user_id, products)
+
+        rows = crud.get_nm_ids(db, user_id)
         return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]
-
-    if replace_existing:
-        crud.clear_nm_ids(db, user.id)
-
-    crud.upsert_nm_ids_bulk(db, user.id, products)
-
-    rows = crud.get_nm_ids(db, user.id)
-    return [{"nmId": row.nm_id, "name": row.product_name} for row in rows]

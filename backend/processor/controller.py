@@ -72,16 +72,22 @@ class MainController:
         )
         if self.db_factory and self.user_id:
             db = None
+            user_id = self.user_id
+            token = ""
             try:
                 db = self.db_factory()
                 user = db.query(User).filter(User.id == self.user_id).first()
                 if user:
-                    await sync_user_products(db, user, False)
+                    user_id = user.id
+                    token = str(user.wb_api_token or "")
             except Exception as exc:
                 logger.exception("[controller] fetch_all_products error: %s", exc)
             finally:
                 if "db" in locals() and db:
                     db.close()
+
+            if token:
+                await sync_user_products(self.db_factory, user_id, token, False)
 
     async def _handle_chats(self):
         chats = await self.processor.get_chat_messages(take=50)
