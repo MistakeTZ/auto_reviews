@@ -801,7 +801,7 @@ class MainController:
                     ),
                 },
             ],
-            model="gpt-4o-mini",
+            model="gpt-5-nano",
             temperature=0.2,
             max_tokens=300,
         )
@@ -860,7 +860,7 @@ class MainController:
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": feedback_summary},
             ],
-            model="gpt-4o-mini",
+            model="gpt-5-nano",
             temperature=0.3,
             max_tokens=1000,
         )

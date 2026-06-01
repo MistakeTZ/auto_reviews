@@ -51,7 +51,7 @@ async def classify_question_reply_state(
                 ),
             },
         ],
-        model="gpt-4o-mini",
+        model="gpt-5-nano",
         temperature=0.2,
         max_tokens=400,
     )
