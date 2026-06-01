@@ -1,6 +1,9 @@
+import logging
 from typing import Optional
 
 import openai
+
+logger = logging.getLogger(__name__)
 
 
 class AsyncOpenAIClient:
@@ -27,6 +30,13 @@ class AsyncOpenAIClient:
             # max_tokens=max_tokens,
             max_completion_tokens=max_tokens,
         )
+        if response.usage and response.usage.completion_tokens_details:
+            logger.info(
+                "Chat completion tokens usage: %s",
+                response.usage.completion_tokens_details.model_dump_json(
+                    ensure_ascii=False
+                ),
+            )
         return response.choices[0].message.content.strip()
 
 
