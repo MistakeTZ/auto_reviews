@@ -77,8 +77,8 @@ function LandingPageContent() {
         });
       },
       {
-        threshold: 0.16,
-        rootMargin: '0px 0px -10% 0px'
+        threshold: 0.05,
+        rootMargin: '0px 0px 0px 0px'
       }
     );
 
