@@ -852,7 +852,7 @@ class MainController:
             parts.append(f"Клиент прикрепил {photo_count} фото")
 
         feedback_summary = "\n".join(parts)
-        prompt = ((prompt or "").strip() + FEEDBACK_REPLY_SUFFIX).strip()
+        prompt = (FEEDBACK_REPLY_SUFFIX + (prompt or "").strip()).strip()
 
         raw = await self.gpt.chat_completion(
             messages=[
