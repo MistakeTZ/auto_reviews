@@ -329,7 +329,9 @@ async def handle_max_callback_query(
     callback = update.get("callback") or {}
     callback_data = str(callback.get("payload") or "").strip()
 
-    chat_id = str(update.get("chat_id") or "").strip()
+    chat_id = str(
+        update.get("message", {}).get("recipient", {}).get("chat_id") or ""
+    ).strip()
     if not chat_id:
         chat_id = str(callback.get("chat_id") or "").strip()
     if not chat_id:
