@@ -13,6 +13,14 @@ class AsyncOpenAIClient:
             return
         self.client = openai.AsyncOpenAI(api_key=api_key)
 
+    @staticmethod
+    def _adapt_messages(messages: list) -> list:
+        """Convert 'system' role to 'developer' for reasoning models."""
+        return [
+            {**m, "role": "developer"} if m.get("role") == "system" else m
+            for m in messages
+        ]
+
     async def chat_completion(
         self,
         messages: list,
@@ -25,7 +33,7 @@ class AsyncOpenAIClient:
             return ""
         response = await self.client.chat.completions.create(
             model=model,
-            messages=messages,
+            messages=self._adapt_messages(messages),
             # temperature=temperature,
             # max_tokens=max_tokens,
             max_completion_tokens=max_tokens,
