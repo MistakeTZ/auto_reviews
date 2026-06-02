@@ -803,7 +803,7 @@ class MainController:
             ],
             model="gpt-5-nano",
             temperature=0.2,
-            max_tokens=300,
+            max_tokens=1300,
         )
         return self._safe_parse_json_response(raw)
 

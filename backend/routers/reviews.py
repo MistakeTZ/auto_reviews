@@ -338,7 +338,7 @@ async def generate_reply_for_review(
         ],
         model="gpt-5-nano",
         temperature=0.4,
-        max_tokens=1000,
+        max_tokens=2000,
     )
 
     reply_text = str(generated or "").strip()

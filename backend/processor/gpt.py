@@ -29,7 +29,7 @@ class AsyncOpenAIClient:
             # temperature=temperature,
             # max_tokens=max_tokens,
             max_completion_tokens=max_tokens,
-            reasoning_effort="minimal",
+            reasoning_effort="low",
         )
         if response.usage and response.usage.completion_tokens_details:
             logger.info(
