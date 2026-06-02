@@ -170,7 +170,7 @@ class QuestionReplyRequest(BaseModel):
 @router.post("/{question_id}/reply", response_model=QuestionOut)
 @router.patch("/{question_id}/reply", response_model=QuestionOut)
 async def reply_to_question(
-    question_id: int,
+    question_id: str,
     request: QuestionReplyRequest,
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
@@ -182,9 +182,22 @@ async def reply_to_question(
 
     db_question = (
         db.query(Question)
-        .filter(Question.id == question_id, Question.user_id == current_user.id)
+        .filter(
+            Question.wb_question_id == question_id,
+            Question.user_id == current_user.id,
+        )
         .first()
     )
+
+    if not db_question and question_id.isdigit():
+        db_question = (
+            db.query(Question)
+            .filter(
+                Question.id == int(question_id),
+                Question.user_id == current_user.id,
+            )
+            .first()
+        )
 
     if not db_question:
         raise HTTPException(status_code=404, detail="Question not found")
