@@ -13,7 +13,6 @@ from crud import get_reviews, get_rules, upsert_question, upsert_review
 from prompts import (
     CHAT_REPLY_DECISION_SYSTEM_PROMPT,
     FEEDBACK_REPLY_SUFFIX,
-    build_question_system_prompt,
 )
 from schemas import QuestionCreate, ReviewCreate
 from services.question_replies import (
