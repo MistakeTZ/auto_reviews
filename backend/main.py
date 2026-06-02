@@ -157,14 +157,21 @@ async def setup_bot_webhooks():
 async def bot_webhook(bot_type: str, secret: str, request: Request):
     expected_secret = os.getenv("BOT_WEBHOOK_SECRET", "").strip()
     if not expected_secret or secret != expected_secret:
+        logger.warning("Invalid webhook secret: received '%s'", secret)
         raise HTTPException(status_code=403, detail="Invalid webhook secret")
 
     if bot_type not in {"telegram", "max"}:
+        logger.warning("Unknown bot type in webhook URL: '%s'", bot_type)
         raise HTTPException(status_code=404, detail="Unknown bot type")
 
     token_env = "TG_BOT_TOKEN" if bot_type == "telegram" else "MAX_BOT_TOKEN"
     token = os.getenv(token_env, "").strip()
     if not token:
+        logger.error(
+            "Webhook received for bot type '%s' but %s is not configured",
+            bot_type,
+            token_env,
+        )
         raise HTTPException(status_code=503, detail=f"{token_env} is not configured")
 
     payload = await request.json()
@@ -182,9 +189,17 @@ async def bot_webhook(bot_type: str, secret: str, request: Request):
             # Some updates do not carry link/start payload and can be ignored.
             if ctx:
                 await process_update(ctx)
+            else:
+                logger.info(
+                    "Received and ignored callback query for bot type '%s'", bot_type
+                )
     except Exception as e:
         logger.error(
-            f"Error processing {bot_type} webhook: {e}, data: {payload}", exc_info=True
+            "Error processing %s webhook: %s, data: %s",
+            bot_type,
+            e,
+            payload,
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail="Error processing webhook") from e
     return {"ok": True}
