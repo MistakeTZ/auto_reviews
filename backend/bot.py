@@ -321,6 +321,9 @@ async def handle_max_callback_query(
     update: dict[str, Any], client: MaxBotClient
 ) -> bool:
     if str(update.get("update_type") or "").strip() != "message_callback":
+        logger.info(
+            "[Max] Ignored non-callback update_type: %s", update.get("update_type")
+        )
         return False
 
     callback = update.get("callback") or {}
@@ -334,11 +337,13 @@ async def handle_max_callback_query(
 
     question_id, reply_state = _parse_question_callback_data(callback_data)
     if question_id is None or reply_state is None:
+        logger.info("[Max] Ignored callback with invalid data: %s", callback_data)
         if chat_id:
             await client.send_message(chat_id, "Неизвестная команда")
         return True
 
     if not chat_id:
+        logger.info("[Max] Ignored callback with missing chat_id: %s", update)
         return True
 
     with SessionLocal() as db:
