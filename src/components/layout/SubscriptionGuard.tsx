@@ -33,8 +33,8 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
   const isTrialExpired = trialActivated && tariffType === 'trial';
   const trialDays = 7 + Math.max(0, Number(registrationBonusDays || 0));
   const trialNotStartedTitle = language === 'ru'
-    ? `Активируйте ${trialDays} дней пробного периода`
-    : `Activate ${trialDays} days of trial period`;
+    ? `Активируйте бесплатный пробный период до осени`
+    : `Activate free trial period until autumn`;
 
   return (
     <div className="min-h-[80vh] w-full flex items-center justify-center p-4 md:p-8 animate-fade-in">
