@@ -174,7 +174,7 @@ function RegisterPageContent() {
                 required
               />
             </div>
-            <div>
+            <div className="hidden">
               <label className="block text-sm font-medium mb-1">
                 {t("auth.promoCode")}
               </label>

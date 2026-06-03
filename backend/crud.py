@@ -127,8 +127,12 @@ def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] 
         if not db_user.trial_activated:
             db_user.trial_activated = True
             now = datetime.now(timezone.utc)
-            trial_days = 7 + max(int(db_user.registration_bonus_days or 0), 0)
-            db_user.subscription_expires_at = now + timedelta(days=trial_days)
+            september_first = datetime(2026, 9, 1, 9, tzinfo=timezone.utc)
+
+            trial_days = max(int(db_user.registration_bonus_days or 0), 0)
+            db_user.subscription_expires_at = september_first + timedelta(
+                days=trial_days
+            )
             db_user.registration_bonus_days = 0
             db_user.tariff_type = "trial"
 
@@ -442,7 +446,8 @@ def get_questions(db: Session, user_id: int, include_answered: bool = True):
     query = db.query(models.Question).filter(models.Question.user_id == user_id)
     if not include_answered:
         query = query.filter(
-            (models.Question.answer_text.is_(None)) | (models.Question.answer_text == "")
+            (models.Question.answer_text.is_(None))
+            | (models.Question.answer_text == "")
         )
     return query.order_by(models.Question.id.desc()).all()
 
