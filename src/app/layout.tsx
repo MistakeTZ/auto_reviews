@@ -26,6 +26,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
 };
+// Automating responses to Wildberries questions and reviews using AI. It works according to the added rules and sends notifications to a messenger or email. There is an option to manually send a response from the site interface.
 
 export default function RootLayout({
   children,

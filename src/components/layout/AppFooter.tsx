@@ -71,6 +71,9 @@ export default function AppFooter({
           <Link href="/legal" className={linkClass}>
             {t("common.legalInfo")}
           </Link>
+          <Link href="/sitemap.xml" className={linkClass}>
+            {t("common.sitemap")}
+          </Link>
         </div>
 
         <p className={rightsClass}>{t("landing.footerRights")}</p>

@@ -88,7 +88,10 @@ async def update_token(
 ):
     checked_token = check_token(token_data.token, db)
     if checked_token.get("error"):
-        raise HTTPException(status_code=401, detail=checked_token.get("error"))
+        raise HTTPException(
+            status_code=401,
+            detail=checked_token.get("error"),
+        )
     updated_user = crud.update_user_token(
         db,
         user_id=current_user.id,
@@ -96,7 +99,10 @@ async def update_token(
         sid=checked_token.get("sid"),
     )
     if not updated_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
 
     await sync_user_products(
         database.SessionLocal,
@@ -170,7 +176,9 @@ def get_question_answer_settings(
     }
 
 
-@router.patch("/question-answer-settings", response_model=schemas.QuestionAnswerSettings)
+@router.patch(
+    "/question-answer-settings", response_model=schemas.QuestionAnswerSettings
+)
 def update_question_answer_settings(
     payload: schemas.QuestionAnswerSettingsUpdate,
     db: Session = Depends(database.get_db),

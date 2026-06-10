@@ -21,6 +21,7 @@ export const en = {
     legalInfo: 'Legal Information',
     backToHome: 'Back to Home',
     contact: 'Support',
+    sitemap: 'Sitemap',
   },
   cookie: {
     text: 'Our website uses cookies to improve user experience, analytics, and service operations. By continuing to use the site, you agree to our use of cookies in accordance with our',
