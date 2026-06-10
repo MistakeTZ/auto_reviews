@@ -654,70 +654,50 @@ class MainController:
                     "[feedbacks] empty answer for feedback_id=%s, skipping",
                     feedback_id,
                 )
-                await self._upsert_review_in_db(feedback, "", "none")
-                continue
-
-            if False:
-                review_create = await self._upsert_review_in_db(
-                    feedback, text, answer_status
-                )
-
-                if matched_rule.send_notification and review_create:
-                    try:
-                        db = self.db_factory()
-                        await notify_review_processed(
-                            db,
-                            self.user_id,
-                            review_create,
-                        )
-                    except Exception as exc:
-                        logger.exception(
-                            "[feedbacks] failed to send notification for feedback_id=%s: %s",
-                            feedback_id,
-                            exc,
-                        )
-                    finally:
-                        if "db" in locals() and db:
-                            db.close()
-
-            response = await self.processor.answer_feedback(
-                feedback_id=feedback_id,
-                text=text,
-                only_post=True,
-            )
-            if response is True or response == {}:
-                logger.info(
-                    "[feedbacks] answered feedback_id=%s (rule=%s)",
-                    feedback_id,
-                    matched_rule.name if matched_rule else "none",
-                )
-                review_create = await self._upsert_review_in_db(
-                    feedback, text, answer_status
-                )
-
-                if matched_rule.send_notification and review_create:
-                    try:
-                        db = self.db_factory()
-                        await notify_review_processed(
-                            db,
-                            self.user_id,
-                            review_create,
-                        )
-                    except Exception as exc:
-                        logger.exception(
-                            "[feedbacks] failed to send notification for feedback_id=%s: %s",
-                            feedback_id,
-                            exc,
-                        )
-                    finally:
-                        if "db" in locals() and db:
-                            db.close()
+                review_create = await self._upsert_review_in_db(feedback, "", "none")
 
             else:
-                logger.warning(
-                    "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
+                response = await self.processor.answer_feedback(
+                    feedback_id=feedback_id,
+                    text=text,
+                    only_post=True,
                 )
-                await self._upsert_review_in_db(feedback, text, "none")
+                if response is True or response == {}:
+                    logger.info(
+                        "[feedbacks] answered feedback_id=%s (rule=%s)",
+                        feedback_id,
+                        matched_rule.name if matched_rule else "none",
+                    )
+                    review_create = await self._upsert_review_in_db(
+                        feedback, text, answer_status
+                    )
+
+                else:
+                    logger.warning(
+                        "[feedbacks] failed feedback_id=%s: %s", feedback_id, response
+                    )
+                    review_create = await self._upsert_review_in_db(
+                        feedback, text, "none"
+                    )
+                    review_create.auto_answer_text = None
+
+        if matched_rule.send_notification and review_create:
+            try:
+                db = self.db_factory()
+                await notify_review_processed(
+                    db,
+                    self.user_id,
+                    review_create,
+                )
+            except Exception as exc:
+                logger.exception(
+                    "[feedbacks] failed to send notification for feedback_id=%s: %s",
+                    feedback_id,
+                    exc,
+                )
+            finally:
+                if "db" in locals() and db:
+                    db.close()
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []
