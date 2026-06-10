@@ -681,7 +681,12 @@ class MainController:
                     )
                     review_create.auto_answer_text = None
 
-            if matched_rule and matched_rule.send_notification and review_create:
+            if (
+                matched_rule
+                and matched_rule.send_notification
+                and review_create
+                and existing is None
+            ):
                 try:
                     db = self.db_factory()
                     await notify_review_processed(
