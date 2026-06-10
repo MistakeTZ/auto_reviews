@@ -681,23 +681,23 @@ class MainController:
                     )
                     review_create.auto_answer_text = None
 
-        if matched_rule and matched_rule.send_notification and review_create:
-            try:
-                db = self.db_factory()
-                await notify_review_processed(
-                    db,
-                    self.user_id,
-                    review_create,
-                )
-            except Exception as exc:
-                logger.exception(
-                    "[feedbacks] failed to send notification for feedback_id=%s: %s",
-                    feedback_id,
-                    exc,
-                )
-            finally:
-                if "db" in locals() and db:
-                    db.close()
+            if matched_rule and matched_rule.send_notification and review_create:
+                try:
+                    db = self.db_factory()
+                    await notify_review_processed(
+                        db,
+                        self.user_id,
+                        review_create,
+                    )
+                except Exception as exc:
+                    logger.exception(
+                        "[feedbacks] failed to send notification for feedback_id=%s: %s",
+                        feedback_id,
+                        exc,
+                    )
+                finally:
+                    if "db" in locals() and db:
+                        db.close()
 
     def _normalize_messages(self, messages: List[Dict]) -> List[Dict]:
         normalized: List[Dict] = []
