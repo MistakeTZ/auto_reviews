@@ -839,16 +839,24 @@ class MainController:
         feedback_summary = "\n".join(parts)
         prompt = (FEEDBACK_REPLY_SUFFIX + (prompt or "").strip()).strip()
 
-        raw = await self.gpt.chat_completion(
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": feedback_summary},
-            ],
-            model="gpt-5-nano",
-            temperature=0.3,
-            max_tokens=1000,
-        )
-        return str(raw).strip()
+        try:
+            raw = await self.gpt.chat_completion(
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": feedback_summary},
+                ],
+                model="gpt-5-nano",
+                temperature=0.3,
+                max_tokens=1000,
+            )
+            return str(raw).strip()
+        except Exception as exc:
+            logger.exception(
+                "[feedbacks] failed to generate answer text for feedback_id=%s: %s",
+                feedback.get("id"),
+                exc,
+            )
+            return ""
 
     def _safe_parse_json_response(self, raw: str) -> Dict:
         text = str(raw).strip()
