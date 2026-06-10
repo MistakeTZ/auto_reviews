@@ -1,17 +1,20 @@
 import logging
 from typing import Optional
-
-import openai
+import httpx
 
 logger = logging.getLogger(__name__)
 
 
 class AsyncOpenAIClient:
     def __init__(self, api_key: Optional[str] = None):
-        if not api_key:
-            self.client = None
-            return
-        self.client = openai.AsyncOpenAI(api_key=api_key)
+        self.api_key = api_key
+        if api_key:
+            self.headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}",
+            }
+        else:
+            self.headers = {}
 
     async def chat_completion(
         self,
@@ -20,121 +23,71 @@ class AsyncOpenAIClient:
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> str:
-        """Send a chat message and get a response."""
-        if not self.client:
+        """Send a chat message to Perplexity agent and get a response."""
+        if not self.api_key:
             return ""
-        response = await self.client.chat.completions.create(
-            model=model,
-            messages=messages,
-            # temperature=temperature,
-            # max_tokens=max_tokens,
-            max_completion_tokens=max_tokens,
-            reasoning_effort="low",
-        )
-        if response.usage and response.usage.completion_tokens_details:
-            logger.info(
-                "Chat completion tokens usage: %s",
-                response.usage.completion_tokens_details.model_dump_json(
-                    ensure_ascii=False
-                ),
-            )
-        return response.choices[0].message.content.strip()
 
+        # Map model name
+        perplexity_model = model
+        if perplexity_model.startswith("gpt-5"):
+            perplexity_model = "openai/gpt-5.4-nano"
+        elif perplexity_model == "gpt-4":
+            perplexity_model = "openai/gpt-5.4-nano"
 
-# from typing import Optional
+        # Construct input from messages
+        system_parts = []
+        other_parts = []
+        for msg in messages:
+            if msg.get("role") == "system":
+                system_parts.append(msg.get("content", ""))
+            else:
+                other_parts.append(msg.get("content", ""))
 
-# import openai
+        system_prompt = "\n".join(system_parts)
+        user_content = "\n".join(other_parts)
+        input_str = f"{system_prompt}\n\nUser: {user_content}\nAI:"
 
+        payload = {
+            "model": perplexity_model,
+            "input": input_str,
+        }
 
-# class AsyncOpenAIClient:
-#     def __init__(self, api_key: Optional[str] = None):
-#         if not api_key:
-#             self.client = None
-#             return
-#         self.client = openai.AsyncOpenAI(api_key=api_key)
+        if max_tokens is not None:
+            try:
+                payload["max_output_tokens"] = int(max_tokens)
+            except (ValueError, TypeError):
+                pass
 
-#     async def chat_completion(
-#         self,
-#         messages: list,
-#         model: str = "gpt-4",
-#         temperature: float = 0.7,
-#         max_tokens: Optional[int] = None,
-#     ) -> str:
-#         """Send a chat message and get a response."""
-#         if not self.client:
-#             return ""
+        url = "https://api.perplexity.ai/v1/agent"
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                response = await client.post(
+                    url,
+                    json=payload,
+                    headers=self.headers,
+                )
 
-#         response = await self.client.chat.completions.create(
-#             **self._build_request_kwargs(
-#                 model=model,
-#                 messages=messages,
-#                 temperature=temperature,
-#                 max_tokens=max_tokens,
-#             )
-#         )
-#         content = self._extract_content(response)
+                if response.status_code != 200:
+                    logger.error(
+                        "Perplexity API error: %d - %s",
+                        response.status_code,
+                        response.text,
+                    )
+                    return ""
 
-#         if content:
-#             return content
+                data = response.json()
+                # Extract text using data.output?.[0]?.content?.[0]?.text
+                output = data.get("output")
+                if isinstance(output, list) and len(output) > 0:
+                    content_list = output[0].get("content")
+                    if isinstance(content_list, list) and len(content_list) > 0:
+                        text = content_list[0].get("text")
+                        if text:
+                            return text.strip()
 
-#         if self._should_retry_with_more_tokens(response, max_tokens):
-#             retry_max_tokens = max(max_tokens * 4, max_tokens + 512)
-#             retry_response = await self.client.chat.completions.create(
-#                 **self._build_request_kwargs(
-#                     model=model,
-#                     messages=messages,
-#                     temperature=temperature,
-#                     max_tokens=retry_max_tokens,
-#                 )
-#             )
-#             return self._extract_content(retry_response)
+                logger.warning("Perplexity response format unexpected: %s", data)
+                return ""
+        except Exception as exc:
+            logger.exception("Failed to call Perplexity API: %s", exc)
+            return ""
 
-#         return ""
-
-#     def _build_request_kwargs(
-#         self,
-#         *,
-#         model: str,
-#         messages: list,
-#         temperature: float,
-#         max_tokens: Optional[int],
-#     ) -> dict:
-#         request_kwargs = {
-#             "model": model,
-#             "messages": messages,
-#         }
-
-#         if max_tokens is not None:
-#             request_kwargs["max_completion_tokens"] = max_tokens
-
-#         # GPT-5 reasoning models are stricter about supported params.
-#         if not model.startswith("gpt-5"):
-#             request_kwargs["temperature"] = temperature
-
-#         return request_kwargs
-
-#     def _extract_content(self, response) -> str:
-#         choices = getattr(response, "choices", None) or []
-#         if not choices:
-#             return ""
-
-#         message = getattr(choices[0], "message", None)
-#         content = getattr(message, "content", "")
-#         return str(content or "").strip()
-
-#     def _should_retry_with_more_tokens(self, response, max_tokens: Optional[int]) -> bool:
-#         if not max_tokens:
-#             return False
-
-#         choices = getattr(response, "choices", None) or []
-#         if not choices:
-#             return False
-
-#         finish_reason = getattr(choices[0], "finish_reason", None)
-#         if finish_reason != "length":
-#             return False
-
-#         usage = getattr(response, "usage", None)
-#         completion_details = getattr(usage, "completion_tokens_details", None)
-#         reasoning_tokens = getattr(completion_details, "reasoning_tokens", 0) or 0
-#         return reasoning_tokens >= max_tokens
