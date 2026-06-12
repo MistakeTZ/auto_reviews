@@ -127,12 +127,10 @@ def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] 
         if not db_user.trial_activated:
             db_user.trial_activated = True
             now = datetime.now(timezone.utc)
-            september_first = datetime(2026, 9, 1, 9, tzinfo=timezone.utc)
+            # september_first = datetime(2026, 9, 1, 9, tzinfo=timezone.utc)
 
-            trial_days = max(int(db_user.registration_bonus_days or 0), 0)
-            db_user.subscription_expires_at = september_first + timedelta(
-                days=trial_days
-            )
+            trial_days = max(int(db_user.registration_bonus_days or 0), 0) + 60
+            db_user.subscription_expires_at = now + timedelta(days=trial_days)
             db_user.registration_bonus_days = 0
             db_user.tariff_type = "trial"
 

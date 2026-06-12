@@ -612,21 +612,21 @@ function LandingPageContent() {
                 price: t("landing.pricingStarterPrice"),
                 desc: t("landing.pricingStarterDesc"),
                 isPopular: false,
-                period: t("landing.pricingHalfMonth"),
+                period: t("landing.pricingStarterPeriod"),
               },
               {
                 title: t("landing.pricingPro"),
                 price: t("landing.pricingProPrice"),
                 desc: t("landing.pricingProDesc"),
                 isPopular: true,
-                period: t("landing.pricingMonth"),
+                period: t("landing.pricingProPeriod"),
               },
               {
                 title: t("landing.pricingEnterprise"),
                 price: t("landing.pricingEnterprisePrice"),
                 desc: t("landing.pricingEnterpriseDesc"),
                 isPopular: false,
-                period: t("landing.pricingWeek"),
+                period: t("landing.pricingEnterprisePeriod"),
               },
             ].map((plan, idx) => (
               <div
