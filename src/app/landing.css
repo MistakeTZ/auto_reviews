@@ -83,6 +83,19 @@ html[lang='ru'] {
   transform: translate3d(0, 0, 0) scale(1);
 }
 
+.testimonial-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.testimonial-text.is-expanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+
 .site-footer {
   animation: chrome-enter 880ms cubic-bezier(0.22, 1, 0.36, 1);
 }
