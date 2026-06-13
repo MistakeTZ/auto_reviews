@@ -58,7 +58,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
           </div>
 
           {/* Визуал: Эмуляция чата ИИ */}
-          <div className="mt-4 w-full lg:mt-0 lg:ml-auto lg:w-[45%] bg-slate-50/50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 text-xs">
+          <div className="hidden lg:flex mt-4 w-full lg:mt-0 lg:ml-auto lg:w-[45%] bg-slate-50/50 border border-slate-100 rounded-2xl p-4 flex-col gap-3 text-xs">
             <div className="bg-white border border-slate-100 rounded-xl p-3 max-w-[85%] shadow-sm self-start">
               <div className="font-semibold text-amber-500 mb-0.5">
                 {t("features.mockBuyer")}
@@ -104,7 +104,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
           </div>
 
           {/* Визуал: Каскад карточек WB */}
-          <div className="relative w-full h-[120px] mt-4 flex justify-center">
+          <div className="hidden lg:flex relative w-full h-[120px] mt-4 justify-center">
             <div className="absolute bottom-[-20px] w-[160px] h-[130px] bg-slate-50 border border-slate-100 rounded-xl p-2 shadow-sm transform -rotate-6 -translate-x-12 group-hover:-translate-y-2 transition-transform duration-300">
               <div className="w-full h-[60px] bg-slate-200 rounded-lg mb-1 animate-pulse" />
               <div className="h-2 w-3/4 bg-slate-300 rounded mb-1" />
@@ -152,7 +152,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
           </div>
 
           {/* Визуал: Компактные теги логики */}
-          <div className="flex items-center gap-1.5 text-[10px] font-medium mt-2 overflow-hidden whitespace-nowrap">
+          <div className="hidden lg:flex items-center gap-1.5 text-[10px] font-medium mt-2 overflow-hidden whitespace-nowrap">
             <span className="px-2 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-md">
               {t("features.mockRuleIf")}
             </span>
@@ -168,7 +168,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
         </div>
 
         {/* КАРТОЧКА 4: Мгновенные уведомления (1 колонка, 1 строка) */}
-        <div className="group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between relative">
+        <div className="hidden lg:flex group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-col justify-between relative">
           <div>
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-indigo-500">
@@ -194,7 +194,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
           </div>
 
           {/* Визуал: Всплывающий Пуш Telegram */}
-          <div className="bg-slate-900 text-white text-[11px] rounded-xl p-2.5 shadow-md flex items-center gap-2.5 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+          <div className="hidden lg:flex bg-slate-900 text-white text-[11px] rounded-xl p-2.5 shadow-md items-center gap-2.5 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
             <div className="w-5 h-5 bg-sky-500 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold text-white">
               TG
             </div>
@@ -210,7 +210,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
         </div>
 
         {/* КАРТОЧКА 5: Анализ тональности и инсайты (1 колонка на десктопе, 2 на планшете) */}
-        <div className="group md:col-span-2 lg:col-span-1 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between relative">
+        <div className="hidden lg:flex group md:col-span-2 lg:col-span-1 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-col justify-between relative">
           <div>
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-amber-500">

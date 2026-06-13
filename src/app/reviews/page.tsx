@@ -1054,7 +1054,7 @@ export default function ReviewsPage() {
                                 }}
                               />
                             )}
-                            <div className="pr-[85px] sm:pr-0 mt-1 sm:mt-0">
+                            <div className="small-title pr-[85px] mt-1">
                               <h3 className="font-bold text-lg text-slate-900 leading-tight">
                                 {review.userName
                                   ? `${review.userName} • ${productName}`

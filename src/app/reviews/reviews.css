@@ -41,3 +41,11 @@
 .reviews-reply-textarea {
   max-width: 100%;
 }
+
+
+@media (min-width: 640px) {
+  .small-title {
+    margin-top: 0;
+    padding-right: 0;
+  }
+}
