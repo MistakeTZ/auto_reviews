@@ -108,6 +108,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         priority=1,
         send_notification=False,
         is_edited_feedback=False,
+        is_active=False,
         user_id=db_user.id,
     )
     db.add(db_default_rule)

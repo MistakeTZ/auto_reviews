@@ -518,6 +518,7 @@ class MainController:
             try:
                 db = self.db_factory()
                 rules = get_rules(db, self.user_id)
+                rules = [r for r in rules if getattr(r, "is_active", True) is not False]
                 existing_reviews = get_reviews(db, self.user_id, status="all")
                 existing_reviews_by_wb_id = {
                     str(r.wb_review_id): r for r in existing_reviews if r.wb_review_id

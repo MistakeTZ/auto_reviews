@@ -468,7 +468,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {rules.map((rule) => (
+                  {rules.filter((rule) => rule.isActive !== false).map((rule) => (
                     <div
                       key={rule.id}
                       className="p-4 bg-slate-50 rounded-xl border border-slate-100"
@@ -497,14 +497,14 @@ export default function Dashboard() {
                         {rule.conditionKeyword && (
                           <span>
                             {" "}
-                            {t("dashboard.andContains")} "
-                            {rule.conditionKeyword}"
+                            {t("dashboard.andContains")} &quot;
+                            {rule.conditionKeyword}&quot;
                           </span>
                         )}
                       </p>
                     </div>
                   ))}
-                  {rules.length === 0 && (
+                  {rules.filter((rule) => rule.isActive !== false).length === 0 && (
                     <p className="text-sm font-medium text-slate-500 text-center py-6">
                       {t("dashboard.noActiveRules")}
                     </p>

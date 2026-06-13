@@ -55,7 +55,9 @@ def _normalize_user_name(raw_name: Optional[str]) -> Optional[str]:
     return user_name or None
 
 
-def _extract_feedback_payload(feedback: dict, fallback_review: Review) -> schemas.ReviewCreate:
+def _extract_feedback_payload(
+    feedback: dict, fallback_review: Review
+) -> schemas.ReviewCreate:
     product_details = feedback.get("productDetails") or {}
     rating = feedback.get("productValuation", fallback_review.rating)
     feedback_text = feedback.get("text", fallback_review.text or "")
@@ -85,15 +87,21 @@ def _extract_feedback_payload(feedback: dict, fallback_review: Review) -> schema
         user_name=user_name,
         pros=(feedback.get("pros") or "").strip() or fallback_review.pros,
         cons=(feedback.get("cons") or "").strip() or fallback_review.cons,
-        photos_count=len(feedback.get("photoLinks") or [])
-        if "photoLinks" in feedback
-        else (fallback_review.photos_count or 0),
-        has_video=bool(feedback.get("video"))
-        if "video" in feedback
-        else bool(fallback_review.has_video),
-        is_edited_feedback=bool(feedback.get("parentFeedbackId"))
-        if "parentFeedbackId" in feedback
-        else bool(fallback_review.is_edited_feedback),
+        photos_count=(
+            len(feedback.get("photoLinks") or [])
+            if "photoLinks" in feedback
+            else (fallback_review.photos_count or 0)
+        ),
+        has_video=(
+            bool(feedback.get("video"))
+            if "video" in feedback
+            else bool(fallback_review.has_video)
+        ),
+        is_edited_feedback=(
+            bool(feedback.get("parentFeedbackId"))
+            if "parentFeedbackId" in feedback
+            else bool(fallback_review.is_edited_feedback)
+        ),
     )
 
 
@@ -113,6 +121,7 @@ async def sync_reviews(
 
     # Get user rules
     rules = crud.get_rules(db, user_id=current_user.id)
+    rules = [r for r in rules if getattr(r, "is_active", True) is not False]
 
     synced_reviews = []
     for fb in feedbacks:
@@ -334,7 +343,6 @@ async def generate_reply_for_review(
                 "content": REVIEW_REPLY_SYSTEM_PROMPT,
             },
             {"role": "user", "content": review_summary},
-            
         ],
         model="gpt-5-nano",
         temperature=0.4,

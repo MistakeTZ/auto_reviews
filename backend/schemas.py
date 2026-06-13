@@ -76,6 +76,7 @@ class RuleBase(BaseModel):
     priority: Optional[int] = 0
     send_notification: Optional[bool] = False
     is_edited_feedback: Optional[bool] = False
+    is_active: Optional[bool] = True
 
 
 class RuleCreate(RuleBase):
@@ -97,6 +98,7 @@ class RuleUpdate(BaseModel):
     priority: Optional[int] = None
     send_notification: Optional[bool] = None
     is_edited_feedback: Optional[bool] = None
+    is_active: Optional[bool] = None
 
 
 class Rule(RuleBase):

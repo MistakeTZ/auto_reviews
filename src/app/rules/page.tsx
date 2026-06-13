@@ -33,6 +33,7 @@ export default function RulesPage() {
     withName: false,
     sendNotification: true,
     isEditedFeedback: false,
+    isActive: true,
   });
 
   const handleSave = () => {
@@ -58,6 +59,7 @@ export default function RulesPage() {
         withName: false,
         sendNotification: true,
         isEditedFeedback: false,
+        isActive: true,
       });
     }
   };
@@ -79,6 +81,7 @@ export default function RulesPage() {
       withName: false,
       sendNotification: true,
       isEditedFeedback: false,
+      isActive: true,
     });
   };
 
@@ -98,6 +101,7 @@ export default function RulesPage() {
       withName: rule.withName || false,
       isEditedFeedback: rule.isEditedFeedback || false,
       sendNotification: rule.sendNotification || true,
+      isActive: rule.isActive !== false,
     });
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -404,6 +408,20 @@ export default function RulesPage() {
                     />
                     <span>{t("rules.sendNotification")}</span>
                   </label>
+                  <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                    <input
+                      type="checkbox"
+                      checked={newRule.isActive !== false}
+                      onChange={(e) => {
+                        setNewRule({
+                          ...newRule,
+                          isActive: e.target.checked,
+                        });
+                      }}
+                      className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
+                    />
+                    <span className="font-semibold text-purple-700">{t("rules.active")}</span>
+                  </label>
                 </div>
               </div>
 
@@ -509,7 +527,11 @@ export default function RulesPage() {
           {sortedRules.map((rule) => (
             <Card
               key={rule.id}
-              className="border border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all duration-300 rounded-xl overflow-hidden"
+              className={`border transition-all duration-300 rounded-xl overflow-hidden ${
+                rule.isActive === false
+                  ? "border-slate-200 bg-slate-50/50 opacity-75 hover:opacity-90"
+                  : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+              }`}
             >
               <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                 <div className="flex flex-row items-center flex-1 gap-4">
@@ -589,7 +611,7 @@ export default function RulesPage() {
                             {" "}
                             {t("dashboard.andContains")}{" "}
                             <span className="font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-lg ml-1 shadow-sm">
-                              "{rule.conditionKeyword}"
+                              &quot;{rule.conditionKeyword}&quot;
                             </span>
                           </span>
                         )}
@@ -643,23 +665,41 @@ export default function RulesPage() {
                   </div>
                 </div>
 
-                <div className="sm:pl-6 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 flex flex-row sm:flex-col gap-2 min-w-[150px]">
+                <div className="sm:pl-6 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 flex flex-row sm:flex-col gap-2 min-w-[150px] items-center sm:items-stretch">
+                  <div className="flex items-center justify-between gap-2 px-1 mb-1 w-full sm:w-auto">
+                    <span className={`text-xs font-bold ${rule.isActive !== false ? "text-emerald-600" : "text-slate-400"}`}>
+                      {rule.isActive !== false ? t("rules.active") : t("rules.inactive")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateRule(rule.id, { isActive: rule.isActive === false })}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${
+                        rule.isActive !== false ? "bg-emerald-500" : "bg-slate-300"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                          rule.isActive !== false ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={() => startEditing(rule)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 text-sm"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs"
                     style={{ flex: "2", minWidth: "0" }}
                   >
-                    <Edit2 size={16} />
+                    <Edit2 size={14} />
                     {t("rules.edit")}
                   </button>
                   <Button
                     variant="danger"
                     onClick={() => deleteRule(rule.id)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 text-sm"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs"
                     style={{ flex: "1", minWidth: "0" }}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                     {t("common.delete")}
                   </Button>
                 </div>

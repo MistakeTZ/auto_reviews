@@ -49,6 +49,7 @@ export interface Rule {
   priority?: number;
   sendNotification?: boolean;
   isEditedFeedback?: boolean;
+  isActive?: boolean;
 }
 
 export interface NotificationMethod {
@@ -247,6 +248,7 @@ export const useAppStore = create<AppState>()(
                 priority: r.priority,
                 sendNotification: r.send_notification,
                 isEditedFeedback: r.is_edited_feedback,
+                isActive: r.is_active,
               })),
             });
           }
@@ -350,6 +352,7 @@ export const useAppStore = create<AppState>()(
             with_name: rule.withName || false,
             send_notification: rule.sendNotification || false,
             is_edited_feedback: rule.isEditedFeedback || false,
+            is_active: rule.isActive !== undefined ? rule.isActive : true,
           };
           const res = await fetch(`${API_URL}/rules/`, {
             method: "POST",
@@ -377,6 +380,7 @@ export const useAppStore = create<AppState>()(
               priority: r.priority,
               sendNotification: r.send_notification,
               isEditedFeedback: r.is_edited_feedback,
+              isActive: r.is_active,
             };
             set({ rules: [...rules, newRule] });
           }
@@ -435,6 +439,8 @@ export const useAppStore = create<AppState>()(
             payload.send_notification = updatedFields.sendNotification;
           if (updatedFields.isEditedFeedback !== undefined)
             payload.is_edited_feedback = updatedFields.isEditedFeedback;
+          if (updatedFields.isActive !== undefined)
+            payload.is_active = updatedFields.isActive;
 
           const res = await fetch(`${API_URL}/rules/${id}`, {
             method: "PUT",
@@ -462,6 +468,7 @@ export const useAppStore = create<AppState>()(
               priority: r.priority,
               sendNotification: r.send_notification,
               isEditedFeedback: r.is_edited_feedback,
+              isActive: r.is_active,
             };
             set({
               rules: rules.map((rule) => (rule.id === id ? updatedRule : rule)),

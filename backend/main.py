@@ -48,6 +48,12 @@ def run_migrations():
                     "ALTER TABLE questions ADD COLUMN proposed_answer_text VARCHAR"
                 )
 
+            rule_columns = {col.get("name") for col in inspector.get_columns("rules")}
+            if "is_active" not in rule_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE rules ADD COLUMN is_active BOOLEAN DEFAULT 1"
+                )
+
             conn.commit()
 
     except Exception as e:

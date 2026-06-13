@@ -68,6 +68,14 @@ export default function HeroSection({
               {t("landing.viewDemo")}
             </Link>
           </Reveal>
+
+          <Reveal
+            as="p"
+            className="mt-6 text-center text-sm font-medium text-[#4A5568] lg:text-left"
+            delay={420}
+          >
+            {t("landing.heroBottomLine")}
+          </Reveal>
         </div>
 
         <Reveal
