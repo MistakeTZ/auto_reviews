@@ -61,8 +61,7 @@ export default function HeroSection({
                 <ArrowRight size={18} className="ml-2" />
               </Link>
               <Link
-                href="https://youtu.be/z8gAzje9ho4"
-                target="_blank"
+                href="#demo"
                 rel="noopener noreferrer"
                 className="btn-secondary inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 border-[#0A192F] bg-transparent px-7 text-[0.98rem] font-bold tracking-[0.01em] text-[#0A192F] transition duration-200 hover:-translate-y-0.5 hover:bg-[rgba(10,25,47,0.06)] hover:shadow-[0_8px_16px_rgba(10,25,47,0.1)] active:translate-y-0 active:shadow-none shrink-0"
               >

@@ -14,6 +14,7 @@ export default function HowItWorksSection({ t }: HowItWorksSectionProps) {
     <section
       className="why-choose-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
       style={{ contentVisibility: "auto", containIntrinsicSize: "780px" }}
+      id="demo"
     >
       <div className="why-choose-container mx-auto max-w-[1200px] text-center">
         <Reveal
