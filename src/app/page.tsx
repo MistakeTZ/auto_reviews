@@ -620,68 +620,54 @@ function LandingPageContent() {
         </section>
 
         {/* Security Guarantees Section */}
-        <section className="security-guarantees-section bg-white px-4 py-16 lg:px-8 lg:py-20 border-b border-[#E2E8F0]">
-          <div className="mx-auto max-w-[1200px]">
-            <div className="text-center mb-14" data-reveal="up">
-              <span className="text-[0.78rem] font-bold uppercase tracking-[1.8px] text-indigo-600 mb-3 inline-block">
+        <section className="security-guarantees-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20">
+
+          <div className="relative z-10 mx-auto max-w-[1200px]">
+            <div className="text-center mb-16" data-reveal="up">
+              <span className="eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]">
                 {t("landing.security")}
               </span>
-              <h2 className="text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F] m-0 max-w-[30ch] mx-auto">
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.75rem)] font-black leading-[1.15] tracking-tight text-[#0A192F] m-0 max-w-[28ch] mx-auto">
                 {t("landing.securityTitle")}
               </h2>
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-3">
-              {/* Карта 1: Ограничение прав */}
-              <div
-                className="flex flex-col p-8 rounded-[20px] bg-[#F7FAFC] border border-[rgba(10,25,47,0.05)] transition duration-200 hover:shadow-lg"
-                data-reveal="up"
-                style={revealDelay(100)}
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600">
-                  <ShieldCheck size={24} />
+            {/* Security Cards Grid */}
+            <div className="security-grid mx-auto grid max-w-[1200px] gap-7 md:grid-cols-2 xl:grid-cols-3">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: t("landing.securityFeature1Title"),
+                  desc: t("landing.securityFeature1Desc"),
+                },
+                {
+                  icon: Zap,
+                  title: t("landing.securityFeature2Title"),
+                  desc: t("landing.securityFeature2Desc"),
+                },
+                {
+                  icon: Settings,
+                  title: t("landing.securityFeature3Title"),
+                  desc: t("landing.securityFeature3Desc"),
+                },
+              ].map((security, idx) => (
+                <div
+                  key={idx}
+                  className="security-card flex flex-col rounded-[20px] border border-[rgba(10,25,47,0.08)] bg-white p-9 transition duration-200 hover:-translate-y-1.5 hover:border-[rgba(37,48,217,0.18)] hover:shadow-[0_18px_36px_rgba(10,25,47,0.1)]"
+                  data-reveal="zoom"
+                  style={revealDelay(120 + idx * 90)}
+                >
+                  <div className="security-card-icon mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(37,48,217,0.08)] text-[#2530D9]">
+                    <security.icon size={28} />
+                  </div>
+                  <h3 className="security-card-title mb-3 text-[1.2rem] font-bold leading-[1.3] text-[#0A192F]">
+                    {security.title}
+                  </h3>
+                  <p className="security-card-description m-0 text-[0.95rem] leading-[1.65] text-[#4A5568]">
+                    {security.desc}
+                  </p>
                 </div>
-                <h3 className="text-[1.15rem] font-bold text-[#0A192F] mb-3">
-                  {t("landing.securityFeature1Title")}
-                </h3>
-                <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0">
-                  {t("landing.securityFeature1Desc")}
-                </p>
-              </div>
-
-              {/* Карта 2: Фильтр стоп-слов */}
-              <div
-                className="flex flex-col p-8 rounded-[20px] bg-[#F7FAFC] border border-[rgba(10,25,47,0.05)] transition duration-200 hover:shadow-lg"
-                data-reveal="up"
-                style={revealDelay(200)}
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                  <Zap size={24} />
-                </div>
-                <h3 className="text-[1.15rem] font-bold text-[#0A192F] mb-3">
-                  {t("landing.securityFeature2Title")}
-                </h3>
-                <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0">
-                  {t("landing.securityFeature2Desc")}
-                </p>
-              </div>
-
-              {/* Карта 3: Анти-бот система */}
-              <div
-                className="flex flex-col p-8 rounded-[20px] bg-[#F7FAFC] border border-[rgba(10,25,47,0.05)] transition duration-200 hover:shadow-lg"
-                data-reveal="up"
-                style={revealDelay(300)}
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                  <Settings size={24} />
-                </div>
-                <h3 className="text-[1.15rem] font-bold text-[#0A192F] mb-3">
-                  {t("landing.securityFeature3Title")}
-                </h3>
-                <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0">
-                  {t("landing.securityFeature3Desc")}
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
