@@ -13,6 +13,7 @@ import ScenariosSection from "@/components/landing/ScenariosSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import SecurityGuaranteesSection from "@/components/landing/SecurityGuaranteesSection";
 import PricingSection from "@/components/landing/PricingSection";
+import EngineersForSellersSection from "@/components/landing/EngineersForSellersSection";
 import "./landing.css";
 
 function LandingPageContent() {
@@ -69,6 +70,7 @@ function LandingPageContent() {
         <TrustBarSection t={t} language={language} />
         <FeaturesSection t={t} />
         <TestimonialsSection t={t} />
+        <EngineersForSellersSection t={t} />
         <ScenariosSection
           t={t}
           language={language}

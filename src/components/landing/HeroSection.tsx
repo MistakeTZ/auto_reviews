@@ -47,26 +47,42 @@ export default function HeroSection({
           </Reveal>
 
           <Reveal
-            className="hero-buttons flex w-full flex-col gap-4 sm:w-auto sm:flex-row"
+            className="hero-buttons flex w-full flex-col gap-5 items-center lg:items-start xl:flex-row"
             delay={340}
           >
-            <Link
-              href={isAuthenticated ? "/dashboard" : registerHref}
-              className="btn-primary inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 border-[#0A192F] bg-[#0A192F] px-7 text-[0.98rem] font-bold tracking-[0.01em] text-white shadow-[0_10px_20px_rgba(10,25,47,0.12)] transition duration-200 hover:-translate-y-0.5 hover:border-[#1f366c] hover:bg-[#1f366c] hover:shadow-[0_14px_26px_rgba(10,25,47,0.18)] active:translate-y-0 active:shadow-none"
-            >
-              {isAuthenticated
-                ? t("common.dashboard")
-                : t("landing.getStarted")}
-              <ArrowRight size={18} className="ml-2" />
-            </Link>
-            <Link
-              href="https://youtu.be/z8gAzje9ho4"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 border-[#0A192F] bg-transparent px-7 text-[0.98rem] font-bold tracking-[0.01em] text-[#0A192F] transition duration-200 hover:-translate-y-0.5 hover:bg-[rgba(10,25,47,0.06)] hover:shadow-[0_8px_16px_rgba(10,25,47,0.1)] active:translate-y-0 active:shadow-none"
-            >
-              {t("landing.viewDemo")}
-            </Link>
+            <div className="flex flex-col gap-4 sm:flex-row w-full sm:w-auto">
+              <Link
+                href={isAuthenticated ? "/dashboard" : registerHref}
+                className="btn-primary inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 border-[#0A192F] bg-[#0A192F] px-7 text-[0.98rem] font-bold tracking-[0.01em] text-white shadow-[0_10px_20px_rgba(10,25,47,0.12)] transition duration-200 hover:-translate-y-0.5 hover:border-[#1f366c] hover:bg-[#1f366c] hover:shadow-[0_14px_26px_rgba(10,25,47,0.18)] active:translate-y-0 active:shadow-none shrink-0"
+              >
+                {isAuthenticated
+                  ? t("common.dashboard")
+                  : t("landing.getStarted")}
+                <ArrowRight size={18} className="ml-2" />
+              </Link>
+              <Link
+                href="https://youtu.be/z8gAzje9ho4"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 border-[#0A192F] bg-transparent px-7 text-[0.98rem] font-bold tracking-[0.01em] text-[#0A192F] transition duration-200 hover:-translate-y-0.5 hover:bg-[rgba(10,25,47,0.06)] hover:shadow-[0_8px_16px_rgba(10,25,47,0.1)] active:translate-y-0 active:shadow-none shrink-0"
+              >
+                {t("landing.viewDemo")}
+              </Link>
+            </div>
+            {/* Safe Sandbox Highlight Badge */}
+            <div className="flex items-center gap-3 bg-white border border-[rgba(10,25,47,0.08)] rounded-[0.625rem] p-3 max-w-[340px] shadow-sm select-none hidden">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(37,48,217,0.08)] text-[#2530D9] shrink-0 font-extrabold text-xs shadow-sm animate-pulse">
+                🛡️
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-[#0A192F] uppercase tracking-wider leading-none mb-1">
+                  {t("landing.sandboxTitle")}
+                </span>
+                <span className="text-[11px] font-semibold text-[#4A5568] leading-tight block">
+                  {t("landing.sandboxDesc")}
+                </span>
+              </div>
+            </div>
           </Reveal>
 
           <Reveal

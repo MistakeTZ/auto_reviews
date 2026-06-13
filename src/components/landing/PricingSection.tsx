@@ -51,7 +51,7 @@ export default function PricingSection({
   return (
     <section
       className="pricing-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
-      style={{ contentVisibility: "auto", containIntrinsicSize: "900px" }}
+      style={{ contentVisibility: "auto", containIntrinsicSize: "900px", paddingBottom: "2.5rem" }}
     >
       <Reveal
         className="pricing-header mx-auto mb-16 max-w-[1200px] text-center"
@@ -140,6 +140,27 @@ export default function PricingSection({
           </Reveal>
         ))}
       </div>
+      <Reveal
+        className="mx-auto mt-12 max-w-[1200px] flex justify-center"
+        direction="up"
+        delay={300}
+      >
+        <div className="inline-flex flex-wrap items-center justify-center gap-x-7 gap-y-3 rounded-2xl border border-[#d6def2] bg-[linear-gradient(145deg,#ffffff_0%,#f4f7ff_100%)] px-6 py-4 text-sm font-semibold text-[#0A192F] shadow-[0_14px_28px_rgba(10,25,47,0.08)] ring-1 ring-white/70 backdrop-blur-sm select-none">
+          <div className="flex items-center gap-3">
+              ⚡
+            <span className="font-bold text-[#1f366c]">
+              {t("landing.technicalSupportSla")}
+            </span>
+          </div>
+          <div className="hidden h-5 w-px bg-[#c9d4ee] md:block" />
+          <div className="flex items-center gap-3">
+              🛡️
+            <span className="font-bold text-[#1f366c]">
+              {t("landing.moneyBackGuarantee")}
+            </span>
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }

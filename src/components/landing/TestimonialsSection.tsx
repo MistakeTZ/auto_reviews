@@ -4,12 +4,14 @@ import { useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
+import { useAppStore } from "@/store/useAppStore";
+import Image from "next/image";
 
 type TestimonialsSectionProps = {
   t: (key: string) => string;
 };
 
-const TESTIMONIAL_IDS = ["testimonial1", "testimonial2", "testimonial3"];
+
 
 export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
   const [expandedTestimonials, setExpandedTestimonials] = useState<number[]>(
@@ -24,11 +26,36 @@ export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
     );
   };
 
-  const testimonials = TESTIMONIAL_IDS.map((id) => ({
-    text: t(`landing.${id}.text`),
-    author: t(`landing.${id}.author`),
-    role: t(`landing.${id}.role`),
-    link: t(`landing.${id}.link`),
+  const language = useAppStore((state) => state.language);
+
+  const testimonialsData = [
+    {
+      id: "testimonial1",
+      avatar: "/avatar_alexey.png",
+      verifiedBadge: "5+ hours saved per week",
+      verifiedBadgeRu: "5+ часов сэкономлено в неделю",
+    },
+    {
+      id: "testimonial2",
+      avatar: "/avatar_maria.png",
+      verifiedBadge: "0 warnings",
+      verifiedBadgeRu: "0 штрафов",
+    },
+    {
+      id: "testimonial3",
+      avatar: "/avatar_dmitry.png",
+      verifiedBadge: "24/7 instant replies",
+      verifiedBadgeRu: "Ответы 24/7",
+    },
+  ];
+
+  const testimonials = testimonialsData.map((data) => ({
+    text: t(`landing.${data.id}.text`),
+    author: t(`landing.${data.id}.author`),
+    role: t(`landing.${data.id}.role`),
+    link: t(`landing.${data.id}.link`),
+    avatar: data.avatar,
+    badge: language === "ru" ? data.verifiedBadgeRu : data.verifiedBadge,
   }));
 
   return (
@@ -78,27 +105,36 @@ export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
               delay={110 + idx * 85}
             >
               <div className="about-us-card-author flex items-center gap-3">
-                <div className="about-us-card-avatar flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#2530D9] to-[#1f366c] font-bold text-white transition-transform duration-300 group-hover:scale-105">
-                  {testimonial.author[0]}
-                </div>
-                <div className="about-us-card-info">
-                  {hasLink ? (
-                    <a
-                      href={testimonial.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(event) => event.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-[0.95rem] font-bold text-[#0A192F] transition hover:text-[#2530D9] hover:underline"
-                    >
-                      {testimonial.author}
-                      <ExternalLink size={14} className="ml-1 text-[#2530D9]" />
-                    </a>
-                  ) : (
-                    <h3 className="m-0 text-[0.95rem] font-bold text-[#0A192F]">
-                      {testimonial.author}
-                    </h3>
-                  )}
-                  <p className="m-0 text-[0.8rem] text-[#4A5568]">
+                <Image
+                  src={testimonial.avatar}
+                  alt={testimonial.author}
+                  width={44}
+                  height={44}
+                  className="about-us-card-avatar h-11 w-11 rounded-full object-cover border border-slate-100 transition-transform duration-300 group-hover:scale-105 shrink-0"
+                />
+                <div className="about-us-card-info flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    {hasLink ? (
+                      <a
+                        href={testimonial.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(event) => event.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-[0.95rem] font-bold text-[#0A192F] transition hover:text-[#2530D9] hover:underline"
+                      >
+                        {testimonial.author}
+                        <ExternalLink size={12} className="text-[#2530D9] shrink-0" />
+                      </a>
+                    ) : (
+                      <h3 className="m-0 text-[0.95rem] font-bold text-[#0A192F]">
+                        {testimonial.author}
+                      </h3>
+                    )}
+                    <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[0.68rem] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                      ✓ {testimonial.badge}
+                    </span>
+                  </div>
+                  <p className="m-0 text-[0.8rem] text-[#4A5568] truncate">
                     {testimonial.role}
                   </p>
                 </div>

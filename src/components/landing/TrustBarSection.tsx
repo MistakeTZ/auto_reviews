@@ -25,9 +25,12 @@ export default function TrustBarSection({ t, language }: TrustBarSectionProps) {
           className="trust-metric flex flex-col items-center gap-1 text-center text-[#4A5568]"
           delay={90}
         >
-          <strong className="text-[clamp(1.2rem,2vw,1.5rem)] font-extrabold text-[#0A192F]">
-            {stat1Value}
-          </strong>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <strong className="text-[clamp(1.2rem,2vw,1.5rem)] font-extrabold text-[#0A192F]">
+              {stat1Value}
+            </strong>
+            <span className="h-2 w-2 rounded-full bg-[#22C55E] shadow-[0_0_0_4px_rgba(34,197,94,0.2)] animate-pulse motion-reduce:animate-none" />
+          </div>
           <span>{t("landing.stat1Desc")}</span>
         </Reveal>
         <div className="trust-divider hidden h-10 w-px bg-[#CBD5E0] md:block" />
