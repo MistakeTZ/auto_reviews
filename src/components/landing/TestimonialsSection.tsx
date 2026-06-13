@@ -31,19 +31,19 @@ export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
   const testimonialsData = [
     {
       id: "testimonial1",
-      avatar: "/avatar_alexey.jpg",
+      avatar: "/avatar_alexey.webp",
       verifiedBadge: "5+ hours saved per week",
       verifiedBadgeRu: "5+ часов сэкономлено в неделю",
     },
     {
       id: "testimonial2",
-      avatar: "/avatar_maria.jpg",
+      avatar: "/avatar_maria.webp",
       verifiedBadge: "0 warnings",
       verifiedBadgeRu: "0 штрафов",
     },
     {
       id: "testimonial3",
-      avatar: "/avatar_dmitry.jpg",
+      avatar: "/avatar_dmitry.webp",
       verifiedBadge: "24/7 instant replies",
       verifiedBadgeRu: "Ответы 24/7",
     },
