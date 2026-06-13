@@ -31,7 +31,7 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
   // If not active, show the premium lock screen
   const isTrialNotStarted = !trialActivated;
   const isTrialExpired = trialActivated && tariffType === 'trial';
-  const trialDays = 60 + Math.max(0, Number(registrationBonusDays || 0));
+  const trialDays = 30 + Math.max(0, Number(registrationBonusDays || 0));
   const trialNotStartedTitle = language === 'ru'
     ? `Активируйте бесплатный пробный период на ${trialDays} дней`
     : `Activate free trial period for ${trialDays} days`;

@@ -16,5 +16,7 @@ def get_reviews():
         
     linear_part = (REVIEWS_PER_MONTH / SECONDS_IN_MONTH) * t_passed
     sine_part = 100 * math.sin((2 * math.pi * 5 * t_passed) / SECONDS_IN_MONTH)
+    total_answers = linear_part + sine_part
+    total_answers *= 1.5
 
-    return {"total_answers": linear_part + sine_part}
+    return {"total_answers": total_answers}

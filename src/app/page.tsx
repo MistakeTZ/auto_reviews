@@ -231,6 +231,7 @@ function LandingPageContent() {
       </header>
 
       <main className="relative overflow-hidden">
+        {/* Hero Section */}
         <section className="hero-section overflow-hidden bg-[#F7FAFC] px-4 py-12 lg:px-8">
           <div className="hero-container mx-auto flex max-w-[1200px] flex-col items-center gap-8 lg:flex-row lg:gap-16">
             <div className="hero-content flex flex-1 flex-col items-center lg:items-start">
@@ -314,6 +315,7 @@ function LandingPageContent() {
           </div>
         </section>
 
+        {/* Trust Bar Section */}
         <section className="trust-bar-section border-y border-[#E2E8F0] bg-white py-10">
           <div className="trust-bar-container mx-auto flex max-w-[1000px] flex-col items-center justify-between gap-4 px-4 md:flex-row md:gap-6 lg:px-6">
             <div
@@ -351,6 +353,7 @@ function LandingPageContent() {
           </div>
         </section>
 
+        {/* Features Section */}
         <section
           className="services-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
           style={{ contentVisibility: "auto", containIntrinsicSize: "840px" }}
@@ -403,73 +406,6 @@ function LandingPageContent() {
                 </p>
               </div>
             ))}
-          </div>
-        </section>
-
-        <ScenariosSection
-          t={t}
-          language={language}
-          isAuthenticated={isAuthenticated}
-          registerHref={registerHref}
-        />
-
-        {/* How it Works Section */}
-        <section
-          className="why-choose-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
-          style={{ contentVisibility: "auto", containIntrinsicSize: "780px" }}
-        >
-          <div className="why-choose-container mx-auto max-w-[1200px] text-center">
-            <span
-              className="why-choose-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
-              data-reveal="up"
-            >
-              {t("landing.process")}
-            </span>
-            <h2
-              className="why-choose-title mb-12 text-[clamp(1.6rem,2.6vw,2.3rem)] leading-[1.2] text-[#0A192F]"
-              data-reveal="up"
-              style={revealDelay(100)}
-            >
-              {t("landing.howItWorks")}
-            </h2>
-            <div className="why-choose-grid grid gap-7 text-left xl:grid-cols-3">
-              {[
-                {
-                  step: "01",
-                  title: t("landing.step1Title"),
-                  desc: t("landing.step1Desc"),
-                },
-                {
-                  step: "02",
-                  title: t("landing.step2Title"),
-                  desc: t("landing.step2Desc"),
-                },
-                {
-                  step: "03",
-                  title: t("landing.step3Title"),
-                  desc: t("landing.step3Desc"),
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="why-choose-card relative rounded-[20px] border border-[rgba(10,25,47,0.06)] bg-white p-9 text-left shadow-[0_1px_3px_rgba(10,25,47,0.04),0_8px_24px_rgba(10,25,47,0.05)] transition duration-[260ms] hover:-translate-y-1.5 hover:border-[rgba(37,48,217,0.12)] hover:shadow-[0_4px_12px_rgba(10,25,47,0.06),0_20px_48px_rgba(10,25,47,0.1)]"
-                  data-reveal="up"
-                  style={revealDelay(110 + idx * 90)}
-                >
-                  <div className="why-choose-card-header mb-5 flex items-center gap-3.5">
-                    <div className="why-choose-icon flex h-[52px] w-[52px] min-w-[52px] items-center justify-center rounded-full border border-[rgba(37,48,217,0.08)] bg-[linear-gradient(135deg,#eef1ff_0%,#f0f4f9_100%)] text-[1.25rem] font-extrabold text-[#2530D9]">
-                      {item.step}
-                    </div>
-                    <h3 className="m-0 text-[1.2rem] font-bold tracking-[-0.01em] text-[#0A192F]">
-                      {item.title}
-                    </h3>
-                  </div>
-                  <p className="m-0 text-[0.95rem] leading-[1.7] text-[#4A5568]">
-                    {item.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -585,6 +521,74 @@ function LandingPageContent() {
           </div>
         </section>
 
+        {/* Scenarios Section */}
+        <ScenariosSection
+          t={t}
+          language={language}
+          isAuthenticated={isAuthenticated}
+          registerHref={registerHref}
+        />
+
+        {/* How it Works Section */}
+        <section
+          className="why-choose-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
+          style={{ contentVisibility: "auto", containIntrinsicSize: "780px" }}
+        >
+          <div className="why-choose-container mx-auto max-w-[1200px] text-center">
+            <span
+              className="why-choose-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
+              data-reveal="up"
+            >
+              {t("landing.process")}
+            </span>
+            <h2
+              className="why-choose-title mb-12 text-[clamp(1.6rem,2.6vw,2.3rem)] leading-[1.2] text-[#0A192F]"
+              data-reveal="up"
+              style={revealDelay(100)}
+            >
+              {t("landing.howItWorks")}
+            </h2>
+            <div className="why-choose-grid grid gap-7 text-left xl:grid-cols-3">
+              {[
+                {
+                  step: "01",
+                  title: t("landing.step1Title"),
+                  desc: t("landing.step1Desc"),
+                },
+                {
+                  step: "02",
+                  title: t("landing.step2Title"),
+                  desc: t("landing.step2Desc"),
+                },
+                {
+                  step: "03",
+                  title: t("landing.step3Title"),
+                  desc: t("landing.step3Desc"),
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="why-choose-card relative rounded-[20px] border border-[rgba(10,25,47,0.06)] bg-white p-9 text-left shadow-[0_1px_3px_rgba(10,25,47,0.04),0_8px_24px_rgba(10,25,47,0.05)] transition duration-[260ms] hover:-translate-y-1.5 hover:border-[rgba(37,48,217,0.12)] hover:shadow-[0_4px_12px_rgba(10,25,47,0.06),0_20px_48px_rgba(10,25,47,0.1)]"
+                  data-reveal="up"
+                  style={revealDelay(110 + idx * 90)}
+                >
+                  <div className="why-choose-card-header mb-5 flex items-center gap-3.5">
+                    <div className="why-choose-icon flex h-[52px] w-[52px] min-w-[52px] items-center justify-center rounded-full border border-[rgba(37,48,217,0.08)] bg-[linear-gradient(135deg,#eef1ff_0%,#f0f4f9_100%)] text-[1.25rem] font-extrabold text-[#2530D9]">
+                      {item.step}
+                    </div>
+                    <h3 className="m-0 text-[1.2rem] font-bold tracking-[-0.01em] text-[#0A192F]">
+                      {item.title}
+                    </h3>
+                  </div>
+                  <p className="m-0 text-[0.95rem] leading-[1.7] text-[#4A5568]">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Pricing Section */}
         <section
           className="pricing-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
@@ -690,6 +694,7 @@ function LandingPageContent() {
     </div>
   );
 }
+// TODO: Добавить в FAQ или в блок «Как это работает» конкретные технологические маркеры безопасности: 1) Явно указать, что токен требует права только на «Контент» и «Вопросы и отзывы» (без доступа к балансу и финансам). 2) Упомянуть наличие ИИ-фильтра стоп-слов, который страхует от случайных нарушений оферты маркетплейса.
 
 export default function LandingPage() {
   return (
