@@ -1,370 +1,256 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { Zap, Settings, ShieldCheck, Star, Sparkles, Sliders, Lock, EyeOff } from "lucide-react";
-import Reveal from "@/components/ui/Reveal";
-import { useAppStore } from "@/store/useAppStore";
+import React from "react";
+import Reveal from "../ui/Reveal";
 
 type FeaturesSectionProps = {
   t: (key: string) => string;
 };
 
 export default function FeaturesSection({ t }: FeaturesSectionProps) {
-  const language = useAppStore((state) => state.language);
-  const [repliesStep, setRepliesStep] = useState(0); // 0: Idle, 1: Review Received, 2: Typing, 3: Answered
-
-  // Dynamic animation timer for Card 1 (Instant Replies)
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    const runAnimation = () => {
-      if (repliesStep === 0) {
-        timer = setTimeout(() => setRepliesStep(1), 1500);
-      } else if (repliesStep === 1) {
-        timer = setTimeout(() => setRepliesStep(2), 2000);
-      } else if (repliesStep === 2) {
-        timer = setTimeout(() => setRepliesStep(3), 1500);
-      } else if (repliesStep === 3) {
-        timer = setTimeout(() => setRepliesStep(0), 4000);
-      }
-    };
-    runAnimation();
-    return () => clearTimeout(timer);
-  }, [repliesStep]);
-
-  // Localized terms for high-fidelity mockups
-  const localT = {
-    en: {
-      author: "Anna K.",
-      product: "Wool Blend Sweater",
-      reviewText: "The sweater is so soft and warm! Delivery was fast.",
-      replyText: "Anna, thank you for your feedback! We are glad the sweater kept you warm. Looking forward to your next orders!",
-      today: "Today, 14:02",
-      repliedBadge: "Replied in 1.4s",
-      thinking: "AI drafting reply...",
-      
-      ruleTitle: "Active Automation Rules",
-      ruleRating5: "Rule #1: High Rating",
-      ruleRating5Action: "Gratitude Template",
-      ruleRatingLow: "Rule #2: Low Rating (1-3★)",
-      ruleRatingLowAction: "Apologize + Telegram",
-      ruleCondition: "Condition",
-      ruleAction: "Action",
-      ruleActive: "Active",
-      
-      apiHeader: "WB Integration",
-      apiTokenLabel: "WB OpenAPI Token",
-      apiScopeTitle: "Token Permissions",
-      apiScopeFeedbacks: "Reviews & Questions",
-      apiScopeContent: "Content Manager",
-      apiScopeFinance: "Financials & Prices",
-      apiScopeFinanceStatus: "Locked",
-      apiScopeAllowed: "Allowed",
-      apiStatus: "Connected",
-    },
-    ru: {
-      author: "Анна К.",
-      product: "Свитер из шерсти",
-      reviewText: "Свитер очень мягкий и теплый! Доставили быстро.",
-      replyText: "Анна, спасибо за отзыв! Рады, что свитер согрел вас в холодную погоду. Будем рады новым заказам!",
-      today: "Сегодня, 14:02",
-      repliedBadge: "Отвечено за 1.4 сек",
-      thinking: "ИИ составляет ответ...",
-      
-      ruleTitle: "Активные правила",
-      ruleRating5: "Правило №1: 5 звезд",
-      ruleRating5Action: "Благодарность",
-      ruleRatingLow: "Правило №2: Оценка 1-3★",
-      ruleRatingLowAction: "Извинение + Telegram",
-      ruleCondition: "Условие",
-      ruleAction: "Действие",
-      ruleActive: "Активно",
-      
-      apiHeader: "Интеграция с WB",
-      apiTokenLabel: "Токен WB OpenAPI",
-      apiScopeTitle: "Разрешения токена",
-      apiScopeFeedbacks: "Вопросы и отзывы",
-      apiScopeContent: "Контент и карточки",
-      apiScopeFinance: "Финансы и цены",
-      apiScopeFinanceStatus: "Блок",
-      apiScopeAllowed: "Доступно",
-      apiStatus: "Подключено",
-    }
-  };
-
-  const currentT = localT[language] || localT.en;
-
   return (
     <section
-      className="services-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
-      style={{ contentVisibility: "auto", containIntrinsicSize: "840px" }}
+      id="features"
+      className="bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
     >
-      <Reveal
-        className="services-header mx-auto mb-14 max-w-[1200px] text-center"
-        direction="up"
-      >
-        <span className="services-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.8px] text-[#1f366c]">
-          {t("landing.capabilities")}
-        </span>
-        <h2 className="services-title m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]">
-          {t("landing.feature1Title")
-            ? t("landing.ourPowerfulFeatures")
-            : t("landing.features")}
-        </h2>
-      </Reveal>
-
-      <div className="services-grid mx-auto grid max-w-[1200px] gap-7 md:grid-cols-2 xl:grid-cols-3 items-stretch">
-        
-        {/* Feature 1: Instant Replies */}
+      <div className="about-us-intro mx-auto mb-12 max-w-[1200px] text-center">
         <Reveal
-          className="service-card flex flex-col rounded-[24px] border border-[rgba(10,25,47,0.08)] bg-white p-7 transition duration-300 hover:border-[rgba(37,48,217,0.18)] hover:shadow-[0_20px_40px_rgba(10,25,47,0.08)]"
-          direction="zoom"
-          delay={120}
+          as="span"
+          className="about-us-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
+          direction="up"
         >
-          {/* Mockup Container */}
-          <div className="bg-slate-50 rounded-2xl p-5 mb-6 border border-slate-200/80 relative min-h-[210px] flex flex-col justify-between font-sans shadow-sm overflow-hidden select-none">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                {language === "ru" ? "Имитация автоответа" : "Auto-Reply Simulator"}
-              </span>
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
+          {t("features.tag")}
+        </Reveal>
+        <Reveal
+          as="h2"
+          className="about-us-headline m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]"
+          direction="up"
+          delay={90}
+        >
+          {t("features.title")}
+        </Reveal>
+      </div>
 
-            {/* Review Section */}
-            <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm transition-all duration-300">
-              <div className="flex justify-between items-start gap-2 mb-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
-                    A
-                  </div>
-                  <div>
-                    <h5 className="text-[11px] font-extrabold text-slate-800 m-0 leading-none">{currentT.author}</h5>
-                    <span className="text-[9px] text-slate-400">{currentT.today}</span>
-                  </div>
-                </div>
-                <div className="flex text-amber-400 gap-0.5">
-                  <Star size={10} fill="currentColor" />
-                  <Star size={10} fill="currentColor" />
-                  <Star size={10} fill="currentColor" />
-                  <Star size={10} fill="currentColor" />
-                  <Star size={10} fill="currentColor" />
-                </div>
+      {/* Bento Grid Сетка */}
+      <div className="max-w-[1200px] mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max lg:auto-rows-[240px]">
+        {/* КАРТОЧКА 1: ИИ-Ассистент (Большая: 2 колонки, 2 строки на десктопе) */}
+        <div className="group md:col-span-2 lg:row-span-2 bg-white border border-slate-100 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative flex flex-col justify-between">
+          <div className="max-w-md z-10">
+            <span className="p-2 bg-indigo-50 text-indigo-600 rounded-xl inline-flex mb-4">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                />
+              </svg>
+            </span>
+            <h3 className="text-xl font-bold text-slate-900">
+              {t("features.aiTitle")}
+            </h3>
+            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+              {t("features.aiDesc")}
+            </p>
+          </div>
+
+          {/* Визуал: Эмуляция чата ИИ */}
+          <div className="mt-4 w-full lg:mt-0 lg:ml-auto lg:w-[45%] bg-slate-50/50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 text-xs">
+            <div className="bg-white border border-slate-100 rounded-xl p-3 max-w-[85%] shadow-sm self-start">
+              <div className="font-semibold text-amber-500 mb-0.5">
+                {t("features.mockBuyer")}
               </div>
-              <p className="m-0 text-[10px] text-slate-600 leading-relaxed font-semibold">
-                {currentT.reviewText}
-              </p>
+              <p className="text-slate-600">{t("features.mockReviewText")}</p>
             </div>
-
-            {/* Reply Section */}
-            <div className="min-h-[72px] flex items-center justify-center mt-3">
-              {repliesStep === 0 && (
-                <span className="text-[10px] text-slate-400 font-bold italic animate-pulse">
-                  {language === "ru" ? "Ожидание нового отзыва..." : "Waiting for new review..."}
+            <div className="bg-indigo-600 rounded-xl p-3 max-w-[85%] shadow-sm self-end text-white relative transition-transform duration-300 group-hover:-translate-y-1">
+              <div className="font-semibold text-indigo-200 mb-0.5 flex justify-between items-center gap-4">
+                <span>{t("features.mockAssistant")}</span>
+                <span className="bg-indigo-500/50 text-[10px] px-1.5 py-0.5 rounded text-white font-medium">
+                  {t("features.mockAiBadge")}
                 </span>
-              )}
-              
-              {repliesStep === 1 && (
-                <span className="text-[10px] text-indigo-600 font-bold bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5 animate-pulse">
-                  {language === "ru" ? "Новый отзыв обнаружен!" : "New review detected!"}
-                </span>
-              )}
-
-              {repliesStep === 2 && (
-                <div className="w-full bg-slate-100/60 border border-slate-200/50 rounded-xl p-3 text-[10px] flex items-center justify-between text-slate-600 animate-pulse">
-                  <span className="font-semibold flex items-center gap-1.5">
-                    <Sparkles size={12} className="text-indigo-500 animate-spin" />
-                    {currentT.thinking}
-                  </span>
-                  <div className="flex gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
-              )}
-
-              {repliesStep === 3 && (
-                <div className="w-full bg-indigo-50/70 border border-indigo-100/80 rounded-xl p-3 text-[10px] text-slate-800 shadow-inner flex flex-col gap-1.5 animate-[fadeIn_300ms_ease-out]">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-extrabold text-[#2530D9] flex items-center gap-1">
-                      <Sparkles size={11} className="fill-indigo-100" />
-                      reAnswer AI
-                    </span>
-                    <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/40">
-                      {currentT.repliedBadge}
-                    </span>
-                  </div>
-                  <p className="m-0 leading-relaxed font-semibold">{currentT.replyText}</p>
-                </div>
-              )}
+              </div>
+              <p className="leading-normal">{t("features.mockReplyText")}</p>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(37,48,217,0.08)] text-[#2530D9]">
-              <Zap size={24} />
-            </div>
-            <h3 className="text-[1.2rem] font-bold text-[#0A192F] m-0">
-              {t("landing.feature1Title")}
+        {/* КАРТОЧКА 2: Синхронизация WB (Высокая: 1 колонка, 2 строки на десктопе) */}
+        <div className="group lg:col-span-1 md:col-span-2 lg:row-span-2 bg-white border border-slate-100 rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative flex flex-col justify-between">
+          <div className="z-10">
+            <span className="p-2 bg-emerald-50 text-emerald-600 rounded-xl inline-flex mb-4">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8.5 7.5M12 5v12"
+                />
+              </svg>
+            </span>
+            <h3 className="text-xl font-bold text-slate-900">
+              {t("features.syncTitle")}
             </h3>
-          </div>
-          <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0 flex-1">
-            {t("landing.feature1Desc")}
-          </p>
-        </Reveal>
-
-        {/* Feature 2: Smart Rules */}
-        <Reveal
-          className="service-card flex flex-col rounded-[24px] border border-[rgba(10,25,47,0.08)] bg-white p-7 transition duration-300 hover:border-[rgba(37,48,217,0.18)] hover:shadow-[0_20px_40px_rgba(10,25,47,0.08)]"
-          direction="zoom"
-          delay={210}
-        >
-          {/* Mockup Container */}
-          <div className="bg-slate-50 rounded-2xl p-5 mb-6 border border-slate-200/80 relative min-h-[210px] flex flex-col justify-between font-sans shadow-sm overflow-hidden select-none">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                {currentT.ruleTitle}
-              </span>
-              <span className="text-[9px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <Sliders size={10} />
-                {language === "ru" ? "Настройка" : "Manage"}
-              </span>
-            </div>
-
-            <div className="space-y-2.5 flex-1 flex flex-col justify-center">
-              {/* Rule #1 */}
-              <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-sm hover:border-indigo-300 transition duration-200">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-extrabold text-slate-800">
-                    {currentT.ruleRating5}
-                  </span>
-                  <span className="flex items-center gap-1 text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-100">
-                    <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                    {currentT.ruleActive}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-[8px] font-semibold text-slate-500">
-                  <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50">
-                    {currentT.ruleCondition}: ★ = 5
-                  </span>
-                  <span className="text-slate-400">→</span>
-                  <span className="bg-indigo-50 border border-indigo-100 text-[#2530D9] px-1.5 py-0.5 rounded">
-                    {currentT.ruleRating5Action}
-                  </span>
-                </div>
-              </div>
-
-              {/* Rule #2 */}
-              <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-sm hover:border-indigo-300 transition duration-200">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-extrabold text-slate-800">
-                    {currentT.ruleRatingLow}
-                  </span>
-                  <span className="flex items-center gap-1 text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-100">
-                    <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                    {currentT.ruleActive}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-[8px] font-semibold text-slate-500">
-                  <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50">
-                    {currentT.ruleCondition}: ★ ≤ 3
-                  </span>
-                  <span className="text-slate-400">→</span>
-                  <span className="bg-amber-50 border border-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
-                    {currentT.ruleRatingLowAction}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+              {t("features.syncDesc")}
+            </p>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(37,48,217,0.08)] text-[#2530D9]">
-              <Settings size={24} />
+          {/* Визуал: Каскад карточек WB */}
+          <div className="relative w-full h-[120px] mt-4 flex justify-center">
+            <div className="absolute bottom-[-20px] w-[160px] h-[130px] bg-slate-50 border border-slate-100 rounded-xl p-2 shadow-sm transform -rotate-6 -translate-x-12 group-hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-full h-[60px] bg-slate-200 rounded-lg mb-1 animate-pulse" />
+              <div className="h-2 w-3/4 bg-slate-300 rounded mb-1" />
+              <div className="h-2 w-1/2 bg-slate-200 rounded" />
             </div>
-            <h3 className="text-[1.2rem] font-bold text-[#0A192F] m-0">
-              {t("landing.feature2Title")}
+            <div className="absolute bottom-[-10px] w-[160px] h-[130px] bg-white border border-slate-200 rounded-xl p-2 shadow-md z-10 group-hover:-translate-y-4 transition-transform duration-300">
+              <div className="w-full h-[60px] bg-indigo-50 rounded-lg mb-2 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                Wildberries
+              </div>
+              <div className="h-2.5 w-5/6 bg-slate-800 rounded mb-1.5" />
+              <div className="h-2 w-1/2 bg-slate-200 rounded" />
+            </div>
+            <div className="absolute bottom-[-20px] w-[160px] h-[130px] bg-slate-50 border border-slate-100 rounded-xl p-2 shadow-sm transform rotate-6 translate-x-12 group-hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-full h-[60px] bg-slate-200 rounded-lg mb-1 animate-pulse" />
+              <div className="h-2 w-3/4 bg-slate-300 rounded mb-1" />
+              <div className="h-2 w-1/2 bg-slate-200 rounded" />
+            </div>
+          </div>
+        </div>
+
+        {/* КАРТОЧКА 3: Конструктор правил (1 колонка, 1 строка) */}
+        <div className="group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between relative">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span className="text-indigo-600">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                  />
+                </svg>
+              </span>
+              {t("features.rulesTitle")}
             </h3>
-          </div>
-          <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0 flex-1">
-            {t("landing.feature2Desc")}
-          </p>
-        </Reveal>
-
-        {/* Feature 3: Secure Integration */}
-        <Reveal
-          className="service-card flex flex-col rounded-[24px] border border-[rgba(10,25,47,0.08)] bg-white p-7 transition duration-300 hover:border-[rgba(37,48,217,0.18)] hover:shadow-[0_20px_40px_rgba(10,25,47,0.08)]"
-          direction="zoom"
-          delay={300}
-        >
-          {/* Mockup Container */}
-          <div className="bg-slate-900 rounded-2xl p-5 mb-6 text-slate-200 font-sans shadow-inner border border-slate-800 relative overflow-hidden select-none min-h-[210px] flex flex-col justify-between">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none" />
-            
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">
-                {currentT.apiHeader}
-              </span>
-              <span className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {currentT.apiStatus}
-              </span>
-            </div>
-
-            {/* Key Input */}
-            <div className="mb-2">
-              <label className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                {currentT.apiTokenLabel}
-              </label>
-              <div className="relative bg-slate-950/80 rounded-lg p-2 border border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-300">
-                <span className="tracking-widest">wb_api_••••••••••••</span>
-                <Lock size={10} className="text-slate-500" />
-              </div>
-            </div>
-
-            {/* Scopes Section */}
-            <div className="bg-slate-950/40 rounded-xl p-2.5 border border-slate-800/60">
-              <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                {currentT.apiScopeTitle}
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[9px] font-semibold">
-                  <span className="text-slate-300">{currentT.apiScopeFeedbacks}</span>
-                  <span className="text-[8px] text-emerald-400 font-bold bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20">
-                    {currentT.apiScopeAllowed}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-[9px] font-semibold">
-                  <span className="text-slate-300">{currentT.apiScopeContent}</span>
-                  <span className="text-[8px] text-emerald-400 font-bold bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20">
-                    {currentT.apiScopeAllowed}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-[9px] font-semibold opacity-60">
-                  <span className="text-slate-500 flex items-center gap-1">
-                    <EyeOff size={9} className="text-rose-500/80" />
-                    {currentT.apiScopeFinance}
-                  </span>
-                  <span className="text-[8px] text-rose-400 font-bold bg-rose-500/10 px-1 py-0.2 rounded border border-rose-500/20">
-                    {currentT.apiScopeFinanceStatus}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <p className="text-slate-500 mt-1 text-xs">
+              {t("features.rulesDesc")}
+            </p>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(37,48,217,0.08)] text-[#2530D9]">
-              <ShieldCheck size={24} />
-            </div>
-            <h3 className="text-[1.2rem] font-bold text-[#0A192F] m-0">
-              {t("landing.feature3Title")}
+          {/* Визуал: Компактные теги логики */}
+          <div className="flex items-center gap-1.5 text-[10px] font-medium mt-2 overflow-hidden whitespace-nowrap">
+            <span className="px-2 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-md">
+              {t("features.mockRuleIf")}
+            </span>
+            <span className="text-slate-400">→</span>
+            <span className="px-2 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-md">
+              {t("features.mockRuleAnd")}
+            </span>
+            <span className="text-slate-400">→</span>
+            <span className="px-2 py-1 bg-indigo-600 text-white rounded-md transition-transform group-hover:scale-105">
+              {t("features.mockRuleThen")}
+            </span>
+          </div>
+        </div>
+
+        {/* КАРТОЧКА 4: Мгновенные уведомления (1 колонка, 1 строка) */}
+        <div className="group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between relative">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span className="text-indigo-500">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              </span>
+              {t("features.notifyTitle")}
             </h3>
+            <p className="text-slate-500 mt-1 text-xs">
+              {t("features.notifyDesc")}
+            </p>
           </div>
-          <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0 flex-1">
-            {t("landing.feature3Desc")}
-          </p>
-        </Reveal>
 
+          {/* Визуал: Всплывающий Пуш Telegram */}
+          <div className="bg-slate-900 text-white text-[11px] rounded-xl p-2.5 shadow-md flex items-center gap-2.5 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <div className="w-5 h-5 bg-sky-500 rounded-full flex items-center justify-center text-[10px] shrink-0 font-bold text-white">
+              TG
+            </div>
+            <div className="truncate">
+              <span className="font-semibold text-sky-400 block text-[9px] leading-tight">
+                {t("features.mockTgBot")}
+              </span>
+              <span className="text-slate-200">
+                {t("features.mockTgAlert")}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* КАРТОЧКА 5: Анализ тональности и инсайты (1 колонка на десктопе, 2 на планшете) */}
+        <div className="group md:col-span-2 lg:col-span-1 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between relative">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span className="text-amber-500">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </span>
+              {t("features.analyticsTitle")}
+            </h3>
+            <p className="text-slate-500 mt-1 text-xs">
+              {t("features.analyticsDesc")}
+            </p>
+          </div>
+
+          {/* Визуал: Бейджи плюсов и минусов */}
+          <div className="flex gap-2 mt-3 text-xs">
+            <div className="flex-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg p-2 text-center transition-transform duration-300 group-hover:-translate-y-0.5">
+              <span className="font-bold block text-xs">
+                {t("features.mockPros").split(" ").slice(1).join(" ")}
+              </span>
+              {t("features.mockProsText")}
+            </div>
+            <div className="flex-1 bg-rose-50 border border-rose-100 text-rose-700 rounded-lg p-2 text-center transition-transform duration-300 group-hover:-translate-y-0.5">
+              <span className="font-bold block text-xs">
+                {t("features.mockCons").split(" ").slice(1).join(" ")}
+              </span>
+              {t("features.mockConsText")}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
