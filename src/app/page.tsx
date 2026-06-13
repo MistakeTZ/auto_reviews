@@ -42,9 +42,22 @@ function LandingPageContent() {
 
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobileVideo, setIsMobileVideo] = useState(false);
 
   const revealDelay = (ms: number): CSSProperties =>
     ({ "--reveal-delay": `${ms}ms` }) as CSSProperties;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileVideo(window.innerWidth < 768);
+    };
+    const timeoutId = setTimeout(handleResize, 0);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -548,43 +561,28 @@ function LandingPageContent() {
             >
               {t("landing.howItWorks")}
             </h2>
-            <div className="why-choose-grid grid gap-7 text-left xl:grid-cols-3">
-              {[
-                {
-                  step: "01",
-                  title: t("landing.step1Title"),
-                  desc: t("landing.step1Desc"),
-                },
-                {
-                  step: "02",
-                  title: t("landing.step2Title"),
-                  desc: t("landing.step2Desc"),
-                },
-                {
-                  step: "03",
-                  title: t("landing.step3Title"),
-                  desc: t("landing.step3Desc"),
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="why-choose-card relative rounded-[20px] border border-[rgba(10,25,47,0.06)] bg-white p-9 text-left shadow-[0_1px_3px_rgba(10,25,47,0.04),0_8px_24px_rgba(10,25,47,0.05)] transition duration-[260ms] hover:-translate-y-1.5 hover:border-[rgba(37,48,217,0.12)] hover:shadow-[0_4px_12px_rgba(10,25,47,0.06),0_20px_48px_rgba(10,25,47,0.1)]"
-                  data-reveal="up"
-                  style={revealDelay(110 + idx * 90)}
-                >
-                  <div className="why-choose-card-header mb-5 flex items-center gap-3.5">
-                    <div className="why-choose-icon flex h-[52px] w-[52px] min-w-[52px] items-center justify-center rounded-full border border-[rgba(37,48,217,0.08)] bg-[linear-gradient(135deg,#eef1ff_0%,#f0f4f9_100%)] text-[1.25rem] font-extrabold text-[#2530D9]">
-                      {item.step}
-                    </div>
-                    <h3 className="m-0 text-[1.2rem] font-bold tracking-[-0.01em] text-[#0A192F]">
-                      {item.title}
-                    </h3>
-                  </div>
-                  <p className="m-0 text-[0.95rem] leading-[1.7] text-[#4A5568]">
-                    {item.desc}
-                  </p>
+            <div className="mx-auto w-full flex justify-center px-4" data-reveal="zoom" style={revealDelay(150)}>
+              {isMobileVideo ? (
+                <div className="relative aspect-[9/16] w-full max-w-[340px] overflow-hidden rounded-[24px] border border-black/5 bg-[#f3f4f6] shadow-[0_20px_40px_rgba(10,25,47,0.08)]">
+                  <iframe
+                    src="https://www.youtube.com/embed/prZ7yU8ioOI"
+                    title="How AutoReviews Works Mobile"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full border-0"
+                  ></iframe>
                 </div>
-              ))}
+              ) : (
+                <div className="relative aspect-video w-full max-w-[850px] overflow-hidden rounded-[24px] border border-black/5 bg-[#f3f4f6] shadow-[0_20px_40px_rgba(10,25,47,0.08)]">
+                  <iframe
+                    src="https://www.youtube.com/embed/z8gAzje9ho4"
+                    title="How AutoReviews Works Desktop"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full border-0"
+                  ></iframe>
+                </div>
+              )}
             </div>
           </div>
         </section>
