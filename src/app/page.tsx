@@ -9,12 +9,14 @@ import {
   Settings,
   Check,
   ExternalLink,
+  ChevronDown,
 } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import FlagSwitcher from "@/components/ui/FlagSwitcher";
 import ScenariosSection from "@/components/landing/ScenariosSection";
 import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { useEffect, useState, Suspense, type CSSProperties } from "react";
 import "./landing.css";
 
@@ -378,7 +380,7 @@ function LandingPageContent() {
             <span className="services-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.8px] text-[#1f366c]">
               {t("landing.capabilities")}
             </span>
-            <h2 className="services-title m-0 text-[clamp(1.7rem,2.8vw,2.5rem)] leading-[1.2] text-[#0A192F]">
+            <h2 className="services-title m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]">
               {t("landing.feature1Title")
                 ? t("landing.ourPowerfulFeatures")
                 : t("landing.features")}
@@ -435,7 +437,7 @@ function LandingPageContent() {
               {t("landing.reviews")}
             </span>
             <h2
-              className="about-us-headline m-0 text-[clamp(1.6rem,2.6vw,2.3rem)] leading-[1.2] text-[#0A192F]"
+              className="about-us-headline m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]"
               data-reveal="up"
               style={revealDelay(90)}
             >
@@ -479,12 +481,12 @@ function LandingPageContent() {
                 role="button"
                 tabIndex={0}
                 aria-expanded={expandedTestimonials.includes(idx)}
-                className="about-us-card group flex h-fit w-full flex-col self-start rounded-[20px] border border-[rgba(10,25,47,0.07)] bg-white p-10 text-left transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(10,25,47,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2530D9] focus-visible:ring-offset-2"
+                className="about-us-card group flex h-fit w-full flex-col self-start rounded-[20px] border border-[rgba(10,25,47,0.07)] bg-white p-10 text-left transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.01] hover:border-indigo-200 hover:shadow-[0_20px_40px_rgba(99,102,241,0.08),0_10px_20px_rgba(10,25,47,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2530D9] focus-visible:ring-offset-2 cursor-pointer"
                 data-reveal="up"
                 style={revealDelay(110 + idx * 85)}
               >
                 <div className="about-us-card-author flex items-center gap-3">
-                  <div className="about-us-card-avatar flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#2530D9] to-[#1f366c] font-bold text-white">
+                  <div className="about-us-card-avatar flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#2530D9] to-[#1f366c] font-bold text-white transition-transform duration-300 group-hover:scale-105">
                     {testimonial.author[0]}
                   </div>
                   <div className="about-us-card-info">
@@ -512,22 +514,48 @@ function LandingPageContent() {
                     </p>
                   </div>
                 </div>
-                <p
-                  className={`testimonial-text mt-6 text-[1rem] italic leading-[1.7] text-[#4A5568] ${expandedTestimonials.includes(idx) ? "is-expanded" : ""}`}
-                >
-                  {testimonial.text}
-                </p>
+                
+                {/* Smooth Height Animation for Expandable Testimonial Text */}
+                <div className="relative w-full mt-6">
+                  <motion.div
+                    layout
+                    initial={false}
+                    animate={{
+                      height: expandedTestimonials.includes(idx) ? "auto" : "82px"
+                    }}
+                    transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+                    className="overflow-hidden w-full"
+                  >
+                    <p className="text-[1rem] italic leading-[1.7] text-[#4A5568] m-0">
+                      {testimonial.text}
+                    </p>
+                  </motion.div>
+
+                  {/* Gradient Fade Overlay when Collapsed */}
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none transition-opacity duration-300 ${
+                      expandedTestimonials.includes(idx) ? "opacity-0" : "opacity-100"
+                    }`}
+                  />
+                </div>
+
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
                     toggleTestimonial(idx);
                   }}
-                  className="mt-5 inline-flex items-center text-[0.85rem] font-semibold text-[#2530D9] opacity-80 transition hover:opacity-100"
+                  className="mt-5 inline-flex items-center text-[0.85rem] font-semibold text-[#2530D9] opacity-80 transition hover:opacity-100 cursor-pointer"
                 >
                   {expandedTestimonials.includes(idx)
                     ? t("landing.hideMore")
                     : t("landing.readMore")}
+                  <ChevronDown
+                    size={16}
+                    className={`ml-1.5 transition-transform duration-300 ${
+                      expandedTestimonials.includes(idx) ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
               </div>
             ))}
@@ -555,13 +583,17 @@ function LandingPageContent() {
               {t("landing.process")}
             </span>
             <h2
-              className="why-choose-title mb-12 text-[clamp(1.6rem,2.6vw,2.3rem)] leading-[1.2] text-[#0A192F]"
+              className="why-choose-title mb-12 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]"
               data-reveal="up"
               style={revealDelay(100)}
             >
               {t("landing.howItWorks")}
             </h2>
-            <div className="mx-auto w-full flex justify-center px-4" data-reveal="zoom" style={revealDelay(150)}>
+            <div
+              className="mx-auto w-full flex justify-center px-4"
+              data-reveal="zoom"
+              style={revealDelay(150)}
+            >
               {isMobileVideo ? (
                 <div className="relative aspect-[9/16] w-full max-w-[340px] overflow-hidden rounded-[24px] border border-black/5 bg-[#f3f4f6] shadow-[0_20px_40px_rgba(10,25,47,0.08)]">
                   <iframe
@@ -587,6 +619,73 @@ function LandingPageContent() {
           </div>
         </section>
 
+        {/* Security Guarantees Section */}
+        <section className="security-guarantees-section bg-white px-4 py-16 lg:px-8 lg:py-20 border-b border-[#E2E8F0]">
+          <div className="mx-auto max-w-[1200px]">
+            <div className="text-center mb-14" data-reveal="up">
+              <span className="text-[0.78rem] font-bold uppercase tracking-[1.8px] text-indigo-600 mb-3 inline-block">
+                {t("landing.security")}
+              </span>
+              <h2 className="text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F] m-0 max-w-[30ch] mx-auto">
+                {t("landing.securityTitle")}
+              </h2>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-3">
+              {/* Карта 1: Ограничение прав */}
+              <div
+                className="flex flex-col p-8 rounded-[20px] bg-[#F7FAFC] border border-[rgba(10,25,47,0.05)] transition duration-200 hover:shadow-lg"
+                data-reveal="up"
+                style={revealDelay(100)}
+              >
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600">
+                  <ShieldCheck size={24} />
+                </div>
+                <h3 className="text-[1.15rem] font-bold text-[#0A192F] mb-3">
+                  {t("landing.securityFeature1Title")}
+                </h3>
+                <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0">
+                  {t("landing.securityFeature1Desc")}
+                </p>
+              </div>
+
+              {/* Карта 2: Фильтр стоп-слов */}
+              <div
+                className="flex flex-col p-8 rounded-[20px] bg-[#F7FAFC] border border-[rgba(10,25,47,0.05)] transition duration-200 hover:shadow-lg"
+                data-reveal="up"
+                style={revealDelay(200)}
+              >
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <Zap size={24} />
+                </div>
+                <h3 className="text-[1.15rem] font-bold text-[#0A192F] mb-3">
+                  {t("landing.securityFeature2Title")}
+                </h3>
+                <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0">
+                  {t("landing.securityFeature2Desc")}
+                </p>
+              </div>
+
+              {/* Карта 3: Анти-бот система */}
+              <div
+                className="flex flex-col p-8 rounded-[20px] bg-[#F7FAFC] border border-[rgba(10,25,47,0.05)] transition duration-200 hover:shadow-lg"
+                data-reveal="up"
+                style={revealDelay(300)}
+              >
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                  <Settings size={24} />
+                </div>
+                <h3 className="text-[1.15rem] font-bold text-[#0A192F] mb-3">
+                  {t("landing.securityFeature3Title")}
+                </h3>
+                <p className="text-[0.92rem] leading-[1.6] text-[#4A5568] m-0">
+                  {t("landing.securityFeature3Desc")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Pricing Section */}
         <section
           className="pricing-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
@@ -600,7 +699,7 @@ function LandingPageContent() {
               {t("landing.pricing")}
             </span>
             <h2
-              className="why-choose-title m-0 text-[clamp(1.6rem,2.6vw,2.3rem)] leading-[1.2] text-[#0A192F]"
+              className="why-choose-title m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]"
               data-reveal="up"
               style={revealDelay(100)}
             >
