@@ -87,46 +87,46 @@ export default function SecurityGuaranteesSection({
             delay={120}
           >
             {/* High-Fidelity WB Developer Portal Permissions Toggle Panel */}
-            <div className="bg-slate-900 rounded-2xl p-5 mb-6 text-slate-200 font-sans shadow-inner border border-slate-800 relative overflow-hidden select-none">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl" />
-              <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
-                <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">
+            <div className="bg-gradient-to-br from-[#f9fbff] to-[#f1f5ff] rounded-2xl p-5 mb-6 text-slate-700 font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] border border-[#dbe7ff] relative overflow-hidden select-none">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#6f86ff]/15 rounded-full blur-2xl" />
+              <div className="flex justify-between items-center border-b border-[#dbe7ff] pb-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 tracking-wider uppercase">
                   {language === "ru" ? "Доступы токена WB API" : "WB API Token Permissions"}
                 </span>
                 <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               </div>
               <div className="space-y-3.5">
                 {/* Content - Active */}
-                <div className="flex items-center justify-between bg-slate-800/40 rounded-xl p-3 border border-slate-800/50">
+                <div className="flex items-center justify-between bg-white rounded-xl p-3 border border-emerald-200 shadow-sm">
                   <div className="flex items-center gap-2.5">
                     <span className="text-emerald-400">●</span>
-                    <span className="text-sm font-bold text-slate-100">
+                    <span className="text-sm font-bold text-slate-800">
                       {language === "ru" ? "Контент" : "Content"}
                     </span>
                   </div>
-                  <div className="h-5 w-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-end px-0.5 shadow-sm">
+                  <div className="h-5 w-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-end px-0.5 shadow-sm">
                     <div className="h-4 w-4 rounded-full bg-emerald-400 shadow" />
                   </div>
                 </div>
 
                 {/* Reviews & Questions - Active */}
-                <div className="flex items-center justify-between bg-slate-800/40 rounded-xl p-3 border border-slate-800/50">
+                <div className="flex items-center justify-between bg-white rounded-xl p-3 border border-emerald-200 shadow-sm">
                   <div className="flex items-center gap-2.5">
                     <span className="text-emerald-400">●</span>
-                    <span className="text-sm font-bold text-slate-100">
+                    <span className="text-sm font-bold text-slate-800">
                       {language === "ru" ? "Вопросы и отзывы" : "Questions & Feedbacks"}
                     </span>
                   </div>
-                  <div className="h-5 w-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-end px-0.5 shadow-sm">
+                  <div className="h-5 w-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-end px-0.5 shadow-sm">
                     <div className="h-4 w-4 rounded-full bg-emerald-400 shadow" />
                   </div>
                 </div>
 
                 {/* Pricing & Discounts - Disabled & Locked */}
-                <div className="flex items-center justify-between opacity-50 bg-slate-800/20 rounded-xl p-3 border border-dashed border-slate-800">
+                <div className="flex items-center justify-between bg-white/70 rounded-xl p-3 border border-dashed border-slate-300">
                   <div className="flex items-center gap-2.5">
                     <Lock size={12} className="text-rose-500" />
-                    <span className="text-sm font-bold text-slate-400">
+                    <span className="text-sm font-bold text-slate-500">
                       {language === "ru" ? "Цены и скидки" : "Prices & Discounts"}
                     </span>
                   </div>
@@ -136,10 +136,10 @@ export default function SecurityGuaranteesSection({
                 </div>
 
                 {/* Finance - Disabled & Locked */}
-                <div className="flex items-center justify-between opacity-50 bg-slate-800/20 rounded-xl p-3 border border-dashed border-slate-800">
+                <div className="flex items-center justify-between bg-white/70 rounded-xl p-3 border border-dashed border-slate-300">
                   <div className="flex items-center gap-2.5">
                     <Lock size={12} className="text-rose-500" />
-                    <span className="text-sm font-bold text-slate-400">
+                    <span className="text-sm font-bold text-slate-500">
                       {language === "ru" ? "Финансы" : "Finance"}
                     </span>
                   </div>
@@ -182,8 +182,8 @@ export default function SecurityGuaranteesSection({
                   </span>
                 )}
                 {aiSandboxStep === 1 && (
-                  <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200/40 flex items-center gap-1">
-                    <AlertTriangle size={12} className="animate-bounce" />
+                  <span className="text-[10px] font-semibold text-rose-500 bg-rose-50/70 px-2.5 py-1 rounded-lg border border-rose-200/60 flex items-center gap-1">
+                    <AlertTriangle size={12} className="text-rose-500" />
                     {language === "ru" ? "ПЕРЕХВАТ КОНТАКТОВ" : "CONTACTS DETECTED"}
                   </span>
                 )}

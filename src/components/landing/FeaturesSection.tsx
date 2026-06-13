@@ -168,7 +168,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
         </div>
 
         {/* КАРТОЧКА 4: Мгновенные уведомления (1 колонка, 1 строка) */}
-        <div className="hidden lg:flex group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-col justify-between relative">
+        <div className="flex group bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-col justify-between relative">
           <div>
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-indigo-500">
@@ -210,7 +210,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
         </div>
 
         {/* КАРТОЧКА 5: Анализ тональности и инсайты (1 колонка на десктопе, 2 на планшете) */}
-        <div className="hidden lg:flex group md:col-span-2 lg:col-span-1 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-col justify-between relative">
+        <div className="flex group md:col-span-2 lg:col-span-1 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-col justify-between relative">
           <div>
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-amber-500">
@@ -236,7 +236,7 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
           </div>
 
           {/* Визуал: Бейджи плюсов и минусов */}
-          <div className="flex gap-2 mt-3 text-xs">
+          <div className="hidden lg:flex gap-2 mt-3 text-xs">
             <div className="flex-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg p-2 text-center transition-transform duration-300 group-hover:-translate-y-0.5">
               <span className="font-bold block text-xs">
                 {t("features.mockPros").split(" ").slice(1).join(" ")}
