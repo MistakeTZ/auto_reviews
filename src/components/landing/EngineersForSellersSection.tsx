@@ -21,13 +21,13 @@ export default function EngineersForSellersSection({
         <div className="flex-1 space-y-6 text-center lg:text-left">
           <Reveal
             as="span"
-            className="eyebrow inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
+            className="eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c] is-revealed"
           >
             {language === "ru" ? "НАДЕЖНОСТЬ И СТАБИЛЬНОСТЬ" : "RELIABILITY & STABILITY"}
           </Reveal>
           <Reveal
             as="h2"
-            className="m-0 mx-auto max-w-[20ch] text-[clamp(1.8rem,3.4vw,2.75rem)] font-black leading-[1.15] tracking-tight text-[#0A192F] lg:mx-0"
+            className="m-0 mb-4 mx-auto max-w-[20ch] text-[clamp(1.8rem,3.4vw,2.75rem)] font-black leading-[1.15] tracking-tight text-[#0A192F] lg:mx-0"
           >
             {t("landing.engineersSectionTitle")}
           </Reveal>
