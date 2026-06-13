@@ -75,7 +75,7 @@ export default function EngineersForSellersSection({
         </div>
 
         {/* Right column: Terminal matching the "Pro" pricing card style */}
-        <div className="w-full max-w-[540px] flex-1">
+        <div className="w-full max-w-[540px] flex-1 hidden lg:block">
           <Reveal
             className="rounded-[24px] border border-[rgba(10,25,47,0.08)] bg-white p-4 shadow-[0_20px_40px_rgba(10,25,47,0.1)]"
             direction="right"

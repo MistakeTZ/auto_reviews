@@ -1033,18 +1033,20 @@ export default function ReviewsPage() {
                     }
                   >
                     <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="relative mb-4 sm:flex sm:justify-between sm:items-start">
                         <div className="flex items-start">
-                          {/* Orange/emerald status dot matching recent actions */}
+                          {/* Orange/emerald status dot matching recent actions - Hidden on mobile */}
                           <div
-                            className={`w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
+                            className={`hidden sm:block w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
                           />
-                          <div className="flex items-start gap-3">
+                          
+                          {/* Image and Title column on mobile, row on desktop */}
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full">
                             {productPhoto && (
                               <img
                                 src={productPhoto}
                                 alt={productName}
-                                className="w-12 h-16 rounded-md object-cover border border-slate-200 bg-white shrink-0 mt-0.5"
+                                className="w-12 h-16 rounded-md object-cover border border-slate-200 bg-white shrink-0 sm:mt-0.5"
                                 loading="lazy"
                                 referrerPolicy="no-referrer"
                                 onError={(e) => {
@@ -1052,8 +1054,8 @@ export default function ReviewsPage() {
                                 }}
                               />
                             )}
-                            <div>
-                              <h3 className="font-bold text-lg text-slate-900">
+                            <div className="pr-[85px] sm:pr-0 mt-1 sm:mt-0">
+                              <h3 className="font-bold text-lg text-slate-900 leading-tight">
                                 {review.userName
                                   ? `${review.userName} • ${productName}`
                                   : productName}
@@ -1085,9 +1087,11 @@ export default function ReviewsPage() {
                             </div>
                           </div>
                         </div>
-                        <div>
+
+                        {/* Status Badge - Absolute on mobile, static on desktop */}
+                        <div className="absolute top-0 right-0 sm:static z-10">
                           <span
-                            className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getStatusBadgeClass(review.status, review.autoAnswerText)}`}
+                            className={`inline-block px-3 py-1.5 text-xs font-bold rounded-lg ${getStatusBadgeClass(review.status, review.autoAnswerText)}`}
                           >
                             {getStatusLabel(
                               review.status,

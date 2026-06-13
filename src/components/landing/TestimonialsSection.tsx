@@ -80,7 +80,7 @@ export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
           {t("landing.testimonialsTitle")}
         </Reveal>
       </div>
-      <div className="about-us-pillars mx-auto grid max-w-[1200px] items-start gap-[clamp(1.25rem,3vw,2rem)] xl:grid-cols-3">
+      <div className="about-us-pillars mx-auto grid max-w-[1200px] items-start gap-[clamp(1.25rem,3vw,2rem)] grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
         {testimonials.map((testimonial, idx) => {
           const hasLink =
             testimonial.link && testimonial.link.startsWith("http");
@@ -100,7 +100,7 @@ export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
               role="button"
               tabIndex={0}
               aria-expanded={expandedTestimonials.includes(idx)}
-              className="about-us-card group flex h-fit w-full flex-col self-start rounded-[20px] border border-[rgba(10,25,47,0.07)] bg-white p-10 text-left transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.01] hover:border-indigo-200 hover:shadow-[0_20px_40px_rgba(99,102,241,0.08),0_10px_20px_rgba(10,25,47,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2530D9] focus-visible:ring-offset-2 cursor-pointer"
+              className="about-us-card group flex h-fit w-full flex-col self-start rounded-[20px] border border-[rgba(10,25,47,0.07)] bg-white p-6 sm:p-8 lg:p-10 text-left transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.01] hover:border-indigo-200 hover:shadow-[0_20px_40px_rgba(99,102,241,0.08),0_10px_20px_rgba(10,25,47,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2530D9] focus-visible:ring-offset-2 cursor-pointer"
               direction="up"
               delay={110 + idx * 85}
             >
