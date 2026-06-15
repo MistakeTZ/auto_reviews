@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Inter, PT_Sans } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
+import IntercomProvider from "@/components/layout/IntercomProvider";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -57,7 +58,9 @@ export default function RootLayout({
             />
           </div>
         </noscript>
-        <AppShell>{children}</AppShell>
+        <IntercomProvider>
+          <AppShell>{children}</AppShell>
+        </IntercomProvider>
       </body>
     </html>
   );
