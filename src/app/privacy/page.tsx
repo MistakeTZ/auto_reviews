@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import LegalDocLayout from "@/components/ui/LegalDocLayout";
 import { useTranslation } from "@/hooks/useTranslation";
 
