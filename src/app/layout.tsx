@@ -3,7 +3,7 @@ import Script from "next/script";
 import { Inter, PT_Sans } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
-import IntercomProvider from "@/components/layout/IntercomProvider";
+// import IntercomProvider from "@/components/layout/IntercomProvider";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -20,9 +20,10 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://reanswer.ru"),
   title: {
     default: "reAnswer — AI автоответы на отзывы Wildberries",
-    template: "%s | reAnswer"
+    template: "%s | reAnswer",
   },
-  description: "Автоматизируйте ответы на отзывы Wildberries с помощью ИИ. Повышайте рейтинг продавца, экономьте время и увеличивайте продажи с помощью умных автоответов на основе правил.",
+  description:
+    "Автоматизируйте ответы на отзывы Wildberries с помощью ИИ. Повышайте рейтинг продавца, экономьте время и увеличивайте продажи с помощью умных автоответов на основе правил.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -36,7 +37,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${ptSans.variable} ${inter.className} bg-slate-50 text-slate-900 flex min-h-screen antialiased overflow-x-hidden`}>
+      <body
+        className={`${inter.variable} ${ptSans.variable} ${inter.className} bg-slate-50 text-slate-900 flex min-h-screen antialiased overflow-x-hidden`}
+      >
         <Script id="yandex-metrika" strategy="afterInteractive">
           {`
             (function(m,e,t,r,i,k,a){
@@ -58,9 +61,9 @@ export default function RootLayout({
             />
           </div>
         </noscript>
-        <IntercomProvider>
-          <AppShell>{children}</AppShell>
-        </IntercomProvider>
+        <AppShell>{children}</AppShell>
+        {/* <IntercomProvider>
+        </IntercomProvider> */}
       </body>
     </html>
   );

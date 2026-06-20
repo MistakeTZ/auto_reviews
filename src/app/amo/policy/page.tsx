@@ -17,7 +17,7 @@ export default function AmoPolicyPage() {
         <p className="mb-4">
           Настоящая Политика конфиденциальности (далее — «Политика») определяет
           порядок обработки, транзита и защиты информации, которую
-          интеграционный виджет reAnswer для amoCRM (далее — «Виджет») получает
+          интеграционный виджет WB чат для amoCRM (далее — «Виджет») получает
           в процессе его использования Пользователем (далее — «Пользователь» или
           «Вы»).
         </p>
@@ -32,9 +32,7 @@ export default function AmoPolicyPage() {
           <strong>Важное примечание:</strong> Виджет не является самостоятельным
           веб-сайтом, не осуществляет регистрацию Пользователей по личным
           учетным данным, не использует файлы cookie и не собирает персональные
-          контактные данные Пользователя (такие как личные номера телефонов,
-          персональные адреса электронной почты, ID аккаунтов Telegram,
-          IP-адреса или технические метрики браузера).
+          контактные данные Пользователя.
         </p>
       </section>
 
@@ -83,28 +81,28 @@ export default function AmoPolicyPage() {
           <li>
             <strong>Технические данные аккаунта amoCRM:</strong> Идентификатор
             аккаунта (amo_account_id), субдомен вашей CRM-системы, а также
-            авторизационные токены (access_token, refresh_token) для легитимного
-            взаимодействия с вашим аккаунтом через API[cite: 1].
+            разрешения аккаунта для легитимного
+            взаимодействия с вашим аккаунтом через API.
           </li>
           <li>
             <strong>Интеграционные ключи маркетплейса:</strong> API-токен
             Wildberries, предоставленный Вами в настройках Виджета (используется
             строго для авторизации запросов к API маркетплейса с целью получения
-            диалогов и отправки ответов)[cite: 1].
+            диалогов и отправки ответов).
           </li>
           <li>
             <strong>Служебные и маршрутные идентификаторы:</strong> Технические
             ID чатов Wildberries, ID сообщений, ID менеджеров amoCRM (для
             назначения ответственных в CRM) и уникальные идентификаторы заявок
-            на возврат (rid/claim_id)[cite: 1].
+            на возврат (rid/claim_id).
           </li>
           <li>
             <strong>Данные потока сообщений и вложений:</strong> Текстовое
             содержимое сообщений покупателей, имена клиентов на маркетплейсе
-            (clientName) и медиафайлы/изображения[cite: 1]. Данные файлы
+            (clientName) и медиафайлы/изображения. Данные файлы
             скачиваются Виджетом во время синхронизации и хранятся временно
             (транзитно) до момента их успешной отправки в интерфейс amoCRM Chats
-            API, после чего удаляются из очереди обработки[cite: 1].
+            API, после чего удаляются из очереди обработки.
           </li>
         </ul>
       </section>
@@ -121,22 +119,22 @@ export default function AmoPolicyPage() {
           <li>
             Обеспечение базовой работоспособности интеграции: трансляция
             входящих сообщений от покупателей Wildberries в личный кабинет
-            amoCRM в виде чатов[cite: 1].
+            amoCRM в виде чатов.
           </li>
           <li>
             Предоставление возможности отправки исходящих ответов от лица
             продавца обратно на маркетплейс Wildberries напрямую из карточки
-            сделки amoCRM[cite: 1].
+            сделки amoCRM.
           </li>
           <li>
             Автоматическое создание и обновление карточек сделок (лидов) в
             amoCRM, включая автоматическое заполнение системных полей («Ссылка
-            на чат WB», «Название товара WB»)[cite: 1].
+            на чат WB», «Название товара WB»).
           </li>
           <li>
             Синхронизация рекламаций и импорт заявок на возврат от покупателей
             Wildberries в CRM-систему Пользователя (при активации
-            соответствующей опции)[cite: 1].
+            соответствующей опции).
           </li>
         </ul>
       </section>
@@ -149,13 +147,13 @@ export default function AmoPolicyPage() {
           Безопасность ваших интеграционных ключей является критически важной.
           API-токены Wildberries, а также OAuth-токены доступа к amoCRM
           шифруются с использованием современных криптографических алгоритмов
-          перед записью в базу данных[cite: 1]. Доступ к ключам дешифрования на
+          перед записью в базу данных. Доступ к ключам дешифрования на
           сервере строго изолирован и ограничен.
         </p>
         <p className="mb-4">
           Передача любых данных между серверами Wildberries, amoCRM и серверной
           частью Виджета осуществляется исключительно по защищенным каналам
-          связи с использованием протокола шифрования SSL/TLS[cite: 1].
+          связи с использованием протокола шифрования SSL/TLS.
         </p>
       </section>
 
@@ -185,10 +183,10 @@ export default function AmoPolicyPage() {
         <ul className="list-disc pl-6 mb-4 space-y-2">
           <li>
             Удалив API-токен Wildberries непосредственно из интерфейса
-            расширенных настроек Виджета внутри amoCRM[cite: 1].
+            расширенных настроек Виджета внутри amoCRM.
           </li>
           <li>
-            Удалив (деинсталлировав) сам Виджет reAnswer из вашего аккаунта
+            Удалив (деинсталлировав) сам Виджет WB чат из вашего аккаунта
             amoCRM.
           </li>
           <li>
@@ -229,7 +227,7 @@ export default function AmoPolicyPage() {
         <p className="mb-4">
           This Privacy Policy (hereinafter referred to as the "Policy") governs
           the processing, transit, and protection of information that the
-          reAnswer integration widget for amoCRM (hereinafter referred to as the
+          WB Chat integration widget for amoCRM (hereinafter referred to as the
           "Widget") receives during its use by the User (hereinafter referred to
           as the "User" or "You").
         </p>
@@ -244,8 +242,7 @@ export default function AmoPolicyPage() {
           <strong>Important Note:</strong> The Widget is not a standalone
           website, does not register Users using personal credentials, does not
           use cookies, and does not collect personal contact information of the
-          User (such as personal phone numbers, personal email addresses,
-          Telegram Account IDs, IP addresses, or browser technical metrics).
+          User.
         </p>
       </section>
 
@@ -293,30 +290,29 @@ export default function AmoPolicyPage() {
         <ul className="list-disc pl-6 mb-4 space-y-2">
           <li>
             <strong>Technical amoCRM Account Data:</strong> Account ID
-            (amo_account_id), your CRM system subdomain, and OAuth authorization
-            tokens (access_token, refresh_token) for secure interaction with
-            your account via API[cite: 1].
+            (amo_account_id), your CRM system subdomain, and account scope for secure interaction with
+            your account via API.
           </li>
           <li>
             <strong>Marketplace Integration Keys:</strong> Wildberries API token
             provided by you in the Widget settings (used strictly to authorize
             requests to the marketplace API to fetch dialogs and send
-            replies)[cite: 1].
+            replies).
           </li>
           <li>
             <strong>Service and Routing Identifiers:</strong> Technical
             Wildberries chat IDs, message IDs, amoCRM manager IDs (to assign
             responsible agents in CRM), and unique identifiers for return claims
-            (rid/claim_id)[cite: 1].
+            (rid/claim_id).
           </li>
           <li>
             <strong>Message Flow and Attachment Data:</strong> Text content of
             buyer messages, customer names on the marketplace (clientName), and
-            media files/images[cite: 1]. These files are downloaded by the
+            media files/images. These files are downloaded by the
             Widget during synchronization and stored temporarily (in transit)
             until they are successfully uploaded to the amoCRM Chats API
             interface, after which they are deleted from the processing
-            queue[cite: 1].
+            queue.
           </li>
         </ul>
       </section>
@@ -333,22 +329,22 @@ export default function AmoPolicyPage() {
           <li>
             Ensuring core integration functionality: transmitting incoming
             messages from Wildberries buyers into your amoCRM account as
-            chats[cite: 1].
+            chats.
           </li>
           <li>
             Enabling the ability to send outgoing responses from the seller back
             to the Wildberries marketplace directly from the amoCRM lead
-            card[cite: 1].
+            card.
           </li>
           <li>
             Automatically creating and updating lead cards in amoCRM, including
             automatically filling custom fields ("WB Chat Link", "WB Product
-            Name")[cite: 1].
+            Name").
           </li>
           <li>
             Synchronizing return claims and importing return requests from
             Wildberries buyers into the User's CRM system (when the option is
-            activated)[cite: 1].
+            activated).
           </li>
         </ul>
       </section>
@@ -361,13 +357,13 @@ export default function AmoPolicyPage() {
           The security of your integration keys is critical to us. Wildberries
           API tokens, as well as amoCRM access OAuth tokens, are encrypted using
           modern cryptographic algorithms before being saved to the
-          database[cite: 1]. Access to decryption keys on the server is strictly
+          database. Access to decryption keys on the server is strictly
           isolated and restricted.
         </p>
         <p className="mb-4">
           Transmission of any data between Wildberries servers, amoCRM, and the
           Widget backend is carried out exclusively via secure communication
-          channels using SSL/TLS encryption protocols[cite: 1].
+          channels using SSL/TLS encryption protocols.
         </p>
       </section>
 
@@ -379,7 +375,7 @@ export default function AmoPolicyPage() {
           We do not transfer integration tokens, access keys, or chat content to
           third parties. Information exchange occurs strictly between the two
           paired information systems — the Wildberries API and your amoCRM
-          platform[cite: 1]. The only exception is official requests from
+          platform. The only exception is official requests from
           government authorities in cases explicitly provided by the legislation
           of the Russian Federation.
         </p>
@@ -396,10 +392,10 @@ export default function AmoPolicyPage() {
         </p>
         <ul className="list-disc pl-6 mb-4 space-y-2">
           <li>
-            By deleting the Wildberries API token directly from the Widget's
-            advanced settings interface within amoCRM[cite: 1].
+            By deleting the Wildberries API token directly from the WB Chat Widget's
+            advanced settings interface within amoCRM.
           </li>
-          <li>By uninstalling the reAnswer Widget from your amoCRM account.</li>
+          <li>By uninstalling the WB Chat Widget from your amoCRM account.</li>
           <li>
             By sending an official request for full consent revocation and
             database cleanup by email:{" "}
@@ -434,13 +430,13 @@ export default function AmoPolicyPage() {
       title={isRu ? "Политика конфиденциальности" : "Privacy Policy"}
       subtitle={
         isRu
-          ? "Правила обработки и защиты технологической информации в виджете reAnswer"
-          : "Rules of processing and protecting technological information in the reAnswer widget"
+          ? "Правила обработки и защиты технологической информации в виджете WB чат"
+          : "Rules of processing and protecting technological information in the WB Chat widget"
       }
       lastUpdated={
         isRu
-          ? "Последнее обновление: 28 мая 2026 г."
-          : "Last updated: May 28, 2026"
+          ? "Последнее обновление: 20 июня 2026 г."
+          : "Last updated: June 20, 2026"
       }
     >
       {isRu ? ruContent : enContent}

@@ -5,9 +5,9 @@ import Sidebar from "@/components/layout/Sidebar";
 import CookieBanner from "@/components/layout/CookieBanner";
 import AppFooter from "@/components/layout/AppFooter";
 
-const NO_DASHBOARD_PATHS = new Set(["/privacy", "/consent", "/legal"]);
-const DARK_FOOTER_PATHS = new Set(["/", "/privacy", "/consent", "/legal"]);
-const COMPACT_FOOTER_PATHS = new Set(["/privacy", "/consent", "/legal"]);
+const NO_DASHBOARD_PATHS = new Set(["/privacy", "/consent", "/legal", "/amo/policy"]);
+const DARK_FOOTER_PATHS = new Set(["/", "/privacy", "/consent", "/legal", "/amo/policy"]);
+const COMPACT_FOOTER_PATHS = new Set(["/privacy", "/consent", "/legal", "/amo/policy"]);
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
