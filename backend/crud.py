@@ -596,7 +596,11 @@ def get_spam_rules(db: Session, user_id: int):
 
 
 def get_spam_rule(db: Session, rule_id: int, user_id: int):
-    return db.query(models.SpamRule).filter(models.SpamRule.id == rule_id, models.SpamRule.user_id == user_id).first()
+    return (
+        db.query(models.SpamRule)
+        .filter(models.SpamRule.id == rule_id, models.SpamRule.user_id == user_id)
+        .first()
+    )
 
 
 def create_spam_rule(db: Session, user_id: int, rule: schemas.SpamRuleCreate):
@@ -614,17 +618,21 @@ def create_spam_rule(db: Session, user_id: int, rule: schemas.SpamRuleCreate):
     db.flush()
 
     for tid in rule.template_ids:
-        t = db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.id == tid, models.SpamMessageTemplate.user_id == user_id).first()
+        t = (
+            db.query(models.SpamMessageTemplate)
+            .filter(
+                models.SpamMessageTemplate.id == tid,
+                models.SpamMessageTemplate.user_id == user_id,
+            )
+            .first()
+        )
         if t:
             jt = models.SpamRuleTemplate(rule_id=db_rule.id, template_id=t.id)
             db.add(jt)
 
     for text in rule.specific_templates:
         st = models.SpamMessageTemplate(
-            user_id=user_id,
-            rule_id=db_rule.id,
-            text=text,
-            is_global=False
+            user_id=user_id, rule_id=db_rule.id, text=text, is_global=False
         )
         db.add(st)
         db.flush()
@@ -636,7 +644,9 @@ def create_spam_rule(db: Session, user_id: int, rule: schemas.SpamRuleCreate):
     return db_rule
 
 
-def update_spam_rule(db: Session, rule_id: int, user_id: int, rule_in: schemas.SpamRuleUpdate):
+def update_spam_rule(
+    db: Session, rule_id: int, user_id: int, rule_in: schemas.SpamRuleUpdate
+):
     db_rule = get_spam_rule(db, rule_id, user_id)
     if not db_rule:
         return None
@@ -646,21 +656,30 @@ def update_spam_rule(db: Session, rule_id: int, user_id: int, rule_in: schemas.S
             setattr(db_rule, field, val)
 
     if rule_in.template_ids is not None:
-        db.query(models.SpamRuleTemplate).filter(models.SpamRuleTemplate.rule_id == rule_id).delete()
+        db.query(models.SpamRuleTemplate).filter(
+            models.SpamRuleTemplate.rule_id == rule_id
+        ).delete()
         for tid in rule_in.template_ids:
-            t = db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.id == tid, models.SpamMessageTemplate.user_id == user_id).first()
+            t = (
+                db.query(models.SpamMessageTemplate)
+                .filter(
+                    models.SpamMessageTemplate.id == tid,
+                    models.SpamMessageTemplate.user_id == user_id,
+                )
+                .first()
+            )
             if t:
                 jt = models.SpamRuleTemplate(rule_id=db_rule.id, template_id=t.id)
                 db.add(jt)
 
     if rule_in.specific_templates is not None:
-        db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.rule_id == rule_id, models.SpamMessageTemplate.is_global == False).delete()
+        db.query(models.SpamMessageTemplate).filter(
+            models.SpamMessageTemplate.rule_id == rule_id,
+            models.SpamMessageTemplate.is_global == False,
+        ).delete()
         for text in rule_in.specific_templates:
             st = models.SpamMessageTemplate(
-                user_id=user_id,
-                rule_id=db_rule.id,
-                text=text,
-                is_global=False
+                user_id=user_id, rule_id=db_rule.id, text=text, is_global=False
             )
             db.add(st)
             db.flush()
@@ -675,9 +694,16 @@ def update_spam_rule(db: Session, rule_id: int, user_id: int, rule_in: schemas.S
 def delete_spam_rule(db: Session, rule_id: int, user_id: int):
     db_rule = get_spam_rule(db, rule_id, user_id)
     if db_rule:
-        db.query(models.SpamRuleTemplate).filter(models.SpamRuleTemplate.rule_id == rule_id).delete()
-        db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.rule_id == rule_id, models.SpamMessageTemplate.is_global == False).delete()
-        db.query(models.SpamSentMessage).filter(models.SpamSentMessage.rule_id == rule_id).delete()
+        db.query(models.SpamRuleTemplate).filter(
+            models.SpamRuleTemplate.rule_id == rule_id
+        ).delete()
+        db.query(models.SpamMessageTemplate).filter(
+            models.SpamMessageTemplate.rule_id == rule_id,
+            models.SpamMessageTemplate.is_global == False,
+        ).delete()
+        db.query(models.SpamSentMessage).filter(
+            models.SpamSentMessage.rule_id == rule_id
+        ).delete()
         db.delete(db_rule)
         db.commit()
         return True
@@ -685,10 +711,19 @@ def delete_spam_rule(db: Session, rule_id: int, user_id: int):
 
 
 def get_spam_templates(db: Session, user_id: int):
-    return db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.user_id == user_id, models.SpamMessageTemplate.is_global == True).all()
+    return (
+        db.query(models.SpamMessageTemplate)
+        .filter(
+            models.SpamMessageTemplate.user_id == user_id,
+            models.SpamMessageTemplate.is_global == True,
+        )
+        .all()
+    )
 
 
-def create_spam_template(db: Session, user_id: int, template: schemas.SpamMessageTemplateCreate):
+def create_spam_template(
+    db: Session, user_id: int, template: schemas.SpamMessageTemplateCreate
+):
     db_template = models.SpamMessageTemplate(
         user_id=user_id,
         text=template.text,
@@ -702,8 +737,20 @@ def create_spam_template(db: Session, user_id: int, template: schemas.SpamMessag
     return db_template
 
 
-def update_spam_template(db: Session, template_id: int, user_id: int, template_in: schemas.SpamMessageTemplateUpdate):
-    db_template = db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.id == template_id, models.SpamMessageTemplate.user_id == user_id).first()
+def update_spam_template(
+    db: Session,
+    template_id: int,
+    user_id: int,
+    template_in: schemas.SpamMessageTemplateUpdate,
+):
+    db_template = (
+        db.query(models.SpamMessageTemplate)
+        .filter(
+            models.SpamMessageTemplate.id == template_id,
+            models.SpamMessageTemplate.user_id == user_id,
+        )
+        .first()
+    )
     if not db_template:
         return None
     for field, val in template_in.model_dump(exclude_unset=True).items():
@@ -714,9 +761,18 @@ def update_spam_template(db: Session, template_id: int, user_id: int, template_i
 
 
 def delete_spam_template(db: Session, template_id: int, user_id: int):
-    db_template = db.query(models.SpamMessageTemplate).filter(models.SpamMessageTemplate.id == template_id, models.SpamMessageTemplate.user_id == user_id).first()
+    db_template = (
+        db.query(models.SpamMessageTemplate)
+        .filter(
+            models.SpamMessageTemplate.id == template_id,
+            models.SpamMessageTemplate.user_id == user_id,
+        )
+        .first()
+    )
     if db_template:
-        db.query(models.SpamRuleTemplate).filter(models.SpamRuleTemplate.template_id == template_id).delete()
+        db.query(models.SpamRuleTemplate).filter(
+            models.SpamRuleTemplate.template_id == template_id
+        ).delete()
         db.delete(db_template)
         db.commit()
         return True
@@ -734,7 +790,9 @@ def get_spam_sent_messages(db: Session, user_id: int, limit: int = 50):
     )
 
 
-def log_spam_sent_message(db: Session, rule_id: int, text: str, chat_id: str, add_time: int):
+def log_spam_sent_message(
+    db: Session, rule_id: int, text: str, chat_id: str, add_time: int
+):
     msg = models.SpamSentMessage(
         rule_id=rule_id,
         text=text,
@@ -747,28 +805,36 @@ def log_spam_sent_message(db: Session, rule_id: int, text: str, chat_id: str, ad
 
 
 def get_spam_stats(db: Session, user_id: int):
-    total_rules = db.query(models.SpamRule).filter(models.SpamRule.user_id == user_id).count()
-    active_rules = db.query(models.SpamRule).filter(models.SpamRule.user_id == user_id, models.SpamRule.is_active == True).count()
-    
+    total_rules = (
+        db.query(models.SpamRule).filter(models.SpamRule.user_id == user_id).count()
+    )
+    active_rules = (
+        db.query(models.SpamRule)
+        .filter(models.SpamRule.user_id == user_id, models.SpamRule.is_active == True)
+        .count()
+    )
+
     total_sent = (
         db.query(models.SpamSentMessage)
         .join(models.SpamRule)
         .filter(models.SpamRule.user_id == user_id)
         .count()
     )
-    
+
     day_ago = datetime.now(timezone.utc) - timedelta(days=1)
     sent_last_24h = (
         db.query(models.SpamSentMessage)
         .join(models.SpamRule)
-        .filter(models.SpamRule.user_id == user_id, models.SpamSentMessage.sent_at >= day_ago)
+        .filter(
+            models.SpamRule.user_id == user_id,
+            models.SpamSentMessage.sent_at >= day_ago,
+        )
         .count()
     )
-    
+
     return {
         "total_rules": total_rules,
         "active_rules": active_rules,
         "total_sent": total_sent,
         "sent_last_24h": sent_last_24h,
     }
-

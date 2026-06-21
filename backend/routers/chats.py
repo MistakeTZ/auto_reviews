@@ -46,7 +46,7 @@ async def validate_chat_id(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Wildberries chat API token is not configured in settings.",
         )
-    
+
     chats = await fetch_wb_chats(token)
     for chat in chats:
         if chat.get("chatID") == chat_id.strip():
@@ -54,7 +54,7 @@ async def validate_chat_id(
                 "found": True,
                 "clientName": chat.get("clientName") or "Buyer",
             }
-            
+
     return {"found": False, "clientName": "chat not found"}
 
 
@@ -147,7 +147,9 @@ def update_spam_template(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    db_template = crud.update_spam_template(db, template_id, current_user.id, template_in)
+    db_template = crud.update_spam_template(
+        db, template_id, current_user.id, template_in
+    )
     if not db_template:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Template not found."
@@ -181,7 +183,7 @@ def update_spam_settings(
         current_user.notify_answers_in_chats = settings_in.notify_answers_in_chats
     if settings_in.notify_all_messages is not None:
         current_user.notify_all_messages = settings_in.notify_all_messages
-        
+
     db.add(current_user)
     db.commit()
     db.refresh(current_user)

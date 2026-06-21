@@ -594,7 +594,9 @@ async def send_password_reset_email(email: str, reset_link: str) -> None:
     await _send_email(email, body, subject=subject)
 
 
-async def send_custom_notification(db: Session, user_id: int, text: str, subject: str = "Уведомление reAnswer") -> None:
+async def send_custom_notification(
+    db: Session, user_id: int, text: str, subject: str = "Уведомление reAnswer"
+) -> None:
     methods = (
         db.query(models.NotificationMethod)
         .filter(

@@ -60,18 +60,33 @@ interface SpamStats {
 }
 
 export default function SpamPage() {
-  const { jwtToken, hasWbChatApiToken, notifyAnswersInChats, notifyAllMessages, fetchMe } = useAppStore();
+  const {
+    jwtToken,
+    hasWbChatApiToken,
+    notifyAnswersInChats,
+    notifyAllMessages,
+    fetchMe,
+  } = useAppStore();
   const { t } = useTranslation();
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "rules" | "settings" | "tariffs">("dashboard");
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "rules" | "settings" | "tariffs"
+  >("dashboard");
 
   // State
-  const [stats, setStats] = useState<SpamStats>({ total_rules: 0, active_rules: 0, total_sent: 0, sent_last_24h: 0 });
+  const [stats, setStats] = useState<SpamStats>({
+    total_rules: 0,
+    active_rules: 0,
+    total_sent: 0,
+    sent_last_24h: 0,
+  });
   const [lastSent, setLastSent] = useState<SpamSentMessage[]>([]);
   const [rules, setRules] = useState<SpamRule[]>([]);
   const [globalTemplates, setGlobalTemplates] = useState<SpamTemplate[]>([]);
-  const [sentHistory, setSentHistory] = useState<Record<number, SpamSentMessage[]>>({});
+  const [sentHistory, setSentHistory] = useState<
+    Record<number, SpamSentMessage[]>
+  >({});
 
   // Loading indicators
   const [loadingStats, setLoadingStats] = useState(false);
@@ -98,13 +113,17 @@ export default function SpamPage() {
   const [clientName, setClientName] = useState("");
   const [validatingChat, setValidatingChat] = useState(false);
   const [chatValidationMsg, setChatValidationMsg] = useState("");
-  const [frequencyType, setFrequencyType] = useState<"four_times" | "three_times" | "twice" | "once" | "custom_days">("four_times");
+  const [frequencyType, setFrequencyType] = useState<
+    "four_times" | "three_times" | "twice" | "once" | "custom_days"
+  >("four_times");
   const [intervalDays, setIntervalDays] = useState(1);
   const [customSendHours, setCustomSendHours] = useState("9,13,17,21");
   const [specificHour, setSpecificHour] = useState(9);
   const [spamEndlessly, setSpamEndlessly] = useState(false);
   const [ruleActive, setRuleActive] = useState(true);
-  const [selectedGlobalTplIds, setSelectedGlobalTplIds] = useState<number[]>([]);
+  const [selectedGlobalTplIds, setSelectedGlobalTplIds] = useState<number[]>(
+    [],
+  );
   const [ruleSpecificTexts, setRuleSpecificTexts] = useState<string[]>([]);
   const [newSpecificText, setNewSpecificText] = useState("");
   const [savingRule, setSavingRule] = useState(false);
@@ -168,9 +187,12 @@ export default function SpamPage() {
   const fetchRuleHistory = async (ruleId: number) => {
     if (!jwtToken) return;
     try {
-      const res = await fetch(`${API_URL}/chats/sent-messages?rule_id=${ruleId}`, {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      });
+      const res = await fetch(
+        `${API_URL}/chats/sent-messages?rule_id=${ruleId}`,
+        {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        },
+      );
       if (res.ok) {
         const data = await res.json();
         setSentHistory((prev) => ({ ...prev, [ruleId]: data }));
@@ -191,7 +213,15 @@ export default function SpamPage() {
         loadTemplates();
       }, 0);
     }
-  }, [jwtToken, notifyAnswersInChats, notifyAllMessages, fetchMe, loadDashboardData, loadRules, loadTemplates]);
+  }, [
+    jwtToken,
+    notifyAnswersInChats,
+    notifyAllMessages,
+    fetchMe,
+    loadDashboardData,
+    loadRules,
+    loadTemplates,
+  ]);
 
   // Chat ID Dynamic Validation
   useEffect(() => {
@@ -208,7 +238,7 @@ export default function SpamPage() {
       try {
         const res = await fetch(
           `${API_URL}/chats/validate-id?chat_id=${encodeURIComponent(chatId.trim())}`,
-          { headers: { Authorization: `Bearer ${jwtToken}` } }
+          { headers: { Authorization: `Bearer ${jwtToken}` } },
         );
         if (res.ok) {
           const data = await res.json();
@@ -472,7 +502,9 @@ export default function SpamPage() {
     const globals = rule.templates.filter((t) => t.is_global).map((t) => t.id);
     setSelectedGlobalTplIds(globals);
 
-    const specifics = rule.templates.filter((t) => !t.is_global).map((t) => t.text);
+    const specifics = rule.templates
+      .filter((t) => !t.is_global)
+      .map((t) => t.text);
     setRuleSpecificTexts(specifics);
 
     setShowRuleForm(true);
@@ -480,7 +512,7 @@ export default function SpamPage() {
 
   const toggleGlobalTemplateSelection = (id: number) => {
     setSelectedGlobalTplIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -492,9 +524,7 @@ export default function SpamPage() {
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
             {t("spam.title")}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            {t("spam.timeRange")}
-          </p>
+          <p className="text-slate-500 text-sm mt-1">{t("spam.timeRange")}</p>
         </div>
       </div>
 
@@ -561,7 +591,9 @@ export default function SpamPage() {
                     {t("spam.activeRules")}
                   </p>
                   <p className="text-2xl font-black text-slate-800 mt-1">
-                    {loadingStats ? "..." : `${stats.active_rules} / ${stats.total_rules}`}
+                    {loadingStats
+                      ? "..."
+                      : `${stats.active_rules} / ${stats.total_rules}`}
                   </p>
                 </div>
               </CardContent>
@@ -641,8 +673,12 @@ export default function SpamPage() {
                     <tbody className="divide-y divide-slate-100">
                       {lastSent.map((msg) => (
                         <tr key={msg.id} className="hover:bg-slate-50/50">
-                          <td className="px-6 py-4 font-mono text-xs">{msg.chat_id}</td>
-                          <td className="px-6 py-4 font-medium text-slate-800">{msg.text}</td>
+                          <td className="px-6 py-4 font-mono text-xs">
+                            {msg.chat_id}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-slate-800">
+                            {msg.text}
+                          </td>
                           <td className="px-6 py-4 text-slate-400">
                             {new Date(msg.sent_at).toLocaleString()}
                           </td>
@@ -660,7 +696,9 @@ export default function SpamPage() {
       {activeTab === "rules" && (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-800">{t("spam.rulesTab")}</h2>
+            <h2 className="text-xl font-bold text-slate-800">
+              {t("spam.rulesTab")}
+            </h2>
             {!showRuleForm && (
               <Button
                 onClick={() => {
@@ -706,12 +744,17 @@ export default function SpamPage() {
                         />
                         {validatingChat && (
                           <div className="absolute right-3 top-2.5">
-                            <Loader2 size={16} className="animate-spin text-slate-400" />
+                            <Loader2
+                              size={16}
+                              className="animate-spin text-slate-400"
+                            />
                           </div>
                         )}
                       </div>
                       {chatValidationMsg && (
-                        <p className={`text-xs mt-1 font-medium ${clientName ? "text-green-600" : "text-amber-600"}`}>
+                        <p
+                          className={`text-xs mt-1 font-medium ${clientName ? "text-green-600" : "text-amber-600"}`}
+                        >
                           {chatValidationMsg}
                         </p>
                       )}
@@ -741,14 +784,29 @@ export default function SpamPage() {
                       </label>
                       <select
                         value={frequencyType}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFrequencyType(e.target.value as "four_times" | "three_times" | "twice" | "once" | "custom_days")}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                          setFrequencyType(
+                            e.target.value as
+                              | "four_times"
+                              | "three_times"
+                              | "twice"
+                              | "once"
+                              | "custom_days",
+                          )
+                        }
                         className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                       >
-                        <option value="four_times">{t("spam.fourTimesDaily")}</option>
-                        <option value="three_times">{t("spam.threeTimesDaily")}</option>
+                        <option value="four_times">
+                          {t("spam.fourTimesDaily")}
+                        </option>
+                        <option value="three_times">
+                          {t("spam.threeTimesDaily")}
+                        </option>
                         <option value="twice">{t("spam.twiceDaily")}</option>
                         <option value="once">{t("spam.onceDaily")}</option>
-                        <option value="custom_days">{t("spam.everyNDays")}</option>
+                        <option value="custom_days">
+                          {t("spam.everyNDays")}
+                        </option>
                       </select>
                     </div>
 
@@ -763,7 +821,11 @@ export default function SpamPage() {
                             type="number"
                             min={1}
                             value={intervalDays}
-                            onChange={(e) => setIntervalDays(Math.max(1, parseInt(e.target.value) || 1))}
+                            onChange={(e) =>
+                              setIntervalDays(
+                                Math.max(1, parseInt(e.target.value) || 1),
+                              )
+                            }
                             className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                           />
                         </div>
@@ -776,7 +838,14 @@ export default function SpamPage() {
                             min={0}
                             max={23}
                             value={specificHour}
-                            onChange={(e) => setSpecificHour(Math.min(23, Math.max(0, parseInt(e.target.value) || 0)))}
+                            onChange={(e) =>
+                              setSpecificHour(
+                                Math.min(
+                                  23,
+                                  Math.max(0, parseInt(e.target.value) || 0),
+                                ),
+                              )
+                            }
                             className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                           />
                         </div>
@@ -791,7 +860,14 @@ export default function SpamPage() {
                           min={0}
                           max={23}
                           value={specificHour}
-                          onChange={(e) => setSpecificHour(Math.min(23, Math.max(0, parseInt(e.target.value) || 0)))}
+                          onChange={(e) =>
+                            setSpecificHour(
+                              Math.min(
+                                23,
+                                Math.max(0, parseInt(e.target.value) || 0),
+                              ),
+                            )
+                          }
                           className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                         />
                       </div>
@@ -852,18 +928,26 @@ export default function SpamPage() {
                       ) : (
                         <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 p-2 rounded-lg bg-white">
                           {globalTemplates.map((tpl) => (
-                            <label key={tpl.id} className="flex items-start space-x-2 text-xs text-slate-600 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                            <label
+                              key={tpl.id}
+                              className="flex items-start space-x-2 text-xs text-slate-600 cursor-pointer hover:bg-slate-50 p-1 rounded"
+                            >
                               <input
                                 type="checkbox"
                                 checked={selectedGlobalTplIds.includes(tpl.id)}
-                                onChange={() => toggleGlobalTemplateSelection(tpl.id)}
+                                onChange={() =>
+                                  toggleGlobalTemplateSelection(tpl.id)
+                                }
                                 className="rounded text-purple-600 focus:ring-purple-500 mt-0.5"
                               />
                               <div>
-                                <span className="font-semibold block">{tpl.text}</span>
+                                <span className="font-semibold block">
+                                  {tpl.text}
+                                </span>
                                 {tpl.start_hour !== null && (
                                   <span className="text-[10px] text-indigo-500">
-                                    {tpl.start_hour}:00 - {tpl.end_hour}:00 (MSK)
+                                    {tpl.start_hour}:00 - {tpl.end_hour}:00
+                                    (MSK)
                                   </span>
                                 )}
                               </div>
@@ -902,11 +986,18 @@ export default function SpamPage() {
                             </p>
                           ) : (
                             ruleSpecificTexts.map((text, idx) => (
-                              <div key={idx} className="flex justify-between items-center bg-slate-50 p-1.5 rounded text-xs">
-                                <span className="font-medium truncate mr-2">{text}</span>
+                              <div
+                                key={idx}
+                                className="flex justify-between items-center bg-slate-50 p-1.5 rounded text-xs"
+                              >
+                                <span className="font-medium truncate mr-2">
+                                  {text}
+                                </span>
                                 <button
                                   type="button"
-                                  onClick={() => handleRemoveRuleSpecificText(idx)}
+                                  onClick={() =>
+                                    handleRemoveRuleSpecificText(idx)
+                                  }
                                   className="text-rose-500 hover:text-rose-700"
                                 >
                                   <Trash2 size={12} />
@@ -931,7 +1022,10 @@ export default function SpamPage() {
                     >
                       {t("common.cancel")}
                     </Button>
-                    <Button type="submit" disabled={savingRule || validatingChat}>
+                    <Button
+                      type="submit"
+                      disabled={savingRule || validatingChat}
+                    >
                       {savingRule ? "..." : t("spam.saveRule")}
                     </Button>
                   </div>
@@ -953,7 +1047,10 @@ export default function SpamPage() {
             <div className="grid grid-cols-1 gap-4">
               {rules.map((rule) => {
                 return (
-                  <Card key={rule.id} className={`border-l-4 transition-shadow hover:shadow-md ${rule.is_active ? "border-l-green-500" : "border-l-slate-300"}`}>
+                  <Card
+                    key={rule.id}
+                    className={`border-l-4 transition-shadow hover:shadow-md ${rule.is_active ? "border-l-green-500" : "border-l-slate-300"}`}
+                  >
                     <CardContent className="p-6">
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                         <div>
@@ -961,12 +1058,19 @@ export default function SpamPage() {
                             <h3 className="font-mono text-sm font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
                               {rule.chat_id}
                             </h3>
-                            <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${rule.is_active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-                              {rule.is_active ? t("common.active") : t("spam.pausedRules")}
+                            <span
+                              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${rule.is_active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}
+                            >
+                              {rule.is_active
+                                ? t("common.active")
+                                : t("spam.pausedRules")}
                             </span>
                           </div>
                           <p className="text-sm font-semibold text-slate-700 mt-2">
-                            {t("spam.clientName")}: <span className="text-indigo-600">{rule.client_name || "Buyer"}</span>
+                            {t("spam.clientName")}:{" "}
+                            <span className="text-indigo-600">
+                              {rule.client_name || "Buyer"}
+                            </span>
                           </p>
                           <p className="text-xs text-slate-400 mt-1">
                             {t("spam.frequency")}:{" "}
@@ -978,7 +1082,8 @@ export default function SpamPage() {
                           </p>
                           {rule.last_sent_at && (
                             <p className="text-[10px] text-slate-400 mt-1">
-                              Last Sent: {new Date(rule.last_sent_at).toLocaleString()}
+                              Last Sent:{" "}
+                              {new Date(rule.last_sent_at).toLocaleString()}
                             </p>
                           )}
                         </div>
@@ -994,7 +1099,11 @@ export default function SpamPage() {
                             }`}
                             title={rule.is_active ? "Pause" : "Start"}
                           >
-                            {rule.is_active ? <Pause size={16} /> : <Play size={16} />}
+                            {rule.is_active ? (
+                              <Pause size={16} />
+                            ) : (
+                              <Play size={16} />
+                            )}
                           </button>
                           <button
                             onClick={() => startEditRule(rule)}
@@ -1047,8 +1156,13 @@ export default function SpamPage() {
                           ) : (
                             <div className="space-y-1.5 max-h-40 overflow-y-auto">
                               {sentHistory[rule.id].map((h) => (
-                                <div key={h.id} className="flex justify-between items-center text-xs bg-slate-50 p-2 rounded">
-                                  <span className="font-semibold text-slate-700">{h.text}</span>
+                                <div
+                                  key={h.id}
+                                  className="flex justify-between items-center text-xs bg-slate-50 p-2 rounded"
+                                >
+                                  <span className="font-semibold text-slate-700">
+                                    {h.text}
+                                  </span>
                                   <span className="text-slate-400 shrink-0 ml-4">
                                     {new Date(h.sent_at).toLocaleString()}
                                   </span>
@@ -1090,7 +1204,11 @@ export default function SpamPage() {
                           type={showToken ? "text" : "password"}
                           value={chatTokenInput}
                           onChange={(e) => setChatTokenInput(e.target.value)}
-                          placeholder={hasWbChatApiToken ? "**************** (configured)" : "Enter WB API Token with scope 9"}
+                          placeholder={
+                            hasWbChatApiToken
+                              ? "**************** (configured)"
+                              : "Enter WB API Token with scope 9"
+                          }
                           className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                         />
                         <button
@@ -1149,7 +1267,10 @@ export default function SpamPage() {
                 <CardContent className="p-0">
                   {loadingTemplates ? (
                     <div className="flex justify-center items-center py-6">
-                      <Loader2 size={24} className="animate-spin text-indigo-600" />
+                      <Loader2
+                        size={24}
+                        className="animate-spin text-indigo-600"
+                      />
                     </div>
                   ) : globalTemplates.length === 0 ? (
                     <div className="text-center py-8 text-slate-400 text-sm">
@@ -1158,12 +1279,18 @@ export default function SpamPage() {
                   ) : (
                     <div className="divide-y divide-slate-100">
                       {globalTemplates.map((tpl) => (
-                        <div key={tpl.id} className="flex justify-between items-center px-6 py-4 hover:bg-slate-50/50">
+                        <div
+                          key={tpl.id}
+                          className="flex justify-between items-center px-6 py-4 hover:bg-slate-50/50"
+                        >
                           <div>
-                            <p className="font-semibold text-slate-800">{tpl.text}</p>
+                            <p className="font-semibold text-slate-800">
+                              {tpl.text}
+                            </p>
                             {tpl.start_hour !== null && (
                               <p className="text-[10px] text-indigo-600 font-semibold mt-1">
-                                {t("spam.allowedHours")} {tpl.start_hour}:00 - {tpl.end_hour}:00 (MSK)
+                                {t("spam.allowedHours")} {tpl.start_hour}:00 -{" "}
+                                {tpl.end_hour}:00 (MSK)
                               </p>
                             )}
                           </div>
@@ -1190,7 +1317,10 @@ export default function SpamPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleAddGlobalTemplate} className="space-y-4">
+                  <form
+                    onSubmit={handleAddGlobalTemplate}
+                    className="space-y-4"
+                  >
                     <div>
                       <label className="block text-sm font-semibold mb-1">
                         {t("spam.text")}
@@ -1215,7 +1345,16 @@ export default function SpamPage() {
                           min={0}
                           max={23}
                           value={newTplStart}
-                          onChange={(e) => setNewTplStart(e.target.value === "" ? "" : Math.min(23, Math.max(0, parseInt(e.target.value) || 0)))}
+                          onChange={(e) =>
+                            setNewTplStart(
+                              e.target.value === ""
+                                ? ""
+                                : Math.min(
+                                    23,
+                                    Math.max(0, parseInt(e.target.value) || 0),
+                                  ),
+                            )
+                          }
                           className="w-full px-4 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
                         />
                       </div>
@@ -1228,13 +1367,26 @@ export default function SpamPage() {
                           min={0}
                           max={23}
                           value={newTplEnd}
-                          onChange={(e) => setNewTplEnd(e.target.value === "" ? "" : Math.min(23, Math.max(0, parseInt(e.target.value) || 0)))}
+                          onChange={(e) =>
+                            setNewTplEnd(
+                              e.target.value === ""
+                                ? ""
+                                : Math.min(
+                                    23,
+                                    Math.max(0, parseInt(e.target.value) || 0),
+                                  ),
+                            )
+                          }
                           className="w-full px-4 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
                         />
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={addingTemplate}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={addingTemplate}
+                    >
                       {addingTemplate ? "..." : t("spam.addTemplate")}
                     </Button>
                   </form>

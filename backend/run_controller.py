@@ -20,7 +20,10 @@ import schemas
 from processor.chat_processor import ChatProcessor
 from processor.gpt import AsyncOpenAIClient
 from processor.controller import build_controller
-from services.notifications import notify_subscription_expiring_tomorrow, send_custom_notification
+from services.notifications import (
+    notify_subscription_expiring_tomorrow,
+    send_custom_notification,
+)
 
 
 def _normalize_dt(dt: datetime | None) -> datetime | None:
@@ -54,10 +57,7 @@ def _user_has_saved_products(user_id: int) -> bool:
     db = SessionLocal()
     try:
         return (
-            db.query(NmIDs.id)
-            .filter(NmIDs.user_d_id == user_id)
-            .limit(1)
-            .first()
+            db.query(NmIDs.id).filter(NmIDs.user_d_id == user_id).limit(1).first()
             is not None
         )
     finally:
@@ -66,26 +66,24 @@ def _user_has_saved_products(user_id: int) -> bool:
 
 def get_hour_offset(rule_id: int, date_str: str, hour: int) -> int:
     key = f"spam_offset_{rule_id}_{date_str}_{hour}"
-    h = hashlib.sha256(key.encode('utf-8')).hexdigest()
+    h = hashlib.sha256(key.encode("utf-8")).hexdigest()
     return int(h, 16) % 21  # 0 to 20 minutes
 
 
 async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
-    token = str(user.wb_chat_api_token).strip()
-    if not token:
-        return
-
-    rules = db.query(models.SpamRule).filter(
-        models.SpamRule.user_id == user.id,
-        models.SpamRule.is_active == True
-    ).all()
+    token = user.wb_chat_api_token.strip()
+    rules = (
+        db.query(models.SpamRule)
+        .filter(models.SpamRule.user_id == user.id, models.SpamRule.is_active == True)
+        .all()
+    )
     if not rules:
         return
 
     chats_url = "https://buyer-chat-api.wildberries.ru/api/v1/seller/chats"
     headers = {"Authorization": token}
     fetched_chats = []
-    
+
     async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             res = await client.get(chats_url, headers=headers)
@@ -103,18 +101,21 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
         chat = chats_by_id.get(rule.chat_id)
         if not chat:
             continue
-        
+
         last_msg = chat.get("lastMessage") or {}
         last_msg_ts = last_msg.get("addTimestamp")
-        
+
         if rule.last_sent_message_timestamp > 0 and last_msg_ts:
             if last_msg_ts != rule.last_sent_message_timestamp:
                 if not rule.spam_endlessly:
-                    logger.info("Reconciliation: Pausing spam rule %s because last message timestamp changed", rule.id)
+                    logger.info(
+                        "Reconciliation: Pausing spam rule %s because last message timestamp changed",
+                        rule.id,
+                    )
                     rule.is_active = False
                     db.add(rule)
                     db.commit()
-                    
+
                     client_name = rule.client_name or chat.get("clientName") or "Buyer"
                     msg_text = last_msg.get("text") or "без текста"
                     notif_text = (
@@ -123,7 +124,9 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
                         f"<i>{msg_text}</i>\n\n"
                         f"❗️ Рассылка остановлена."
                     )
-                    await send_custom_notification(db, user.id, notif_text, subject="Рассылка остановлена")
+                    await send_custom_notification(
+                        db, user.id, notif_text, subject="Рассылка остановлена"
+                    )
                     continue
 
     rules = [r for r in rules if r.is_active]
@@ -136,7 +139,9 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
     date_str = moscow_now.strftime("%Y-%m-%d")
 
     for rule in rules:
-        allowed_hours = [int(h.strip()) for h in rule.send_hours.split(",") if h.strip().isdigit()]
+        allowed_hours = [
+            int(h.strip()) for h in rule.send_hours.split(",") if h.strip().isdigit()
+        ]
         if current_hour not in allowed_hours:
             continue
 
@@ -145,8 +150,13 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
             continue
 
         if rule.last_sent_at:
-            last_sent_moscow = rule.last_sent_at.astimezone(timezone(timedelta(hours=3)))
-            if last_sent_moscow.date() == moscow_now.date() and last_sent_moscow.hour == current_hour:
+            last_sent_moscow = rule.last_sent_at.astimezone(
+                timezone(timedelta(hours=3))
+            )
+            if (
+                last_sent_moscow.date() == moscow_now.date()
+                and last_sent_moscow.hour == current_hour
+            ):
                 continue
 
         if rule.frequency_type == "days" and rule.last_sent_at:
@@ -180,11 +190,8 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
         rendered_text = selected_template.text.replace("[name]", client_name)
 
         send_url = "https://buyer-chat-api.wildberries.ru/api/v1/seller/message"
-        payload = {
-            "chatID": rule.chat_id,
-            "text": rendered_text
-        }
-        
+        payload = {"chatID": rule.chat_id, "text": rendered_text}
+
         async with httpx.AsyncClient(timeout=15.0) as client:
             try:
                 res = await client.post(send_url, headers=headers, json=payload)
@@ -192,16 +199,24 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
                     res_data = res.json()
                     result = res_data.get("result") or {}
                     add_time = result.get("addTime")
-                    
+
                     if add_time:
-                        crud.log_spam_sent_message(db, rule.id, rendered_text, rule.chat_id, add_time)
+                        crud.log_spam_sent_message(
+                            db, rule.id, rendered_text, rule.chat_id, add_time
+                        )
                         rule.last_sent_at = datetime.now(timezone.utc)
                         rule.last_sent_message_timestamp = add_time
                         db.add(rule)
                         db.commit()
-                        logger.info("Successfully sent spam message to chat %s (rule %s)", rule.chat_id, rule.id)
+                        logger.info(
+                            "Successfully sent spam message to chat %s (rule %s)",
+                            rule.chat_id,
+                            rule.id,
+                        )
                 else:
-                    logger.error("Failed to send message for rule %s: %s", rule.id, res.text)
+                    logger.error(
+                        "Failed to send message for rule %s: %s", rule.id, res.text
+                    )
             except Exception as e:
                 logger.error("Error sending message for rule %s: %s", rule.id, e)
 
@@ -210,15 +225,19 @@ async def check_user_chat_events(db: Session, user: User):
     if not user.notify_answers_in_chats:
         return
 
-    token = str(user.wb_chat_api_token).strip()
-    if not token:
-        return
-
-    cursor = db.query(models.SpamLastFetchedEventTime).filter(models.SpamLastFetchedEventTime.user_id == user.id).first()
+    token = user.wb_chat_api_token.strip()
+    cursor = (
+        db.query(models.SpamLastFetchedEventTime)
+        .filter(models.SpamLastFetchedEventTime.user_id == user.id)
+        .first()
+    )
     if not cursor:
         import time
+
         init_ts = int(time.time() * 1000)
-        cursor = models.SpamLastFetchedEventTime(user_id=user.id, last_event_time_ms=init_ts)
+        cursor = models.SpamLastFetchedEventTime(
+            user_id=user.id, last_event_time_ms=init_ts
+        )
         db.add(cursor)
         db.commit()
 
@@ -232,26 +251,29 @@ async def check_user_chat_events(db: Session, user: User):
                 data = res.json().get("result") or {}
                 next_cursor = data.get("next")
                 events = data.get("events") or []
-                
+
                 if next_cursor:
                     cursor.last_event_time_ms = next_cursor
                     db.add(cursor)
                     db.commit()
 
                 for event in events:
-                    if event.get("eventType") == "message" and event.get("sender") == "client":
+                    if (
+                        event.get("eventType") == "message"
+                        and event.get("sender") == "client"
+                    ):
                         chat_id = event.get("chatID")
                         client_name = event.get("clientName") or "Buyer"
                         msg_text = event.get("message", {}).get("text") or "без текста"
-                        
+
                         attachments = event.get("message", {}).get("attachments") or {}
                         video_icons = []
                         photo_icons = []
-                        
+
                         images = attachments.get("images") or []
                         if images:
                             photo_icons.extend(["🖼️"] * len(images))
-                            
+
                         files = attachments.get("files") or []
                         for f in files:
                             ctype = str(f.get("contentType") or "").lower()
@@ -259,38 +281,48 @@ async def check_user_chat_events(db: Session, user: User):
                                 video_icons.append("🎥")
                             elif "image" in ctype:
                                 photo_icons.append("🖼️")
-                                
+
                         media_line = ""
                         if video_icons or photo_icons:
                             media_line = " ".join(video_icons + photo_icons)
 
-                        rule = db.query(models.SpamRule).filter(
-                            models.SpamRule.user_id == user.id,
-                            models.SpamRule.chat_id == chat_id
-                        ).first()
-                        
+                        rule = (
+                            db.query(models.SpamRule)
+                            .filter(
+                                models.SpamRule.user_id == user.id,
+                                models.SpamRule.chat_id == chat_id,
+                            )
+                            .first()
+                        )
+
                         if rule:
                             if rule.is_active:
                                 rule.is_active = False
                                 db.add(rule)
                                 db.commit()
-                                logger.info("EventPoller: Pausing active rule %s because buyer messaged", rule.id)
-                            
+                                logger.info(
+                                    "EventPoller: Pausing active rule %s because buyer messaged",
+                                    rule.id,
+                                )
+
                             notif_body = [
                                 "💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>",
                                 f"👤 Покупатель: {client_name}",
                             ]
                             if media_line:
                                 notif_body.append(media_line)
-                            notif_body.extend([
-                                f"<i>{msg_text}</i>",
-                                "",
-                                "❗️ Рассылка остановлена."
-                            ])
-                            
+                            notif_body.extend(
+                                [f"<i>{msg_text}</i>", "", "❗️ Рассылка остановлена."]
+                            )
+
                             notif_text = "\n".join(notif_body)
-                            await send_custom_notification(db, user.id, notif_text, subject="Сообщение в чате | Рассылка остановлена")
-                        
+                            await send_custom_notification(
+                                db,
+                                user.id,
+                                notif_text,
+                                subject="Сообщение в чате | Рассылка остановлена",
+                            )
+
                         else:
                             if user.notify_all_messages:
                                 notif_body = [
@@ -300,12 +332,19 @@ async def check_user_chat_events(db: Session, user: User):
                                 if media_line:
                                     notif_body.append(media_line)
                                 notif_body.append(f"<i>{msg_text}</i>")
-                                
+
                                 notif_text = "\n".join(notif_body)
-                                await send_custom_notification(db, user.id, notif_text, subject="Новое сообщение в чате")
-                                
+                                await send_custom_notification(
+                                    db,
+                                    user.id,
+                                    notif_text,
+                                    subject="Новое сообщение в чате",
+                                )
+
             else:
-                logger.error("Failed to fetch events for user %s: %s", user.id, res.text)
+                logger.error(
+                    "Failed to fetch events for user %s: %s", user.id, res.text
+                )
         except Exception as e:
             logger.error("Error checking events for user %s: %s", user.id, e)
 
@@ -344,26 +383,35 @@ async def run_controllers():
                 logger.info("Running daily controller tasks...")
 
             db = SessionLocal()
-            users = db.query(User).filter(
-                (User.wb_api_token.isnot(None)) | (User.wb_chat_api_token.isnot(None))
-            ).all()
+            users = (
+                db.query(User)
+                .filter(
+                    (User.wb_api_token.isnot(None))
+                    | (User.wb_chat_api_token.isnot(None))
+                )
+                .all()
+            )
 
             # Run spam and event checks for users
             for user in users:
+                if not user.wb_chat_api_token:
+                    continue
                 try:
                     await process_user_spam_rules(db, user, now_utc)
                     await check_user_chat_events(db, user)
                 except Exception as e:
-                    logger.exception(f"Error processing spam/events for user {user.id}: {e}")
+                    logger.exception(
+                        f"Error processing spam/events for user {user.id}: {e}"
+                    )
 
             db.close()
 
             current_user_ids = set()
 
             for user in users:
-                token = str(user.wb_api_token or "").strip()
-                if not token:
+                if not user.wb_chat_api_token:
                     continue
+                token = user.wb_api_token.strip()
 
                 current_user_ids.add(user.id)
 
