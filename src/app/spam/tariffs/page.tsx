@@ -596,51 +596,6 @@ function ReferralsPageContent() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Enter Promo Code / Referral Code Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border border-slate-200 shadow-md rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
-            <CardTitle className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-              <Gift className="text-violet-600" size={20} />
-              {t("referrals.enterCode")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
-              {t("referrals.enterCodeDescSpam")}
-            </p>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={refInput}
-                onChange={(e) => setRefInput(e.target.value)}
-                placeholder={t("referrals.codePlaceholder")}
-                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-              <Button
-                onClick={handleApplyReferral}
-                disabled={loadingCode}
-                className="bg-violet-600 hover:bg-violet-700 text-white font-bold px-4 py-2 rounded-xl text-sm"
-              >
-                {loadingCode
-                  ? t("referrals.applying")
-                  : t("referrals.applyBtn")}
-              </Button>
-            </div>
-
-            {codeError && (
-              <p className="text-xs text-red-500 font-semibold">{codeError}</p>
-            )}
-            {codeSuccess && (
-              <p className="text-xs text-emerald-600 font-semibold">
-                {codeSuccess}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

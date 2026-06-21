@@ -674,7 +674,7 @@ export const en = {
     deleteTemplateTitle: 'Delete template',
     chatTokenDescription: 'To distribute messages to Wildberries chats, you need an API token with permissions for "Chat with customers" and read & write rights.',
     chatTokenLabel: 'Chat API Token',
-    chatTokenPlaceholder: 'Enter WB API token with category 9',
+    chatTokenPlaceholder: 'Enter WB API token',
     globalTemplatesDescription: 'Templates that can be used in any distribution rule.',
     templateStartHour: 'Start (0-23 MCK)',
     templateEndHour: 'End (0-23 MCK)',
