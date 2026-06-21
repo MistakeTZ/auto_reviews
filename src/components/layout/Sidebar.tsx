@@ -187,38 +187,41 @@ export default function Sidebar() {
               )}
             </div>
 
-            {/* Hover Switch Option */}
-            <div className="absolute left-6 right-6 top-[72px] hidden group-hover:block z-50 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
+            {/* Hover Switch Option (Premium Popover Modal) */}
+            <div className="absolute left-6 right-6 top-[72px] hidden group-hover:block z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 scale-95 origin-top group-hover:scale-100 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+              {/* Little arrow pointing up */}
+              <div className="absolute -top-2 left-12 w-4 h-4 bg-white border-t border-l border-slate-200/80 rotate-45" />
+
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 relative z-10">
                 {t("common.switchService")}
               </p>
               <Link
                 href={activeSpam ? "/dashboard" : "/spam"}
                 onClick={onClose}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-semibold text-sm ${
+                className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 font-semibold text-sm border border-transparent hover:border-slate-100 shadow-sm hover:shadow-md relative z-10 ${
                   activeSpam
-                    ? "text-indigo-600 hover:bg-indigo-50"
-                    : "text-violet-600 hover:bg-violet-50"
+                    ? "text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50"
+                    : "text-violet-600 bg-violet-50/50 hover:bg-violet-50"
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
                     activeSpam
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "bg-violet-50 text-violet-600"
+                      ? "bg-gradient-to-br from-indigo-500 to-blue-500 text-white"
+                      : "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
                   }`}
                 >
                   {activeSpam ? (
-                    <MessageSquare size={16} />
+                    <MessageSquare size={18} />
                   ) : (
-                    <Megaphone size={16} />
+                    <Megaphone size={18} />
                   )}
                 </div>
                 <div className="text-left overflow-hidden">
                   <p className="font-bold text-slate-800 leading-none">
                     {activeSpam ? "reAnswer" : "reSpam"}
                   </p>
-                  <p className="text-[10px] text-slate-400 truncate mt-1">
+                  <p className="text-[10px] text-slate-500 truncate mt-1">
                     {activeSpam
                       ? t("common.reviewsAndAI")
                       : t("common.chatCampaigns")}

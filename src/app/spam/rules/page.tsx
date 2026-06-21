@@ -5,7 +5,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Plus, Trash2, Play, Pause, Loader2, Edit2, Eye } from "lucide-react";
+import { Plus, Trash2, Play, Pause, Loader2, Edit2, Eye, Check } from "lucide-react";
 import { SpamRule, SpamTemplate, SpamSentMessage } from "../types";
 
 export default function SpamRulesPage() {
@@ -29,8 +29,6 @@ export default function SpamRulesPage() {
   const [editingRuleId, setEditingRuleId] = useState<number | null>(null);
   const [chatId, setChatId] = useState("");
   const [clientName, setClientName] = useState("");
-  const [validatingChat, setValidatingChat] = useState(false);
-  const [chatValidationMsg, setChatValidationMsg] = useState("");
   const [frequencyType, setFrequencyType] = useState<
     "four_times" | "three_times" | "twice" | "once" | "custom_days"
   >("four_times");
@@ -44,6 +42,34 @@ export default function SpamRulesPage() {
   const [ruleSpecificTexts, setRuleSpecificTexts] = useState<string[]>([]);
   const [newSpecificText, setNewSpecificText] = useState("");
   const [savingRule, setSavingRule] = useState(false);
+
+  const [recentChats, setRecentChats] = useState<
+    { chatID: string; clientName: string; lastMessageText: string }[]
+  >([]);
+  const [loadingRecentChats, setLoadingRecentChats] = useState(false);
+  const [recentChatsError, setRecentChatsError] = useState("");
+
+  const loadRecentChats = useCallback(async () => {
+    if (!jwtToken) return;
+    setLoadingRecentChats(true);
+    setRecentChatsError("");
+    try {
+      const res = await fetch(`${API_URL}/chats/recent`, {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecentChats(data);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setRecentChatsError(errData.detail || "Failed to load recent chats.");
+      }
+    } catch {
+      setRecentChatsError("Failed to fetch recent chats.");
+    } finally {
+      setLoadingRecentChats(false);
+    }
+  }, [jwtToken, API_URL]);
 
   const loadRules = useCallback(async () => {
     if (!jwtToken) return;
@@ -108,45 +134,7 @@ export default function SpamRulesPage() {
     }
   }, [jwtToken, loadRules, loadTemplates]);
 
-  // Chat ID validation debouncer
-  useEffect(() => {
-    if (!chatId.trim()) {
-      setTimeout(() => {
-        setClientName("");
-        setChatValidationMsg("");
-      }, 0);
-      return;
-    }
-    const delayDebounceFn = setTimeout(async () => {
-      setValidatingChat(true);
-      setChatValidationMsg(t("spam.checkingChat"));
-      try {
-        const res = await fetch(
-          `${API_URL}/chats/validate-id?chat_id=${encodeURIComponent(chatId.trim())}`,
-          { headers: { Authorization: `Bearer ${jwtToken}` } },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data.found) {
-            setClientName(data.clientName);
-            setChatValidationMsg("");
-          } else {
-            setClientName("");
-            setChatValidationMsg(t("spam.chatNotFound"));
-          }
-        } else {
-          const data = await res.json().catch(() => ({}));
-          setChatValidationMsg(data.detail || "Error validating chat ID");
-        }
-      } catch {
-        setChatValidationMsg("Connection error");
-      } finally {
-        setValidatingChat(false);
-      }
-    }, 600);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [chatId, jwtToken, t, API_URL]);
 
   const handleAddRuleSpecificText = () => {
     if (!newSpecificText.trim()) return;
@@ -332,6 +320,7 @@ export default function SpamRulesPage() {
               setSelectedGlobalTplIds([]);
               setRuleSpecificTexts([]);
               setShowRuleForm(true);
+              loadRecentChats();
             }}
             className="flex items-center gap-2"
           >
@@ -351,53 +340,87 @@ export default function SpamRulesPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCreateOrUpdateRule} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Chat ID */}
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    {t("spam.chatId")}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={chatId}
-                      onChange={(e) => setChatId(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                      required
-                    />
-                    {validatingChat && (
-                      <div className="absolute right-3 top-2.5">
-                        <Loader2
-                          size={16}
-                          className="animate-spin text-slate-400"
-                        />
+              {/* Chat Selector */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold mb-2">
+                  {t("spam.chatId")}
+                </label>
+
+                {chatId ? (
+                  /* Selected Chat Card */
+                  <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm animate-fade-in">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
+                        <Check className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 leading-snug">
+                          {clientName || "Buyer"}
+                        </p>
+                        <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
+                          {chatId}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setChatId("");
+                        setClientName("");
+                      }}
+                      className="px-3 py-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-slate-200"
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                  </div>
+                ) : (
+                  /* Selector List */
+                  <div className="space-y-3">
+                    {loadingRecentChats ? (
+                      <div className="flex justify-center items-center py-6 bg-white border border-slate-100 rounded-2xl">
+                        <Loader2 className="animate-spin text-indigo-600 h-6 w-6" />
+                        <span className="text-xs text-slate-400 ml-2">Loading active chats...</span>
+                      </div>
+                    ) : recentChatsError ? (
+                      <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl">
+                        {recentChatsError}
+                      </div>
+                    ) : recentChats.length === 0 ? (
+                      <div className="text-center p-6 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 text-xs font-medium">
+                        No active chats found on Wildberries.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1">
+                        {recentChats.map((chat) => (
+                          <button
+                            key={chat.chatID}
+                            type="button"
+                            onClick={() => {
+                              setChatId(chat.chatID);
+                              setClientName(chat.clientName);
+                            }}
+                            className="text-left p-3 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/10 rounded-xl transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
+                          >
+                            <div className="flex justify-between items-start">
+                              <span className="font-bold text-slate-800 text-sm truncate max-w-[120px]">
+                                {chat.clientName}
+                              </span>
+                              <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
+                                {chat.chatID.replace(/^1:/, "")}
+                              </span>
+                            </div>
+                            {chat.lastMessageText && (
+                              <p className="text-xs text-slate-500 mt-1.5 line-clamp-1 italic">
+                                &ldquo;{chat.lastMessageText}&rdquo;
+                              </p>
+                            )}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
-                  {chatValidationMsg && (
-                    <p
-                      className={`text-xs mt-1 font-medium ${clientName ? "text-green-600" : "text-amber-600"}`}
-                    >
-                      {chatValidationMsg}
-                    </p>
-                  )}
-                </div>
-
-                {/* Client Name */}
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    {t("spam.clientName")}
-                  </label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-600"
-                    placeholder="Fetched automatically"
-                    readOnly
-                  />
-                </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -655,7 +678,7 @@ export default function SpamRulesPage() {
                 >
                   {t("common.cancel")}
                 </Button>
-                <Button type="submit" disabled={savingRule || validatingChat}>
+                <Button type="submit" disabled={savingRule || !chatId}>
                   {savingRule ? "..." : t("spam.saveRule")}
                 </Button>
               </div>
@@ -736,7 +759,10 @@ export default function SpamRulesPage() {
                         )}
                       </button>
                       <button
-                        onClick={() => startEditRule(rule)}
+                        onClick={() => {
+                          startEditRule(rule);
+                          loadRecentChats();
+                        }}
                         className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-all duration-200"
                         title="Edit"
                       >

@@ -14,7 +14,7 @@ from routers.auth import get_current_user
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-WB_CHATS_CACHE_TTL_SECONDS = 30 * 60
+WB_CHATS_CACHE_TTL_SECONDS = 30
 _wb_chats_cache: dict[str, tuple[float, List[dict]]] = {}
 
 
@@ -46,6 +46,36 @@ async def fetch_wb_chats(token: str) -> List[dict]:
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Failed to communicate with Wildberries chat API: {str(e)}",
             )
+
+
+@router.get("/recent")
+async def get_recent_chats(
+    current_user: models.User = Depends(get_current_user),
+):
+    token = (current_user.wb_chat_api_token or "").strip()
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Wildberries chat API token is not configured in settings.",
+        )
+
+    chats = await fetch_wb_chats(token)
+
+    def get_timestamp(c):
+        lm = c.get("lastMessage") or {}
+        return lm.get("addTimestamp") or 0
+
+    sorted_chats = sorted(chats, key=get_timestamp, reverse=True)
+
+    recent = []
+    for chat in sorted_chats[:10]:
+        recent.append({
+            "chatID": chat.get("chatID"),
+            "clientName": chat.get("clientName") or "Buyer",
+            "lastMessageText": (chat.get("lastMessage") or {}).get("text") or "",
+        })
+
+    return recent
 
 
 @router.get("/validate-id")
