@@ -21,8 +21,9 @@ function LandingPageContent() {
   const { t, language, setLanguage } = useTranslation();
   const searchParams = useSearchParams();
   const referralCodeFromUrl = searchParams.get("ref")?.trim() || "";
+  const referralSourceFromUrl = searchParams.get("source")?.trim() || "";
   const registerHref = referralCodeFromUrl
-    ? `/register?ref=${encodeURIComponent(referralCodeFromUrl)}`
+    ? `/register?ref=${encodeURIComponent(referralCodeFromUrl)}${referralSourceFromUrl ? `&source=${encodeURIComponent(referralSourceFromUrl)}` : ""}`
     : "/register";
 
   const [isVisible, setIsVisible] = useState(false);
@@ -42,7 +43,10 @@ function LandingPageContent() {
       return;
     }
     localStorage.setItem("pendingReferralCode", referralCodeFromUrl);
-  }, [referralCodeFromUrl]);
+    if (referralSourceFromUrl) {
+      localStorage.setItem("pendingReferralSource", referralSourceFromUrl);
+    }
+  }, [referralCodeFromUrl, referralSourceFromUrl]);
 
   const toggleLanguage = () => {
     setLanguage(language === "en" ? "ru" : "en");

@@ -32,6 +32,10 @@ function RegisterPageContent() {
     if (refFromQuery) {
       localStorage.setItem("pendingReferralCode", refFromQuery);
     }
+    const sourceFromQuery = searchParams.get("source")?.trim() || "";
+    if (sourceFromQuery) {
+      localStorage.setItem("pendingReferralSource", sourceFromQuery);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -85,6 +89,8 @@ function RegisterPageContent() {
       try {
         const pendingReferralCode =
           localStorage.getItem("pendingReferralCode")?.trim() || "";
+        const pendingReferralSource =
+          localStorage.getItem("pendingReferralSource")?.trim() || "";
         const trimmedPromoCode = promoCode.trim();
         const payload = {
           email,
@@ -92,6 +98,9 @@ function RegisterPageContent() {
           password,
           ...(pendingReferralCode
             ? { referral_code: pendingReferralCode }
+            : {}),
+          ...(pendingReferralSource
+            ? { referral_source: pendingReferralSource }
             : {}),
           ...(trimmedPromoCode ? { promo_code: trimmedPromoCode } : {}),
         };
@@ -109,6 +118,9 @@ function RegisterPageContent() {
           if (pendingReferralCode) {
             localStorage.removeItem("pendingReferralCode");
           }
+          if (pendingReferralSource) {
+            localStorage.removeItem("pendingReferralSource");
+          }
           const formData = new URLSearchParams();
           formData.append("username", email);
           formData.append("password", password);
@@ -122,7 +134,11 @@ function RegisterPageContent() {
           if (loginRes.ok) {
             const data = await loginRes.json();
             login(data.access_token);
-            router.push("/dashboard");
+            if (pendingReferralSource === "respam") {
+              router.push("/spam");
+            } else {
+              router.push("/dashboard");
+            }
           } else {
             setError(t("auth.loginAfterRegisterFailed"));
           }

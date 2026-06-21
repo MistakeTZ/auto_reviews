@@ -81,14 +81,24 @@ def create_user(db: Session, user: schemas.UserCreate):
         promo.used_count = int(promo.used_count or 0) + 1
         db.add(promo)
 
+    referral_source = user.referral_source or "reanswer"
+
     db_user = models.User(
         email=user.email,
         hashed_password=hashed_password,
         name=user.name,
         referral_code=str(uuid.uuid4())[:8],
-        registration_bonus_days=registration_bonus_days,
         referred_by_id=referred_by_id,
+        referral_source=referral_source,
     )
+
+    if referral_source == "respam":
+        db_user.respam_registration_bonus_days = registration_bonus_days
+        db_user.registration_bonus_days = 0
+    else:
+        db_user.registration_bonus_days = registration_bonus_days
+        db_user.respam_registration_bonus_days = 0
+
     db.add(db_user)
     db.flush()
 
@@ -135,8 +145,8 @@ def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] 
             db_user.registration_bonus_days = 0
             db_user.tariff_type = "trial"
 
-            # If referred by someone, extend referrer's subscription by 7 days on full tariff
-            if db_user.referred_by_id:
+            # If referred by someone and not respam source, extend referrer's subscription by 7 days on full tariff
+            if db_user.referred_by_id and db_user.referral_source != "respam":
                 referrer = get_user(db, db_user.referred_by_id)
                 if referrer:
                     ref_now = datetime.now(timezone.utc)
@@ -183,14 +193,21 @@ def update_user_question_answer_settings(
     return db_user
 
 
-def apply_referral_code(db: Session, user_id: int, code: str):
+def apply_referral_code(
+    db: Session, user_id: int, code: str, source: Optional[str] = "reanswer"
+):
     db_user = get_user(db, user_id)
     if not db_user:
         raise ValueError("User not found")
     if db_user.referred_by_id:
         raise ValueError("You have already applied a referral code")
-    if db_user.trial_activated:
-        raise ValueError("Cannot apply referral code after trial has started")
+
+    if source == "respam":
+        if db_user.respam_trial_activated:
+            raise ValueError("Cannot apply referral code after trial has started")
+    else:
+        if db_user.trial_activated:
+            raise ValueError("Cannot apply referral code after trial has started")
 
     referrer = get_user_by_referral_code(db, code)
     if not referrer:
@@ -199,30 +216,73 @@ def apply_referral_code(db: Session, user_id: int, code: str):
         raise ValueError("You cannot refer yourself")
 
     db_user.referred_by_id = referrer.id
+    db_user.referral_source = source
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def buy_service_subscription(db: Session, user_id: int, service_type: str):
+    db_user = get_user(db, user_id)
+    if not db_user:
+        raise ValueError("User not found")
+
+    now = datetime.now(timezone.utc)
+
+    if service_type == "reanswer":
+        current_expiry = db_user.subscription_expires_at
+        if current_expiry and current_expiry.tzinfo is None:
+            current_expiry = current_expiry.replace(timezone.utc)
+
+        if current_expiry and current_expiry > now:
+            db_user.subscription_expires_at = current_expiry + timedelta(days=30)
+        else:
+            db_user.subscription_expires_at = now + timedelta(days=30)
+        db_user.tariff_type = "full"
+
+    elif service_type == "respam":
+        current_expiry = db_user.respam_subscription_expires_at
+        if current_expiry and current_expiry.tzinfo is None:
+            current_expiry = current_expiry.replace(timezone.utc)
+
+        if current_expiry and current_expiry > now:
+            db_user.respam_subscription_expires_at = current_expiry + timedelta(days=30)
+        else:
+            db_user.respam_subscription_expires_at = now + timedelta(days=30)
+        db_user.respam_tariff_type = "full"
+
+    elif service_type == "both":
+        # 1. reAnswer
+        current_expiry = db_user.subscription_expires_at
+        if current_expiry and current_expiry.tzinfo is None:
+            current_expiry = current_expiry.replace(timezone.utc)
+
+        if current_expiry and current_expiry > now:
+            db_user.subscription_expires_at = current_expiry + timedelta(days=30)
+        else:
+            db_user.subscription_expires_at = now + timedelta(days=30)
+        db_user.tariff_type = "full"
+
+        # 2. reSpam
+        current_expiry_spam = db_user.respam_subscription_expires_at
+        if current_expiry_spam and current_expiry_spam.tzinfo is None:
+            current_expiry_spam = current_expiry_spam.replace(timezone.utc)
+
+        if current_expiry_spam and current_expiry_spam > now:
+            db_user.respam_subscription_expires_at = current_expiry_spam + timedelta(
+                days=30
+            )
+        else:
+            db_user.respam_subscription_expires_at = now + timedelta(days=30)
+        db_user.respam_tariff_type = "full"
+
     db.commit()
     db.refresh(db_user)
     return db_user
 
 
 def buy_full_subscription(db: Session, user_id: int):
-    db_user = get_user(db, user_id)
-    if not db_user:
-        raise ValueError("User not found")
-
-    now = datetime.now(timezone.utc)
-    current_expiry = db_user.subscription_expires_at
-    if current_expiry and current_expiry.tzinfo is None:
-        current_expiry = current_expiry.replace(tzinfo=timezone.utc)
-
-    if current_expiry and current_expiry > now:
-        db_user.subscription_expires_at = current_expiry + timedelta(days=30)
-    else:
-        db_user.subscription_expires_at = now + timedelta(days=30)
-
-    db_user.tariff_type = "full"
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    return buy_service_subscription(db, user_id, "reanswer")
 
 
 from sqlalchemy import func
@@ -470,9 +530,15 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
         if question_data.state is not None and str(question_data.state).strip() != "":
             db_question.state = question_data.state
         db_question.editable = question_data.editable
-        if question_data.answer_text is not None and str(question_data.answer_text).strip() != "":
+        if (
+            question_data.answer_text is not None
+            and str(question_data.answer_text).strip() != ""
+        ):
             db_question.answer_text = question_data.answer_text
-        if question_data.proposed_answer_text is not None and str(question_data.proposed_answer_text).strip() != "":
+        if (
+            question_data.proposed_answer_text is not None
+            and str(question_data.proposed_answer_text).strip() != ""
+        ):
             db_question.proposed_answer_text = question_data.proposed_answer_text
         db_question.user_name = question_data.user_name
     else:

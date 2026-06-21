@@ -41,6 +41,13 @@ def _has_active_subscription(user: User, now_utc: datetime) -> bool:
     return expires_at > now_utc
 
 
+def _has_active_spam_subscription(user: User, now_utc: datetime) -> bool:
+    expires_at = _normalize_dt(user.respam_subscription_expires_at)
+    if not expires_at:
+        return False
+    return expires_at > now_utc
+
+
 def _expires_tomorrow(user: User, now_utc: datetime) -> bool:
     expires_at = _normalize_dt(user.subscription_expires_at)
     if not expires_at:
@@ -116,7 +123,9 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
                     db.add(rule)
                     db.commit()
 
-                    client_name = rule.client_name or chat.get("clientName") or "Покупатель"
+                    client_name = (
+                        rule.client_name or chat.get("clientName") or "Покупатель"
+                    )
                     msg_text = last_msg.get("text") or "без текста"
                     notif_text = (
                         f"💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>\n"
@@ -370,17 +379,22 @@ async def run_controllers():
 
     # Ensure spam_rules has reply_sign column
     from sqlalchemy import inspect
+
     try:
         inspector = inspect(engine)
         with engine.connect() as conn:
-            spam_rule_columns = {col.get("name") for col in inspector.get_columns("spam_rules")}
+            spam_rule_columns = {
+                col.get("name") for col in inspector.get_columns("spam_rules")
+            }
             if "reply_sign" not in spam_rule_columns:
                 conn.exec_driver_sql(
                     "ALTER TABLE spam_rules ADD COLUMN reply_sign VARCHAR"
                 )
                 conn.commit()
     except Exception as e:
-        logger.warning("Failed to run spam_rules reply_sign migration in controller: %s", e)
+        logger.warning(
+            "Failed to run spam_rules reply_sign migration in controller: %s", e
+        )
 
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
@@ -425,6 +439,8 @@ async def run_controllers():
             # Run spam and event checks for users
             for user in users:
                 if not user.wb_chat_api_token:
+                    continue
+                if not _has_active_spam_subscription(user, now_utc):
                     continue
                 try:
                     await process_user_spam_rules(db, user, now_utc)

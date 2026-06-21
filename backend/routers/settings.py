@@ -11,7 +11,7 @@ import base64
 import json
 from datetime import datetime
 import schemas
-from typing import List
+from typing import List, Optional
 import os
 
 router = APIRouter()
@@ -212,6 +212,7 @@ def update_question_answer_settings(
 
 class ReferralCodeRequest(BaseModel):
     code: str
+    source: Optional[str] = "reanswer"
 
 
 @router.post("/apply-referral")
@@ -221,7 +222,9 @@ def apply_referral(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        crud.apply_referral_code(db, user_id=current_user.id, code=req.code)
+        crud.apply_referral_code(
+            db, user_id=current_user.id, code=req.code, source=req.source
+        )
         return {"ok": True, "message": "Referral code applied successfully"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -229,16 +232,21 @@ def apply_referral(
 
 @router.post("/buy-subscription")
 def buy_subscription(
+    service_type: str = "reanswer",
     db: Session = Depends(database.get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        updated = crud.buy_full_subscription(db, user_id=current_user.id)
+        updated = crud.buy_service_subscription(
+            db, user_id=current_user.id, service_type=service_type
+        )
         return {
             "ok": True,
             "message": "Subscription purchased successfully",
             "subscription_expires_at": updated.subscription_expires_at,
             "tariff_type": updated.tariff_type,
+            "respam_subscription_expires_at": updated.respam_subscription_expires_at,
+            "respam_tariff_type": updated.respam_tariff_type,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -259,6 +267,9 @@ def referrals_list(
             "email": ref.email,
             "trial_activated": ref.trial_activated,
             "tariff_type": ref.tariff_type,
+            "respam_trial_activated": ref.respam_trial_activated,
+            "respam_tariff_type": ref.respam_tariff_type,
+            "referral_source": ref.referral_source,
         }
         for ref in referrals
     ]

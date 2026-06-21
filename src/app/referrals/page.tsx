@@ -35,7 +35,35 @@ function ReferralsPageContent() {
     fetchMe,
   } = useAppStore();
 
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+
+  const [selectedPlan, setSelectedPlan] = useState<"reanswer" | "both">(
+    "reanswer",
+  );
+
+  const planOptions = [
+    {
+      id: "reanswer",
+      title: "reAnswer Premium",
+      desc:
+        language === "en"
+          ? "Wildberries reviews automation"
+          : "Автоматизация работы с отзывами",
+      price: "990 ₽",
+      amount: "990.00",
+    },
+    {
+      id: "both",
+      title: "reAnswer + reSpam Combo",
+      desc:
+        language === "en"
+          ? "Reviews + chats automation bundle"
+          : "Комбо: Отзывы + чаты Wildberries",
+      price: "1190 ₽",
+      amount: "1190.00",
+      badge: language === "en" ? "Save 290 ₽" : "Выгода 290 ₽",
+    },
+  ];
 
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -143,7 +171,7 @@ function ReferralsPageContent() {
         typeof window !== "undefined"
           ? window.location.origin
           : "https://reanswer.ru";
-      const link = `${origin}/?ref=${referralCode}`;
+      const link = `${origin}/?ref=${referralCode}&source=reanswer`;
       void navigator.clipboard.writeText(link);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
@@ -156,7 +184,7 @@ function ReferralsPageContent() {
     setCodeError("");
     setCodeSuccess("");
     try {
-      await applyReferralCode(refInput.trim());
+      await applyReferralCode(refInput.trim(), "reanswer");
       setCodeSuccess(t("referrals.successApplied"));
       setRefInput("");
       void confetti({
@@ -180,7 +208,12 @@ function ReferralsPageContent() {
           ? window.location.origin
           : "http://localhost:8082";
       const returnUrl = `${origin}/referrals`;
-      const res = await createPayment("990.00", returnUrl);
+      const selected = planOptions.find((o) => o.id === selectedPlan);
+      const res = await createPayment(
+        selected?.amount || "990.00",
+        returnUrl,
+        selectedPlan,
+      );
 
       if (res.confirmation_url) {
         window.location.href = res.confirmation_url;
@@ -441,13 +474,41 @@ function ReferralsPageContent() {
               {t("referrals.buyDesc")}
             </p>
 
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-4xl font-black text-slate-900 tracking-tight">
-                {t("referrals.buyPrice")}
-              </span>
-              <span className="text-slate-400 font-bold text-sm uppercase">
-                {t("referrals.buyPeriod")}
-              </span>
+            {/* Visual selector for plan options */}
+            <div className="space-y-3 mb-6">
+              {planOptions.map((option) => (
+                <div
+                  key={option.id}
+                  onClick={() => setSelectedPlan(option.id as any)}
+                  className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
+                    selectedPlan === option.id
+                      ? "border-indigo-600 bg-indigo-50/40"
+                      : "border-slate-200 hover:border-slate-300 bg-white"
+                  }`}
+                >
+                  {option.badge && (
+                    <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-xl">
+                      {option.badge}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-extrabold text-sm text-slate-800">
+                      {option.title}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {option.desc}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-black text-slate-900 text-lg">
+                      {option.price}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                      {t("referrals.buyPeriod")}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <Button

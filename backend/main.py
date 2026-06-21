@@ -68,6 +68,34 @@ def run_migrations():
                 conn.exec_driver_sql(
                     "ALTER TABLE users ADD COLUMN notify_all_messages BOOLEAN DEFAULT 0"
                 )
+            if "respam_subscription_expires_at" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN respam_subscription_expires_at DATETIME"
+                )
+            if "respam_tariff_type" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN respam_tariff_type VARCHAR"
+                )
+            if "respam_trial_activated" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN respam_trial_activated BOOLEAN DEFAULT 0"
+                )
+            if "respam_registration_bonus_days" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN respam_registration_bonus_days INTEGER DEFAULT 0"
+                )
+            if "referral_source" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN referral_source VARCHAR DEFAULT 'reanswer'"
+                )
+
+            payment_columns = {
+                col.get("name") for col in inspector.get_columns("payments")
+            }
+            if "service_type" not in payment_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE payments ADD COLUMN service_type VARCHAR"
+                )
 
             spam_rule_columns = {
                 col.get("name") for col in inspector.get_columns("spam_rules")

@@ -4,12 +4,13 @@ from typing import List, Optional
 import httpx
 import logging
 import time
+from datetime import datetime, timedelta, timezone
 
 import crud
 import schemas
 import database
 import models
-from routers.auth import get_current_user
+from routers.auth import get_current_user, check_active_spam_subscription
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -50,7 +51,7 @@ async def fetch_wb_chats(token: str) -> List[dict]:
 
 @router.get("/recent")
 async def get_recent_chats(
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     token = (current_user.wb_chat_api_token or "").strip()
     if not token:
@@ -69,11 +70,13 @@ async def get_recent_chats(
 
     recent = []
     for chat in sorted_chats[:10]:
-        recent.append({
-            "chatID": chat.get("chatID"),
-            "clientName": chat.get("clientName") or "Покупатель",
-            "lastMessageText": (chat.get("lastMessage") or {}).get("text") or "",
-        })
+        recent.append(
+            {
+                "chatID": chat.get("chatID"),
+                "clientName": chat.get("clientName") or "Покупатель",
+                "lastMessageText": (chat.get("lastMessage") or {}).get("text") or "",
+            }
+        )
 
     return recent
 
@@ -81,7 +84,7 @@ async def get_recent_chats(
 @router.get("/validate-id")
 async def validate_chat_id(
     chat_id: str,
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     token = (current_user.wb_chat_api_token or "").strip()
     if not token:
@@ -111,7 +114,7 @@ async def validate_chat_id(
 @router.get("/stats")
 def get_spam_dashboard_stats(
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     stats = crud.get_spam_stats(db, current_user.id)
     last_sent = crud.get_spam_sent_messages(db, current_user.id, limit=10)
@@ -124,7 +127,7 @@ def get_spam_dashboard_stats(
 @router.get("/rules", response_model=List[schemas.SpamRule])
 def list_spam_rules(
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     return crud.get_spam_rules(db, current_user.id)
 
@@ -133,7 +136,7 @@ def list_spam_rules(
 async def create_spam_rule(
     rule: schemas.SpamRuleCreate,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     token = (current_user.wb_chat_api_token or "").strip()
     if not token:
@@ -169,7 +172,7 @@ async def update_spam_rule(
     rule_id: int,
     rule_in: schemas.SpamRuleUpdate,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     token = (current_user.wb_chat_api_token or "").strip()
 
@@ -205,7 +208,7 @@ async def update_spam_rule(
 def delete_spam_rule(
     rule_id: int,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     success = crud.delete_spam_rule(db, rule_id, current_user.id)
     if not success:
@@ -218,7 +221,7 @@ def delete_spam_rule(
 @router.get("/templates", response_model=List[schemas.SpamMessageTemplate])
 def list_spam_templates(
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     return crud.get_spam_templates(db, current_user.id)
 
@@ -227,7 +230,7 @@ def list_spam_templates(
 def create_spam_template(
     template: schemas.SpamMessageTemplateCreate,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     return crud.create_spam_template(db, current_user.id, template)
 
@@ -237,7 +240,7 @@ def update_spam_template(
     template_id: int,
     template_in: schemas.SpamMessageTemplateUpdate,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     db_template = crud.update_spam_template(
         db, template_id, current_user.id, template_in
@@ -253,7 +256,7 @@ def update_spam_template(
 def delete_spam_template(
     template_id: int,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     success = crud.delete_spam_template(db, template_id, current_user.id)
     if not success:
@@ -270,7 +273,42 @@ def update_spam_settings(
     current_user: models.User = Depends(get_current_user),
 ):
     if settings_in.wb_chat_api_token is not None:
-        current_user.wb_chat_api_token = settings_in.wb_chat_api_token
+        token = settings_in.wb_chat_api_token.strip()
+        current_user.wb_chat_api_token = token
+
+        # Trial starts after chat token input
+        if token and not current_user.respam_trial_activated:
+            current_user.respam_trial_activated = True
+            now = datetime.now(timezone.utc)
+            trial_days = (
+                max(int(current_user.respam_registration_bonus_days or 0), 0) + 30
+            )
+            current_user.respam_subscription_expires_at = now + timedelta(
+                days=trial_days
+            )
+            current_user.respam_registration_bonus_days = 0
+            current_user.respam_tariff_type = "trial"
+
+            # If referred by someone with respam source, extend referrer's respam subscription
+            if current_user.referred_by_id and current_user.referral_source == "respam":
+                referrer = crud.get_user(db, current_user.referred_by_id)
+                if referrer:
+                    ref_now = datetime.now(timezone.utc)
+                    current_expiry = referrer.respam_subscription_expires_at
+                    if current_expiry and current_expiry.tzinfo is None:
+                        current_expiry = current_expiry.replace(tzinfo=timezone.utc)
+
+                    if current_expiry and current_expiry > ref_now:
+                        referrer.respam_subscription_expires_at = (
+                            current_expiry + timedelta(days=7)
+                        )
+                    else:
+                        referrer.respam_subscription_expires_at = ref_now + timedelta(
+                            days=7
+                        )
+                    referrer.respam_tariff_type = "full"
+                    db.add(referrer)
+
     if settings_in.notify_answers_in_chats is not None:
         current_user.notify_answers_in_chats = settings_in.notify_answers_in_chats
     if settings_in.notify_all_messages is not None:
@@ -286,7 +324,7 @@ def update_spam_settings(
 def list_sent_messages(
     rule_id: Optional[int] = None,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(check_active_spam_subscription),
 ):
     if rule_id:
         # Check rule ownership

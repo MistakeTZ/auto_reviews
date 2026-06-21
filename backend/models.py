@@ -30,9 +30,18 @@ class User(Base):
 
     # Subscription & Referral Fields
     subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
-    tariff_type = Column(String, default="trial", nullable=True)
+    tariff_type = Column(String, default=None, nullable=True)
     trial_activated = Column(Boolean, default=False, nullable=True)
     registration_bonus_days = Column(Integer, default=0, nullable=False)
+
+    # reSpam Subscription & Referral Fields
+    respam_subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
+    respam_tariff_type = Column(String, default=None, nullable=True)
+    respam_trial_activated = Column(Boolean, default=False, nullable=True)
+    respam_registration_bonus_days = Column(Integer, default=0, nullable=False)
+
+    # Referral Metadata
+    referral_source = Column(String, default="reanswer", nullable=True)
     referred_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_code = Column(String, unique=True, index=True, nullable=True)
     question_answer_mode = Column(String, default="manual", nullable=False)
@@ -64,6 +73,19 @@ class User(Base):
             else datetime.datetime.now()
         )
         return self.subscription_expires_at > now
+
+    @property
+    def has_active_spam_subscription(self) -> bool:
+        if not self.respam_subscription_expires_at:
+            return False
+        import datetime
+
+        now = (
+            datetime.datetime.now(self.respam_subscription_expires_at.tzinfo)
+            if self.respam_subscription_expires_at.tzinfo
+            else datetime.datetime.now()
+        )
+        return self.respam_subscription_expires_at > now
 
     @property
     def rules_count(self) -> int:
@@ -200,6 +222,7 @@ class Payment(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(String)
     status = Column(String)  # 'pending', 'succeeded', 'failed'
+    service_type = Column(String, nullable=True)  # 'reanswer', 'respam', 'both'
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

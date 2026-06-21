@@ -12,6 +12,7 @@ class UserCreate(UserBase):
     password: str
     referral_code: Optional[str] = None
     promo_code: Optional[str] = None
+    referral_source: Optional[str] = "reanswer"
 
 
 class User(UserBase):
@@ -23,11 +24,17 @@ class User(UserBase):
     tariff_type: Optional[str] = None
     trial_activated: Optional[bool] = None
     registration_bonus_days: int = 0
+    respam_subscription_expires_at: Optional[datetime] = None
+    respam_tariff_type: Optional[str] = None
+    respam_trial_activated: Optional[bool] = None
+    respam_registration_bonus_days: int = 0
+    referral_source: Optional[str] = "reanswer"
     referral_code: Optional[str] = None
     referred_by_id: Optional[int] = None
     question_answer_mode: str = "manual"
     question_answer_prompt: Optional[str] = None
     has_active_subscription: bool = False
+    has_active_spam_subscription: bool = False
     rules_count: int = 0
     notification_methods_count: int = 0
     wb_chat_api_token: Optional[str] = None
@@ -46,11 +53,17 @@ class UserPublic(UserBase):
     tariff_type: Optional[str] = None
     trial_activated: Optional[bool] = None
     registration_bonus_days: int = 0
+    respam_subscription_expires_at: Optional[datetime] = None
+    respam_tariff_type: Optional[str] = None
+    respam_trial_activated: Optional[bool] = None
+    respam_registration_bonus_days: int = 0
+    referral_source: Optional[str] = "reanswer"
     referral_code: Optional[str] = None
     referred_by_id: Optional[int] = None
     question_answer_mode: str = "manual"
     question_answer_prompt: Optional[str] = None
     has_active_subscription: bool = False
+    has_active_spam_subscription: bool = False
     rules_count: int = 0
     notification_methods_count: int = 0
     has_wb_api_token: bool = False

@@ -100,6 +100,17 @@ def check_active_subscription(current_user: schemas.User = Depends(get_current_u
     return current_user
 
 
+def check_active_spam_subscription(
+    current_user: schemas.User = Depends(get_current_user),
+):
+    if not current_user.has_active_spam_subscription:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Active reSpam subscription required. Please activate trial or buy a subscription.",
+        )
+    return current_user
+
+
 @router.post("/forgot-password")
 async def forgot_password(
     request: Request,

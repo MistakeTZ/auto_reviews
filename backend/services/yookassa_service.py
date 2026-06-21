@@ -22,6 +22,7 @@ async def create_yookassa_payment(
     amount_val: str,
     return_url: str,
     email: str,
+    service_type: str = "reanswer",
 ) -> str:
     """
     Creates a payment in YooKassa and saves a pending Payment in local DB.
@@ -41,17 +42,25 @@ async def create_yookassa_payment(
         frontend_url = os.getenv("FRONTEND_URL", "http://localhost:8082").rstrip("/")
         return_url = f"{frontend_url}/referrals"
 
+    # Determine description based on service_type
+    if service_type == "respam":
+        description = "Подписка на 30 дней - reSpam"
+    elif service_type == "both":
+        description = "Подписка на 30 дней - reAnswer + reSpam"
+    else:
+        description = "Подписка на 30 дней - reAnswer"
+
     payload = {
         "amount": {"value": amount_val, "currency": "RUB"},
         "capture": True,
         "confirmation": {"type": "redirect", "return_url": return_url},
-        "description": "Подписка на 30 дней - reAnswer",
-        "metadata": {"user_id": str(user_id)},
+        "description": description,
+        "metadata": {"user_id": str(user_id), "service_type": service_type},
         "receipt": {
             "customer": {"email": email},
             "items": [
                 {
-                    "description": "Подписка на 30 дней - reAnswer",
+                    "description": description,
                     "quantity": 1,
                     "amount": {"value": amount_val, "currency": "RUB"},
                     "vat_code": 1,
@@ -89,6 +98,7 @@ async def create_yookassa_payment(
                 user_id=user_id,
                 amount=amount_val,
                 status="pending",
+                service_type=service_type,
             )
             db.add(payment)
             db.commit()
@@ -128,7 +138,9 @@ async def verify_and_process_payment(db: Session, yookassa_payment_id: str) -> b
         # Update user subscription
         import crud
 
-        crud.buy_full_subscription(db, user_id=payment.user_id)
+        crud.buy_service_subscription(
+            db, user_id=payment.user_id, service_type=payment.service_type or "reanswer"
+        )
         db.commit()
         logger.info(f"Mock Payment {yookassa_payment_id} processed successfully.")
         return True
@@ -153,7 +165,11 @@ async def verify_and_process_payment(db: Session, yookassa_payment_id: str) -> b
                 # Update user subscription
                 import crud
 
-                crud.buy_full_subscription(db, user_id=payment.user_id)
+                crud.buy_service_subscription(
+                    db,
+                    user_id=payment.user_id,
+                    service_type=payment.service_type or "reanswer",
+                )
                 db.commit()
                 logger.info(
                     f"YooKassa Payment {yookassa_payment_id} succeeded and user {payment.user_id} subscription extended."

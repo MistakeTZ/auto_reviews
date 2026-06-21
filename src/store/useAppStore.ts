@@ -82,6 +82,12 @@ interface AppState {
   trialActivated: boolean;
   registrationBonusDays: number;
   hasActiveSubscription: boolean;
+  respamSubscriptionExpiresAt: string | null;
+  respamTariffType: "trial" | "full" | null;
+  respamTrialActivated: boolean;
+  respamRegistrationBonusDays: number;
+  hasActiveSpamSubscription: boolean;
+  referralSource: string | null;
   referralCode: string | null;
   referredById: number | null;
   referrals: any[];
@@ -108,11 +114,12 @@ interface AppState {
     method: Omit<NotificationMethod, "id" | "userId">,
   ) => Promise<void>;
   deleteNotificationMethod: (id: number) => Promise<void>;
-  applyReferralCode: (code: string) => Promise<void>;
+  applyReferralCode: (code: string, source?: string) => Promise<void>;
   buySubscription: () => Promise<void>;
   createPayment: (
     amount?: string,
     returnUrl?: string,
+    serviceType?: string,
   ) => Promise<{ confirmation_url: string; payment_id: string }>;
   checkPaymentStatus: (
     paymentId: string,
@@ -143,6 +150,12 @@ export const useAppStore = create<AppState>()(
       trialActivated: false,
       registrationBonusDays: 0,
       hasActiveSubscription: false,
+      respamSubscriptionExpiresAt: null,
+      respamTariffType: null,
+      respamTrialActivated: false,
+      respamRegistrationBonusDays: 0,
+      hasActiveSpamSubscription: false,
+      referralSource: null,
       referralCode: null,
       referredById: null,
       referrals: [],
@@ -174,6 +187,12 @@ export const useAppStore = create<AppState>()(
           trialActivated: false,
           registrationBonusDays: 0,
           hasActiveSubscription: false,
+          respamSubscriptionExpiresAt: null,
+          respamTariffType: null,
+          respamTrialActivated: false,
+          respamRegistrationBonusDays: 0,
+          hasActiveSpamSubscription: false,
+          referralSource: null,
           referralCode: null,
           referredById: null,
           referrals: [],
@@ -196,12 +215,14 @@ export const useAppStore = create<AppState>()(
             );
             const hasChatToken = Boolean(
               data.has_wb_chat_api_token ??
-              (data.wb_chat_api_token && String(data.wb_chat_api_token).trim())
+              (data.wb_chat_api_token && String(data.wb_chat_api_token).trim()),
             );
             set({
               apiToken: hasApiToken ? "****************" : null,
               hasWbChatApiToken: hasChatToken,
-              notifyAnswersInChats: Boolean(data.notify_answers_in_chats ?? true),
+              notifyAnswersInChats: Boolean(
+                data.notify_answers_in_chats ?? true,
+              ),
               notifyAllMessages: Boolean(data.notify_all_messages ?? false),
               userName: data.name,
               userUuid: data.uuid,
@@ -210,6 +231,14 @@ export const useAppStore = create<AppState>()(
               trialActivated: data.trial_activated,
               registrationBonusDays: Number(data.registration_bonus_days || 0),
               hasActiveSubscription: data.has_active_subscription,
+              respamSubscriptionExpiresAt: data.respam_subscription_expires_at,
+              respamTariffType: data.respam_tariff_type,
+              respamTrialActivated: data.respam_trial_activated,
+              respamRegistrationBonusDays: Number(
+                data.respam_registration_bonus_days || 0,
+              ),
+              hasActiveSpamSubscription: data.has_active_spam_subscription,
+              referralSource: data.referral_source,
               referralCode: data.referral_code,
               referredById: data.referred_by_id,
               hasLoadedProfile: true,
@@ -619,7 +648,7 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      applyReferralCode: async (code: string) => {
+      applyReferralCode: async (code: string, source = "reanswer") => {
         const { jwtToken } = get();
         if (!jwtToken) return;
         const res = await fetch(`${API_URL}/settings/apply-referral`, {
@@ -628,7 +657,7 @@ export const useAppStore = create<AppState>()(
             "Content-Type": "application/json",
             Authorization: `Bearer ${jwtToken}`,
           },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, source }),
         });
         if (res.ok) {
           await get().fetchMe();
@@ -659,7 +688,7 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      createPayment: async (amount = "990.00", returnUrl) => {
+      createPayment: async (amount = "990.00", returnUrl, serviceType) => {
         const { jwtToken } = get();
         if (!jwtToken) throw new Error("Not authenticated");
 
@@ -669,7 +698,11 @@ export const useAppStore = create<AppState>()(
             "Content-Type": "application/json",
             Authorization: `Bearer ${jwtToken}`,
           },
-          body: JSON.stringify({ amount, return_url: returnUrl }),
+          body: JSON.stringify({
+            amount,
+            return_url: returnUrl,
+            service_type: serviceType,
+          }),
         });
 
         if (!res.ok) {

@@ -32,23 +32,42 @@ export default function Sidebar() {
     apiToken,
     tariffType,
     hasActiveSubscription,
+    respamTariffType,
+    hasActiveSpamSubscription,
+    hasWbChatApiToken,
   } = useAppStore();
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
 
+  const [isSpamMode, setIsSpamMode] = useState(false);
+
+  useEffect(() => {
+    const isSpamRoute = pathname.startsWith("/spam");
+    const isFromSpamParam =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("from") === "spam";
+    setIsSpamMode(isSpamRoute || isFromSpamParam);
+  }, [pathname]);
+
   const getPlanBadge = () => {
-    const planName = !hasActiveSubscription
-      ? !apiToken
+    const activeSub = isSpamMode
+      ? hasActiveSpamSubscription
+      : hasActiveSubscription;
+    const tariff = isSpamMode ? respamTariffType : tariffType;
+    const hasToken = isSpamMode ? hasWbChatApiToken : !!apiToken;
+
+    const planName = !activeSub
+      ? !hasToken
         ? "subscription.noToken"
         : "subscription.expiredPlan"
-      : tariffType === "trial"
+      : tariff === "trial"
         ? "subscription.trialPlan"
         : "subscription.premiumPlanShort";
 
-    const badgeClass = !hasActiveSubscription
+    const badgeClass = !activeSub
       ? "text-[10px] font-extrabold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200"
-      : tariffType === "trial"
+      : tariff === "trial"
         ? "text-[10px] font-extrabold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md border border-amber-200"
         : "text-[10px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md border border-indigo-200";
 
@@ -81,16 +100,6 @@ export default function Sidebar() {
     logout();
     router.push("/");
   };
-
-  const [isSpamMode, setIsSpamMode] = useState(false);
-
-  useEffect(() => {
-    const isSpamRoute = pathname.startsWith("/spam");
-    const isFromSpamParam =
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("from") === "spam";
-    setIsSpamMode(isSpamRoute || isFromSpamParam);
-  }, [pathname]);
 
   const mode = isSpamMode ? "respam" : "reanswer";
 
@@ -172,7 +181,7 @@ export default function Sidebar() {
           {/* Logo / Header */}
           <div className="relative group p-6 border-b border-slate-100/50 shrink-0">
             <div className="flex justify-between items-center">
-              <div 
+              <div
                 className="text-left cursor-pointer select-none"
                 onClick={() => setShowMobileSwitcher(!showMobileSwitcher)}
               >
@@ -201,11 +210,13 @@ export default function Sidebar() {
             </div>
 
             {/* Hover/Click Switch Option (Premium Popover Modal) */}
-            <div className={`absolute left-6 right-6 top-[72px] z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 transition-all duration-200 origin-top ${
-              showMobileSwitcher 
-                ? "block scale-100 opacity-100 translate-y-0" 
-                : "hidden group-hover:block group-hover:scale-100 group-hover:opacity-100 animate-in fade-in slide-in-from-top-2"
-            }`}>
+            <div
+              className={`absolute left-6 right-6 top-[72px] z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 transition-all duration-200 origin-top ${
+                showMobileSwitcher
+                  ? "block scale-100 opacity-100 translate-y-0"
+                  : "hidden group-hover:block group-hover:scale-100 group-hover:opacity-100 animate-in fade-in slide-in-from-top-2"
+              }`}
+            >
               {/* Little arrow pointing up */}
               <div className="absolute -top-2 left-12 w-4 h-4 bg-white border-t border-l border-slate-200/80 rotate-45" />
 
@@ -370,4 +381,3 @@ export default function Sidebar() {
     </>
   );
 }
-

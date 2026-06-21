@@ -91,6 +91,10 @@ class UserAdmin(ModelView, model=User):
         User.subscription_expires_at,
         User.tariff_type,
         User.trial_activated,
+        User.respam_subscription_expires_at,
+        User.respam_tariff_type,
+        User.respam_trial_activated,
+        User.referral_source,
     ]
     column_searchable_list = [
         User.email,

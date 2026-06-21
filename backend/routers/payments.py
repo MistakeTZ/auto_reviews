@@ -20,6 +20,7 @@ router = APIRouter()
 class CreatePaymentRequest(BaseModel):
     amount: Optional[str] = "990.00"
     return_url: Optional[str] = None
+    service_type: Optional[str] = None
 
 
 @router.post("/create")
@@ -29,12 +30,25 @@ async def create_payment(
     current_user: User = Depends(get_current_user),
 ):
     try:
+        service_type = req.service_type
+        if not service_type:
+            amount_clean = str(req.amount).split(".")[0]
+            if amount_clean == "990":
+                service_type = "reanswer"
+            elif amount_clean == "490":
+                service_type = "respam"
+            elif amount_clean == "1190":
+                service_type = "both"
+            else:
+                service_type = "reanswer"
+
         confirmation_url, payment_id = await create_yookassa_payment(
             db=db,
             user_id=current_user.id,
             amount_val=req.amount,
             return_url=req.return_url,
             email=current_user.email,
+            service_type=service_type,
         )
         return {
             "ok": True,
