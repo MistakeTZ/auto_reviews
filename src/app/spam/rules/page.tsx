@@ -475,7 +475,7 @@ export default function SpamRulesPage() {
                             }
                           }}
                           className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
-                          placeholder="1:xxxxxxxxx"
+                          placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                           required
                         />
                         {validatingChat && (
@@ -695,19 +695,6 @@ export default function SpamRulesPage() {
                       </p>
                       <ul className="list-disc pl-4 space-y-1">
                         <li>
-                          <span className="font-semibold">4 раза в день:</span>{" "}
-                          отправка сообщений будет происходить в 9:00, 13:00,
-                          17:00, 21:00 по МСК.
-                        </li>
-                        <li>
-                          <span className="font-semibold">3 раза в день:</span>{" "}
-                          в 9:00, 15:00, 21:00 по МСК.
-                        </li>
-                        <li>
-                          <span className="font-semibold">2 раза в день:</span>{" "}
-                          в 9:00, 21:00 по МСК.
-                        </li>
-                        <li>
                           <span className="font-semibold">
                             1 раз в день / раз в N дней:
                           </span>{" "}
@@ -824,7 +811,8 @@ export default function SpamRulesPage() {
                           onClick={handleAddRuleSpecificText}
                           className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
                         >
-                          Добавить
+                          <Plus size={12} />
+                          <span className="hidden sm:inline">{t("spam.add")}</span>
                         </button>
                       </div>
                       <div className="max-h-36 overflow-y-auto border border-slate-200/70 p-3 rounded-xl bg-slate-50/30 space-y-1.5">
@@ -965,7 +953,7 @@ export default function SpamRulesPage() {
                           <span className="font-bold text-slate-700">
                             {rule.frequency_type === "days"
                               ? `Каждые ${rule.interval_days} дн. в ${rule.send_hours}:00`
-                              : `${rule.send_hours.split(",").length} раз(а) в день (${rule.send_hours})`}
+                              : `${rule.send_hours.split(",").length} раз(а) в день`}
                           </span>
                         </div>
 

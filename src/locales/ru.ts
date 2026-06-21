@@ -624,5 +624,6 @@ export const ru = {
     settingsTab: 'Настройки',
     referralsTab: 'Тарифы',
     dashboardTab: 'Дашборд',
+    add: 'Добавить',
   }
 };

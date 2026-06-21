@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Monitor, CheckCircle2, ChevronRight, HelpCircle, ExternalLink } from "lucide-react";
@@ -7,13 +8,26 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 export default function TokenInstructionsPage() {
   const { t, language } = useTranslation();
+  const [isSpam, setIsSpam] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("from") === "spam") {
+      setIsSpam(true);
+    }
+  }, []);
+
+  const breadcrumbUrl = isSpam ? "/spam/settings" : "/settings";
+  const breadcrumbText = isSpam
+    ? (language === "en" ? "Spam Settings" : "Настройки рассылки")
+    : t("settings.title");
 
   return (
     <div className="pt-24 px-4 pb-12 md:p-8 w-full max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Breadcrumbs */}
       <nav className="flex items-center space-x-2 text-sm text-slate-500 font-medium">
-        <Link href="/settings" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
-          {t("settings.title")}
+        <Link href={breadcrumbUrl} className="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+          {breadcrumbText}
         </Link>
         <ChevronRight size={14} className="text-slate-400" />
         <span className="text-slate-800 font-semibold">{t("settings.tokenGuideTitle")}</span>
@@ -28,8 +42,12 @@ export default function TokenInstructionsPage() {
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
           {t("settings.tokenGuideTitle")}
         </h1>
-        <p className="text-slate-600 max-w-2xl text-base md:text-lg leading-relaxed">
-          {t("settings.tokenGuideIntro")}
+        <p className="text-slate-600 max-w-2xl text-sm md:text-base leading-relaxed">
+          {isSpam
+            ? (language === "en"
+                ? "To connect Wildberries chats and periodic spam distributions, create a personal API token in your WB Partners account and paste it into the chat token field on the spam settings page."
+                : "Чтобы подключить чаты Wildberries и автоматические рассылки, создайте персональный API-токен в кабинете WB Партнеры и вставьте его в поле токена на странице настроек рассылок.")
+            : t("settings.tokenGuideIntro")}
         </p>
       </div>
 
@@ -177,17 +195,30 @@ export default function TokenInstructionsPage() {
                 <span>{language === "en" ? "Required Permissions" : "Необходимые права доступа"}</span>
               </h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-emerald-800">
-                <li className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>{language === "en" ? "Content (read/write)" : "Контент (чтение и запись)"}</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>{language === "en" ? "Questions & Reviews (read/write)" : "Вопросы и отзывы (чтение и запись)"}</span>
-                </li>
+                {isSpam ? (
+                  <li className="flex items-center gap-1.5 col-span-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>{language === "en" ? "Chat (read/write)" : "Чат (чтение и запись)"}</span>
+                  </li>
+                ) : (
+                  <>
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>{language === "en" ? "Content (read/write)" : "Контент (чтение и запись)"}</span>
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>{language === "en" ? "Questions & Reviews (read/write)" : "Вопросы и отзывы (чтение и запись)"}</span>
+                    </li>
+                  </>
+                )}
               </ul>
               <p className="text-[10px] font-medium text-emerald-700/80 leading-snug">
-                {t("settings.tokenGuidePermissionsNote")}
+                {isSpam
+                  ? (language === "en"
+                      ? "Important: the token must have 'Chat' access to work with chat distributions. Also, write permissions are required."
+                      : "Необходимые права: 'Чат' (для работы с рассылками). Также обязательно дать разрешение на запись.")
+                  : t("settings.tokenGuidePermissionsNote")}
               </p>
             </div>
           </div>
@@ -218,11 +249,15 @@ export default function TokenInstructionsPage() {
       {/* Back CTA Button */}
       <div className="pt-8 border-t border-slate-200 flex justify-center sm:justify-start">
         <Link
-          href="/settings"
+          href={breadcrumbUrl}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-lg shadow-slate-900/10 transition-all hover:shadow-xl active:scale-95 duration-200 group"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-          <span>{language === "en" ? "Back to Settings" : "Вернуться к настройкам"}</span>
+          <span>
+            {isSpam
+              ? (language === "en" ? "Back to Spam Settings" : "Вернуться к настройкам рассылки")
+              : (language === "en" ? "Back to Settings" : "Вернуться к настройкам")}
+          </span>
         </Link>
       </div>
     </div>

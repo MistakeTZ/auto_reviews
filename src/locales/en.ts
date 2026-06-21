@@ -624,5 +624,6 @@ export const en = {
     settingsTab: 'Settings',
     referralsTab: 'Tariffs',
     dashboardTab: 'Dashboard',
+    add: 'Add',
   }
 };
