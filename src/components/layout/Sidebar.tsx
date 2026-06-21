@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   Gift,
-  Send,
+  Megaphone,
+  CreditCard,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -81,8 +82,7 @@ export default function Sidebar() {
   };
 
   const linkClass = (path: string) => {
-    const isActive =
-      path === "/spam" ? pathname.startsWith("/spam") : pathname === path;
+    const isActive = pathname === path;
     return `flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-medium ${
       isActive
         ? "bg-indigo-50 text-indigo-700"
@@ -178,13 +178,42 @@ export default function Sidebar() {
             <ShieldAlert size={18} />
             <span>{t("common.autoAnswerRules")}</span>
           </Link>
+          <div className="pt-2 pb-1 px-3">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              {t("common.spamDistribution")}
+            </p>
+          </div>
           <Link
             href="/spam"
             onClick={() => setIsOpen(false)}
-            className={linkClass("/spam")}
+            className={`${linkClass("/spam")} ml-2`}
           >
-            <Send size={18} />
-            <span>{t("common.spamDistribution")}</span>
+            <LayoutDashboard size={18} />
+            <span>{t("spam.dashboardTab")}</span>
+          </Link>
+          <Link
+            href="/spam/rules"
+            onClick={() => setIsOpen(false)}
+            className={`${linkClass("/spam/rules")} ml-2`}
+          >
+            <Megaphone size={18} />
+            <span>{t("spam.rulesTab")}</span>
+          </Link>
+          <Link
+            href="/spam/settings"
+            onClick={() => setIsOpen(false)}
+            className={`${linkClass("/spam/settings")} ml-2`}
+          >
+            <Settings size={18} />
+            <span>{t("spam.settingsTab")}</span>
+          </Link>
+          <Link
+            href="/spam/tariffs"
+            onClick={() => setIsOpen(false)}
+            className={`${linkClass("/spam/tariffs")} ml-2`}
+          >
+            <CreditCard size={18} />
+            <span>{t("spam.referralsTab")}</span>
           </Link>
           <Link
             href="/settings"
@@ -264,9 +293,30 @@ export default function Sidebar() {
               <span>{t("common.autoAnswerRules")}</span>
             </Link>
 
-            <Link href="/spam" className={linkClass("/spam")}>
-              <Send size={18} />
-              <span>{t("common.spamDistribution")}</span>
+            <div className="pt-3 pb-1 px-3">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                {t("common.spamDistribution")}
+              </p>
+            </div>
+
+            <Link href="/spam" className={`${linkClass("/spam")} ml-2`}>
+              <LayoutDashboard size={18} />
+              <span>{t("spam.dashboardTab")}</span>
+            </Link>
+
+            <Link href="/spam/rules" className={`${linkClass("/spam/rules")} ml-2`}>
+              <Megaphone size={18} />
+              <span>{t("spam.rulesTab")}</span>
+            </Link>
+
+            <Link href="/spam/settings" className={`${linkClass("/spam/settings")} ml-2`}>
+              <Settings size={18} />
+              <span>{t("spam.settingsTab")}</span>
+            </Link>
+
+            <Link href="/spam/tariffs" className={`${linkClass("/spam/tariffs")} ml-2`}>
+              <CreditCard size={18} />
+              <span>{t("spam.referralsTab")}</span>
             </Link>
 
             <Link href="/settings" className={linkClass("/settings")}>

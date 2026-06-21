@@ -363,7 +363,7 @@ export default function SpamRulesPage() {
                       value={chatId}
                       onChange={(e) => setChatId(e.target.value)}
                       className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                       required
                     />
                     {validatingChat && (

@@ -342,6 +342,7 @@ async def check_user_chat_events(db: Session, user: User):
                                 notif_body = [
                                     "💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>",
                                     f"👤 Покупатель: {client_name}",
+                                    "",
                                 ]
                                 if media_line:
                                     notif_body.append(media_line)
