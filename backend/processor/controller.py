@@ -137,12 +137,13 @@ class MainController:
 
             exists, saved = await self._upsert_question_in_db(question)
             if saved:
-                proposed_answer = ""
-                proposed_state = "none"
+                proposed_answer = (saved.proposed_answer_text or "").strip()
+                proposed_state = saved.state or "none"
 
                 if (
                     question_mode in {"confirm", "auto"}
                     and not (saved.answer_text or "").strip()
+                    and not proposed_answer
                 ):
                     proposed_answer, proposed_state = (
                         await self._build_question_proposed_answer(
@@ -180,7 +181,7 @@ class MainController:
                             if "db" in locals() and db:
                                 db.close()
 
-                if question_mode == "auto" and proposed_answer:
+                if question_mode == "auto" and proposed_answer and not (saved.answer_text or "").strip():
                     await self._reply_question_automatically(
                         saved, proposed_answer, proposed_state
                     )
@@ -578,6 +579,9 @@ class MainController:
                 finally:
                     if "db" in locals() and db:
                         db.close()
+                continue
+
+            if existing and existing.status in {"auto", "manually"}:
                 continue
 
             if not has_rules:

@@ -688,19 +688,19 @@ export default function RulesPage() {
                     type="button"
                     onClick={() => startEditing(rule)}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs"
-                    style={{ flex: "2", minWidth: "0" }}
+                    style={{ flex: "2", minWidth: "50px" }}
                   >
                     <Edit2 size={14} />
-                    {t("rules.edit")}
+                    <span className="hidden sm:inline">{t("rules.edit")}</span>
                   </button>
                   <Button
                     variant="danger"
                     onClick={() => deleteRule(rule.id)}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs"
-                    style={{ flex: "1", minWidth: "0" }}
+                    style={{ flex: "1", minWidth: "50px" }}
                   >
                     <Trash2 size={14} />
-                    {t("common.delete")}
+                    <span className="hidden sm:inline">{t("common.delete")}</span>
                   </Button>
                 </div>
               </CardContent>

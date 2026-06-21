@@ -470,8 +470,10 @@ def upsert_question(db: Session, question_data: schemas.QuestionCreate, user_id:
         if question_data.state is not None and str(question_data.state).strip() != "":
             db_question.state = question_data.state
         db_question.editable = question_data.editable
-        db_question.answer_text = question_data.answer_text
-        db_question.proposed_answer_text = question_data.proposed_answer_text
+        if question_data.answer_text is not None and str(question_data.answer_text).strip() != "":
+            db_question.answer_text = question_data.answer_text
+        if question_data.proposed_answer_text is not None and str(question_data.proposed_answer_text).strip() != "":
+            db_question.proposed_answer_text = question_data.proposed_answer_text
         db_question.user_name = question_data.user_name
     else:
         payload = question_data.model_dump()
