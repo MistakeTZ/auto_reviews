@@ -29,6 +29,9 @@ export default function SpamRulesPage() {
   const [editingRuleId, setEditingRuleId] = useState<number | null>(null);
   const [chatId, setChatId] = useState("");
   const [clientName, setClientName] = useState("");
+  const [isManualInput, setIsManualInput] = useState(false);
+  const [validatingChat, setValidatingChat] = useState(false);
+  const [chatValidationMsg, setChatValidationMsg] = useState("");
   const [frequencyType, setFrequencyType] = useState<
     "four_times" | "three_times" | "twice" | "once" | "custom_days"
   >("four_times");
@@ -134,7 +137,45 @@ export default function SpamRulesPage() {
     }
   }, [jwtToken, loadRules, loadTemplates]);
 
+  // Chat ID validation debouncer (only for manual input mode)
+  useEffect(() => {
+    if (!isManualInput || !chatId.trim()) {
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      setValidatingChat(true);
+      setChatValidationMsg(t("spam.checkingChat"));
+      try {
+        let normalizedChatId = chatId.trim();
+        if (!normalizedChatId.startsWith("1:")) {
+          normalizedChatId = `1:${normalizedChatId}`;
+        }
+        const res = await fetch(
+          `${API_URL}/chats/validate-id?chat_id=${encodeURIComponent(normalizedChatId)}`,
+          { headers: { Authorization: `Bearer ${jwtToken}` } },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.found) {
+            setClientName(data.clientName);
+            setChatValidationMsg("");
+          } else {
+            setClientName("");
+            setChatValidationMsg(t("spam.chatNotFound"));
+          }
+        } else {
+          const data = await res.json().catch(() => ({}));
+          setChatValidationMsg(data.detail || "Error validating chat ID");
+        }
+      } catch {
+        setChatValidationMsg("Connection error");
+      } finally {
+        setValidatingChat(false);
+      }
+    }, 600);
 
+    return () => clearTimeout(delayDebounceFn);
+  }, [chatId, isManualInput, jwtToken, t, API_URL]);
 
   const handleAddRuleSpecificText = () => {
     if (!newSpecificText.trim()) return;
@@ -151,6 +192,11 @@ export default function SpamRulesPage() {
     if (!chatId.trim()) return;
 
     setSavingRule(true);
+
+    let finalChatId = chatId.trim();
+    if (!finalChatId.startsWith("1:")) {
+      finalChatId = `1:${finalChatId}`;
+    }
 
     let finalSendHours = "9,13,17,21";
     let finalIntervalDays = 1;
@@ -175,7 +221,7 @@ export default function SpamRulesPage() {
     }
 
     const payload = {
-      chat_id: chatId.trim(),
+      chat_id: finalChatId,
       client_name: clientName || null,
       frequency_type: finalFreqType,
       interval_days: finalIntervalDays,
@@ -230,6 +276,7 @@ export default function SpamRulesPage() {
     setClientName(rule.client_name || "");
     setSpamEndlessly(rule.spam_endlessly);
     setRuleActive(rule.is_active);
+    setIsManualInput(false);
 
     if (rule.frequency_type === "days") {
       setFrequencyType("custom_days");
@@ -315,6 +362,8 @@ export default function SpamRulesPage() {
               setEditingRuleId(null);
               setChatId("");
               setClientName("");
+              setIsManualInput(false);
+              setChatValidationMsg("");
               setSpamEndlessly(false);
               setRuleActive(true);
               setSelectedGlobalTplIds([]);
@@ -342,11 +391,27 @@ export default function SpamRulesPage() {
             <form onSubmit={handleCreateOrUpdateRule} className="space-y-4">
               {/* Chat Selector */}
               <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">
-                  {t("spam.chatId")}
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-semibold text-slate-800">
+                    {t("spam.chatId")}
+                  </label>
+                  {(!chatId || isManualInput) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsManualInput(!isManualInput);
+                        setChatId("");
+                        setClientName("");
+                        setChatValidationMsg("");
+                      }}
+                      className="text-xs text-indigo-600 hover:text-indigo-700 font-bold hover:underline cursor-pointer"
+                    >
+                      {isManualInput ? "Choose from recent chats" : "Enter ID manually"}
+                    </button>
+                  )}
+                </div>
 
-                {chatId ? (
+                {chatId && !isManualInput ? (
                   /* Selected Chat Card */
                   <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm animate-fade-in">
                     <div className="flex items-center space-x-3">
@@ -368,11 +433,53 @@ export default function SpamRulesPage() {
                       onClick={() => {
                         setChatId("");
                         setClientName("");
+                        setChatValidationMsg("");
                       }}
-                      className="px-3 py-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-slate-200"
+                      className="px-3 py-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-slate-200 cursor-pointer"
                     >
                       {t("common.cancel")}
                     </Button>
+                  </div>
+                ) : isManualInput ? (
+                  /* Manual input view */
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                    <div>
+                      <input
+                        type="text"
+                        value={chatId}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setChatId(val);
+                          if (!val.trim()) {
+                            setClientName("");
+                            setChatValidationMsg("");
+                          }
+                        }}
+                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                        placeholder="1:xxxxxxxxx"
+                        required
+                      />
+                      {validatingChat && (
+                        <div className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
+                          <Loader2 size={12} className="animate-spin text-indigo-600" />
+                          <span>{t("spam.checkingChat")}</span>
+                        </div>
+                      )}
+                      {chatValidationMsg && !validatingChat && (
+                        <p className={`text-xs mt-1.5 font-bold ${clientName ? "text-green-600" : "text-amber-600"}`}>
+                          {chatValidationMsg}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={clientName}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold"
+                        placeholder="Client name"
+                        readOnly
+                      />
+                    </div>
                   </div>
                 ) : (
                   /* Selector List */
@@ -391,7 +498,7 @@ export default function SpamRulesPage() {
                         No active chats found on Wildberries.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1 animate-fade-in">
                         {recentChats.map((chat) => (
                           <button
                             key={chat.chatID}
@@ -678,7 +785,14 @@ export default function SpamRulesPage() {
                 >
                   {t("common.cancel")}
                 </Button>
-                <Button type="submit" disabled={savingRule || !chatId}>
+                <Button
+                  type="submit"
+                  disabled={
+                    savingRule ||
+                    !chatId.trim() ||
+                    (isManualInput && (validatingChat || !clientName))
+                  }
+                >
                   {savingRule ? "..." : t("spam.saveRule")}
                 </Button>
               </div>

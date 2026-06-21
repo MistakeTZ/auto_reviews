@@ -53,10 +53,10 @@ export default function SpamDashboardPage() {
     <SubscriptionGuard>
       <>
         <div className="pt-24 px-4 pb-8 md:p-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">
             {t("spam.title")}
           </h1>
-          <p className="text-sm text-slate-500 font-medium leading-relaxed">
+          <p className="text-sm text-slate-500 font-semibold leading-relaxed mb-8">
             {t("spam.timeRange")}
           </p>
 
@@ -67,7 +67,7 @@ export default function SpamDashboardPage() {
           ) : (
             <>
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
                 <Card>
                   <CardContent className="flex items-center p-6">
                     <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 mr-4">
@@ -77,7 +77,7 @@ export default function SpamDashboardPage() {
                       <p className="text-sm text-slate-500 font-semibold">
                         {t("spam.activeRules")}
                       </p>
-                      <p className="text-2xl font-black text-slate-900 mt-1">
+                      <p className="text-2xl font-black text-slate-900">
                         {loadingStats
                           ? "..."
                           : `${stats.active_rules} / ${stats.total_rules}`}
@@ -95,7 +95,7 @@ export default function SpamDashboardPage() {
                       <p className="text-sm text-slate-500 font-semibold">
                         {t("spam.totalSent")}
                       </p>
-                      <p className="text-2xl font-black text-slate-900 mt-1">
+                      <p className="text-2xl font-black text-slate-900">
                         {loadingStats ? "..." : stats.total_sent}
                       </p>
                     </div>
@@ -111,7 +111,7 @@ export default function SpamDashboardPage() {
                       <p className="text-sm text-slate-500 font-semibold">
                         {t("spam.sentLast24h")}
                       </p>
-                      <p className="text-2xl font-black text-slate-900 mt-1">
+                      <p className="text-2xl font-black text-slate-900">
                         {loadingStats ? "..." : stats.sent_last_24h}
                       </p>
                     </div>
@@ -121,46 +121,40 @@ export default function SpamDashboardPage() {
 
               {/* Last Sent Messages */}
               <Card>
-                <CardHeader className="flex justify-between items-center border-b border-slate-100">
-                  <CardTitle className="text-lg font-bold">
-                    {t("spam.lastSentMessages")}
-                  </CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between py-4">
+                  <CardTitle>{t("spam.lastSentMessages")}</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent>
                   {lastSent.length === 0 ? (
                     <div className="text-center py-8 text-slate-500">
                       {t("spam.noSentMessages")}
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm text-slate-600">
-                        <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
-                          <tr>
-                            <th className="px-6 py-3 font-semibold">
-                              {t("spam.chatId")}
-                            </th>
-                            <th className="px-6 py-3 font-semibold">
-                              {t("spam.text")}
-                            </th>
-                            <th className="px-6 py-3 font-semibold">Time</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {lastSent.map((msg) => (
-                            <tr key={msg.id} className="hover:bg-slate-50/50">
-                              <td className="px-6 py-4 font-mono font-bold text-slate-900 text-xs">
-                                {msg.chat_id}
-                              </td>
-                              <td className="px-6 py-4 font-semibold text-slate-900 text-xs max-w-xs truncate">
-                                {msg.text}
-                              </td>
-                              <td className="px-6 py-4 text-slate-500 text-xs shrink-0">
+                    <div className="space-y-4">
+                      {lastSent.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className="flex items-start pb-4 border-b border-slate-100 last:border-0 last:pb-0"
+                        >
+                          <div className="w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 bg-emerald-500 shadow-sm shadow-emerald-200" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
+                              <p className="font-bold text-slate-800 text-sm">
+                                {t("spam.chatId")}:{" "}
+                                <span className="font-mono text-xs text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded font-bold">
+                                  {msg.chat_id}
+                                </span>
+                              </p>
+                              <span className="text-xs text-slate-400 shrink-0 ml-4 font-semibold">
                                 {new Date(msg.sent_at).toLocaleString()}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-600 mt-2 font-medium bg-slate-50 border border-slate-100/60 p-3.5 rounded-2xl italic leading-relaxed">
+                              &ldquo;{msg.text}&rdquo;
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </CardContent>

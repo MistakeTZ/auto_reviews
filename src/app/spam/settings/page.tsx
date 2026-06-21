@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Trash2, Loader2, Eye, EyeOff } from "lucide-react";
 import { SpamTemplate } from "../types";
+import HelpSection from "@/components/settings/HelpSection";
+import NotificationMethodsSection from "@/components/settings/NotificationMethodsSection";
 
 export default function SpamSettingsPage() {
   const {
@@ -365,6 +367,9 @@ export default function SpamSettingsPage() {
             </CardContent>
           </Card>
         </div>
+
+        <NotificationMethodsSection />
+        <HelpSection />
       </div>
     </div>
   );

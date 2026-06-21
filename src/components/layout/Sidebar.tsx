@@ -72,6 +72,7 @@ export default function Sidebar() {
   ]);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [showMobileSwitcher, setShowMobileSwitcher] = useState(false);
 
   if (pathname === "/" || (!isAuthenticated && pathname !== "/demo"))
     return null;
@@ -162,7 +163,10 @@ export default function Sidebar() {
           {/* Logo / Header */}
           <div className="relative group p-6 border-b border-slate-100/50 shrink-0">
             <div className="flex justify-between items-center">
-              <div className="text-left cursor-pointer">
+              <div 
+                className="text-left cursor-pointer select-none"
+                onClick={() => setShowMobileSwitcher(!showMobileSwitcher)}
+              >
                 <h1
                   className={`text-2xl font-black tracking-tight transition-colors ${
                     activeSpam
@@ -187,8 +191,12 @@ export default function Sidebar() {
               )}
             </div>
 
-            {/* Hover Switch Option (Premium Popover Modal) */}
-            <div className="absolute left-6 right-6 top-[72px] hidden group-hover:block z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 scale-95 origin-top group-hover:scale-100 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+            {/* Hover/Click Switch Option (Premium Popover Modal) */}
+            <div className={`absolute left-6 right-6 top-[72px] z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 transition-all duration-200 origin-top ${
+              showMobileSwitcher 
+                ? "block scale-100 opacity-100 translate-y-0" 
+                : "hidden group-hover:block group-hover:scale-100 group-hover:opacity-100 animate-in fade-in slide-in-from-top-2"
+            }`}>
               {/* Little arrow pointing up */}
               <div className="absolute -top-2 left-12 w-4 h-4 bg-white border-t border-l border-slate-200/80 rotate-45" />
 
@@ -197,7 +205,10 @@ export default function Sidebar() {
               </p>
               <Link
                 href={activeSpam ? "/dashboard" : "/spam"}
-                onClick={onClose}
+                onClick={() => {
+                  setShowMobileSwitcher(false);
+                  if (onClose) onClose();
+                }}
                 className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 font-semibold text-sm border border-transparent hover:border-slate-100 shadow-sm hover:shadow-md relative z-10 ${
                   activeSpam
                     ? "text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50"
@@ -306,7 +317,17 @@ export default function Sidebar() {
           </p>
         </Link>
 
-        <div className="w-10" aria-hidden="true" />
+        <Link
+          href={isSpamMode ? "/dashboard" : "/spam"}
+          className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center shrink-0 ${
+            isSpamMode
+              ? "bg-indigo-50/50 border-indigo-200/50 text-indigo-600 hover:bg-indigo-50"
+              : "bg-violet-50/50 border-violet-200/50 text-violet-600 hover:bg-violet-50"
+          }`}
+          title={isSpamMode ? "reAnswer" : "reSpam"}
+        >
+          {isSpamMode ? <MessageSquare size={18} /> : <Megaphone size={18} />}
+        </Link>
       </header>
 
       {/* Mobile Drawer Overlay / Backdrop */}
@@ -324,7 +345,10 @@ export default function Sidebar() {
         }`}
       >
         <div className="h-full overflow-hidden">
-          {renderSidebarContent(mode, () => setIsOpen(false))}
+          {renderSidebarContent(mode, () => {
+            setIsOpen(false);
+            setShowMobileSwitcher(false);
+          })}
         </div>
       </aside>
 
@@ -337,3 +361,4 @@ export default function Sidebar() {
     </>
   );
 }
+
