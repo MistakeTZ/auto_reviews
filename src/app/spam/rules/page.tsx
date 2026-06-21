@@ -420,7 +420,7 @@ export default function SpamRulesPage() {
                       </div>
                       <div>
                         <p className="font-bold text-slate-800 leading-snug">
-                          {clientName || "Buyer"}
+                          {clientName || "Покупатель"}
                         </p>
                         <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
                           {chatId}
@@ -836,7 +836,7 @@ export default function SpamRulesPage() {
                       <p className="text-sm font-semibold text-slate-700 mt-2">
                         {t("spam.clientName")}:{" "}
                         <span className="text-indigo-600">
-                          {rule.client_name || "Buyer"}
+                          {rule.client_name || "Покупатель"}
                         </span>
                       </p>
                       <p className="text-xs text-slate-400 mt-1">

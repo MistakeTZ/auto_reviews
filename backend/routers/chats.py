@@ -71,7 +71,7 @@ async def get_recent_chats(
     for chat in sorted_chats[:10]:
         recent.append({
             "chatID": chat.get("chatID"),
-            "clientName": chat.get("clientName") or "Buyer",
+            "clientName": chat.get("clientName") or "Покупатель",
             "lastMessageText": (chat.get("lastMessage") or {}).get("text") or "",
         })
 
@@ -102,7 +102,7 @@ async def validate_chat_id(
         if chat.get("chatID") == chat_id.strip():
             return {
                 "found": True,
-                "clientName": chat.get("clientName") or "Buyer",
+                "clientName": chat.get("clientName") or "Покупатель",
             }
 
     return {"found": False, "clientName": "chat not found"}

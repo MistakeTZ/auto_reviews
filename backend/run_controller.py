@@ -116,7 +116,7 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
                     db.add(rule)
                     db.commit()
 
-                    client_name = rule.client_name or chat.get("clientName") or "Buyer"
+                    client_name = rule.client_name or chat.get("clientName") or "Покупатель"
                     msg_text = last_msg.get("text") or "без текста"
                     notif_text = (
                         f"💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>\n"
@@ -186,7 +186,7 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
             continue
 
         selected_template = random.choice(candidate_templates)
-        client_name = rule.client_name or "Buyer"
+        client_name = rule.client_name or "Покупатель"
         rendered_text = selected_template.text.replace("[name]", client_name)
 
         reply_sign = rule.reply_sign
@@ -277,7 +277,7 @@ async def check_user_chat_events(db: Session, user: User):
                         and event.get("sender") == "client"
                     ):
                         chat_id = event.get("chatID")
-                        client_name = event.get("clientName") or "Buyer"
+                        client_name = event.get("clientName") or "Покупатель"
                         msg_text = event.get("message", {}).get("text") or "без текста"
 
                         attachments = event.get("message", {}).get("attachments") or {}

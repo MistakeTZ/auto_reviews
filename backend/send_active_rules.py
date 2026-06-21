@@ -34,7 +34,7 @@ async def send_message_for_rule(db, rule, now_utc):
         return False
 
     selected_template = random.choice(templates)
-    client_name = rule.client_name or "Buyer"
+    client_name = rule.client_name or "Покупатель"
     rendered_text = selected_template.text.replace("[name]", client_name)
 
     reply_sign = rule.reply_sign
