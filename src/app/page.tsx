@@ -2,7 +2,7 @@
 
 import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import Header from "@/components/landing/Header";
 import HeroSection from "@/components/landing/HeroSection";
@@ -20,8 +20,17 @@ function LandingPageContent() {
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
   const { t, language, setLanguage } = useTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const referralCodeFromUrl = searchParams.get("ref")?.trim() || "";
   const referralSourceFromUrl = searchParams.get("source")?.trim() || "";
+
+  useEffect(() => {
+    if (referralSourceFromUrl === "respam") {
+      const params = new URLSearchParams(window.location.search);
+      router.replace(`/spam?${params.toString()}`);
+    }
+  }, [referralSourceFromUrl, router]);
+
   const registerHref = referralCodeFromUrl
     ? `/register?ref=${encodeURIComponent(referralCodeFromUrl)}${referralSourceFromUrl ? `&source=${encodeURIComponent(referralSourceFromUrl)}` : ""}`
     : "/register";

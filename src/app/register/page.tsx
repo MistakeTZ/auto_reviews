@@ -135,7 +135,7 @@ function RegisterPageContent() {
             const data = await loginRes.json();
             login(data.access_token);
             if (pendingReferralSource === "respam") {
-              router.push("/spam");
+              router.push("/spam/dashboard");
             } else {
               router.push("/dashboard");
             }

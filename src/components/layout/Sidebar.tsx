@@ -93,7 +93,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showMobileSwitcher, setShowMobileSwitcher] = useState(false);
 
-  if (pathname === "/" || (!isAuthenticated && pathname !== "/demo"))
+  if (pathname === "/" || pathname === "/spam" || (!isAuthenticated && pathname !== "/demo"))
     return null;
 
   const handleLogout = () => {
@@ -122,7 +122,7 @@ export default function Sidebar() {
     const tabs = activeSpam
       ? [
           {
-            href: "/spam",
+            href: "/spam/dashboard",
             label: t("spam.dashboardTab"),
             icon: LayoutDashboard,
           },
@@ -224,7 +224,7 @@ export default function Sidebar() {
                 {t("common.switchService")}
               </p>
               <Link
-                href={activeSpam ? "/dashboard" : "/spam"}
+                href={activeSpam ? "/dashboard" : "/spam/dashboard"}
                 onClick={() => {
                   setShowMobileSwitcher(false);
                   if (onClose) onClose();
@@ -338,7 +338,7 @@ export default function Sidebar() {
         </Link>
 
         <Link
-          href={isSpamMode ? "/dashboard" : "/spam"}
+          href={isSpamMode ? "/dashboard" : "/spam/dashboard"}
           className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center shrink-0 ${
             isSpamMode
               ? "bg-indigo-50/50 border-indigo-200/50 text-indigo-600 hover:bg-indigo-50"

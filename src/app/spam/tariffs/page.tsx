@@ -169,7 +169,7 @@ function ReferralsPageContent() {
         typeof window !== "undefined"
           ? window.location.origin
           : "https://respam.ru";
-      const link = `${origin}/?ref=${referralCode}&source=respam`;
+      const link = `${origin}/spam?ref=${referralCode}&source=respam`;
       void navigator.clipboard.writeText(link);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);

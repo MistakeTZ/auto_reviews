@@ -17,7 +17,7 @@ export default function TokenInstructionsPage() {
     }
   }, []);
 
-  const breadcrumbUrl = isSpam ? "/spam" : "/settings";
+  const breadcrumbUrl = isSpam ? "/spam/settings" : "/settings";
   const breadcrumbText = isSpam
     ? t("settings.spamDashboard")
     : t("settings.title");

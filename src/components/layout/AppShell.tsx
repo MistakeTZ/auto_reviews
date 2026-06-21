@@ -5,8 +5,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import CookieBanner from "@/components/layout/CookieBanner";
 import AppFooter from "@/components/layout/AppFooter";
 
-const NO_DASHBOARD_PATHS = new Set(["/privacy", "/consent", "/legal", "/amo/policy"]);
-const DARK_FOOTER_PATHS = new Set(["/", "/privacy", "/consent", "/legal", "/amo/policy"]);
+const NO_DASHBOARD_PATHS = new Set(["/spam", "/privacy", "/consent", "/legal", "/amo/policy"]);
+const DARK_FOOTER_PATHS = new Set(["/", "/spam", "/privacy", "/consent", "/legal", "/amo/policy"]);
 const COMPACT_FOOTER_PATHS = new Set(["/privacy", "/consent", "/legal", "/amo/policy"]);
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -14,7 +14,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const hideDashboard = NO_DASHBOARD_PATHS.has(pathname);
   const useDarkFooter = DARK_FOOTER_PATHS.has(pathname);
   const useCompactFooter = COMPACT_FOOTER_PATHS.has(pathname);
-  const footerClassName = pathname === "/" ? "site-footer" : "";
+  const footerClassName = (pathname === "/" || pathname === "/spam") ? "site-footer" : "";
 
   return (
     <div className="w-full min-h-screen flex flex-col">
