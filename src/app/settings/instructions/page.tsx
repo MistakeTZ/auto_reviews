@@ -17,9 +17,9 @@ export default function TokenInstructionsPage() {
     }
   }, []);
 
-  const breadcrumbUrl = isSpam ? "/spam/settings" : "/settings";
+  const breadcrumbUrl = isSpam ? "/spam" : "/settings";
   const breadcrumbText = isSpam
-    ? (language === "en" ? "Spam Settings" : "Настройки рассылки")
+    ? t("settings.spamDashboard")
     : t("settings.title");
 
   return (
@@ -37,16 +37,14 @@ export default function TokenInstructionsPage() {
       <div className="space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-bold text-indigo-700 uppercase tracking-wider">
           <HelpCircle size={12} className="text-indigo-600 animate-pulse" />
-          <span>{language === "en" ? "Help Guide" : "Руководство"}</span>
+          <span>{t("settings.tokenGuideHelpGuide")}</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
           {t("settings.tokenGuideTitle")}
         </h1>
         <p className="text-slate-600 max-w-2xl text-sm md:text-base leading-relaxed">
           {isSpam
-            ? (language === "en"
-                ? "To connect Wildberries chats and periodic spam distributions, create a personal API token in your WB Partners account and paste it into the chat token field on the spam settings page."
-                : "Чтобы подключить чаты Wildberries и автоматические рассылки, создайте персональный API-токен в кабинете WB Партнеры и вставьте его в поле токена на странице настроек рассылок.")
+            ? t("settings.tokenGuideIntroSpam")
             : t("settings.tokenGuideIntro")}
         </p>
       </div>
@@ -58,7 +56,7 @@ export default function TokenInstructionsPage() {
         </div>
         <div className="space-y-1">
           <p className="font-extrabold text-amber-950 text-base">
-            {language === "en" ? "Important Note" : "Важное примечание"}
+            {t("settings.tokenGuideImportantNote")}
           </p>
           <p className="text-sm text-amber-800/90 leading-relaxed font-medium">
             {t("settings.tokenGuideDesktopNote")}
@@ -70,7 +68,7 @@ export default function TokenInstructionsPage() {
       <div className="space-y-8">
         <h2 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
           <span className="w-1.5 h-6 rounded-full bg-indigo-600" />
-          {language === "en" ? "Step-by-step Guide" : "Пошаговые действия"}
+          {t("settings.tokenGuideStepByStepGuide")}
         </h2>
 
         {/* Step 1 */}
@@ -89,7 +87,7 @@ export default function TokenInstructionsPage() {
             </div>
             <div className="pt-2 border-t border-slate-50">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {language === "en" ? "Recommended action" : "Рекомендуемое действие"}
+                {t("settings.tokenGuideRecommendedAction")}
               </span>
               <a
                 href="https://seller.wildberries.ru/"
@@ -97,7 +95,7 @@ export default function TokenInstructionsPage() {
                 rel="noreferrer"
                 className="mt-1 flex items-center gap-1 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors w-fit group"
               >
-                <span>{language === "en" ? "Open WB Partners" : "Открыть WB Партнеры"}</span>
+                <span>{t("settings.tokenGuideOpenWbPartners")}</span>
                 <ExternalLink size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </a>
             </div>
@@ -118,7 +116,7 @@ export default function TokenInstructionsPage() {
               />
               <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="bg-white/95 px-4 py-2 rounded-xl text-xs font-bold text-slate-800 shadow-md">
-                  {language === "en" ? "Zoom Screenshot" : "Увеличить скриншот"}
+                  {t("settings.tokenGuideZoomScreenshot")}
                 </span>
               </div>
             </a>
@@ -133,20 +131,24 @@ export default function TokenInstructionsPage() {
                 2
               </div>
               <h3 className="text-lg md:text-xl font-bold text-slate-900 leading-snug">
-                {t("settings.tokenGuideStep2Title")}
+                {isSpam
+                  ? t("settings.tokenGuideStep2TitleSpam")
+                  : t("settings.tokenGuideStep2Title")}
               </h3>
               <p className="text-slate-600 text-sm md:text-base leading-relaxed">
-                {t("settings.tokenGuideStep2Desc")}
+                {isSpam
+                  ? t("settings.tokenGuideStep2DescSpam")
+                  : t("settings.tokenGuideStep2Desc")}
               </p>
             </div>
             <div className="pt-2 border-t border-slate-50">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {language === "en" ? "Tips" : "Совет"}
+                {t("settings.tokenGuideTips")}
               </span>
               <p className="text-xs font-semibold text-slate-500 mt-1">
-                {language === "en" 
-                  ? "Choose a name that indicates the service connection so you remember it later."
-                  : "Дайте токену понятное имя, чтобы сразу понимать, для какого приложения он создан."}
+                {isSpam
+                  ? t("settings.tokenGuideStep2TipSpam")
+                  : t("settings.tokenGuideStep2TipAnalytics")}
               </p>
             </div>
           </div>
@@ -166,7 +168,7 @@ export default function TokenInstructionsPage() {
               />
               <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="bg-white/95 px-4 py-2 rounded-xl text-xs font-bold text-slate-800 shadow-md">
-                  {language === "en" ? "Zoom Screenshot" : "Увеличить скриншот"}
+                  {t("settings.tokenGuideZoomScreenshot")}
                 </span>
               </div>
             </a>
@@ -192,32 +194,30 @@ export default function TokenInstructionsPage() {
             <div className="space-y-3 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100/60">
               <h4 className="text-xs font-extrabold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
                 <CheckCircle2 size={14} className="text-emerald-600" />
-                <span>{language === "en" ? "Required Permissions" : "Необходимые права доступа"}</span>
+                <span>{t("settings.tokenGuideRequiredPermissions")}</span>
               </h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-emerald-800">
                 {isSpam ? (
                   <li className="flex items-center gap-1.5 col-span-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span>{language === "en" ? "Chat (read/write)" : "Чат (чтение и запись)"}</span>
+                    <span>{t("settings.tokenGuidePermissionChat")}</span>
                   </li>
                 ) : (
                   <>
                     <li className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>{language === "en" ? "Content (read/write)" : "Контент (чтение и запись)"}</span>
+                      <span>{t("settings.tokenGuidePermissionContent")}</span>
                     </li>
                     <li className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>{language === "en" ? "Questions & Reviews (read/write)" : "Вопросы и отзывы (чтение и запись)"}</span>
+                      <span>{t("settings.tokenGuidePermissionQuestionsReviews")}</span>
                     </li>
                   </>
                 )}
               </ul>
               <p className="text-[10px] font-medium text-emerald-700/80 leading-snug">
                 {isSpam
-                  ? (language === "en"
-                      ? "Important: the token must have 'Chat' access to work with chat distributions. Also, write permissions are required."
-                      : "Необходимые права: 'Чат' (для работы с рассылками). Также обязательно дать разрешение на запись.")
+                  ? t("settings.tokenGuidePermissionsNoteSpam")
                   : t("settings.tokenGuidePermissionsNote")}
               </p>
             </div>
@@ -238,7 +238,7 @@ export default function TokenInstructionsPage() {
               />
               <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="bg-white/95 px-4 py-2 rounded-xl text-xs font-bold text-slate-800 shadow-md">
-                  {language === "en" ? "Zoom Screenshot" : "Увеличить скриншот"}
+                  {t("settings.tokenGuideZoomScreenshot")}
                 </span>
               </div>
             </a>
@@ -255,8 +255,8 @@ export default function TokenInstructionsPage() {
           <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
           <span>
             {isSpam
-              ? (language === "en" ? "Back to Spam Settings" : "Вернуться к настройкам рассылки")
-              : (language === "en" ? "Back to Settings" : "Вернуться к настройкам")}
+              ? t("settings.backToSpamSettings")
+              : t("settings.backToSettings")}
           </span>
         </Link>
       </div>

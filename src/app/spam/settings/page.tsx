@@ -109,7 +109,7 @@ export default function SpamSettingsPage() {
         alert(data.detail || "Error saving settings");
       }
     } catch {
-      alert("Connection error");
+      alert(t("auth.connectionError"));
     } finally {
       setSavingSettings(false);
     }
@@ -179,7 +179,7 @@ export default function SpamSettingsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-snug">
-                {t("settings.wbApiIntegration")} (Чат)
+                {t("settings.wbApiIntegrationChat")}
               </h3>
               <p className="text-xs font-semibold text-slate-500">
                 {t("settings.connectApiForAutomation")}
@@ -206,9 +206,7 @@ export default function SpamSettingsPage() {
                   {t("spam.chatToken")}
                 </h4>
                 <p className="text-xs text-slate-500 font-medium">
-                  Для рассылки сообщений в чаты Wildberries необходим токен
-                  API с правами категории 9 (&quot;Вопросы и отзывы&quot;,
-                  &quot;Чат&quot;).
+                  {t("spam.chatTokenDescription")}
                 </p>
               </div>
 
@@ -225,7 +223,7 @@ export default function SpamSettingsPage() {
             <form onSubmit={handleSaveSettings} className="space-y-5">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                  API Токен Чата
+                  {t("spam.chatTokenLabel")}
                 </label>
                 <div className="relative flex items-center">
                   <input
@@ -235,7 +233,7 @@ export default function SpamSettingsPage() {
                     placeholder={
                       hasWbChatApiToken
                         ? "••••••••••••••••••••••••••••••••••••••••"
-                        : "Введите токен WB API с категорией 9"
+                        : t("spam.chatTokenPlaceholder")
                     }
                     className="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white text-slate-800 font-mono text-sm tracking-wide shadow-inner"
                   />
@@ -293,6 +291,85 @@ export default function SpamSettingsPage() {
           </div>
         </div>
 
+        {/* Template Creator Form */}
+        <div className="bg-white rounded-3xl border border-slate-200/60 p-6 space-y-6 shadow-sm shadow-slate-200/40">
+          <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug pb-3 border-b border-slate-100 flex items-center gap-2">
+            <Plus size={18} className="text-indigo-600 stroke-[2.5]" />
+            <span>{t("spam.addTemplate")}</span>
+          </h3>
+
+          <form onSubmit={handleAddGlobalTemplate} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                {t("spam.text")}
+              </label>
+              <textarea
+                value={newTplText}
+                onChange={(e) => setNewTplText(e.target.value)}
+                placeholder={t("spam.templateTextPlaceholder")}
+                rows={4}
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  {t("spam.templateStartHour")}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={newTplStart}
+                  onChange={(e) =>
+                    setNewTplStart(
+                      e.target.value === ""
+                        ? ""
+                        : Math.min(
+                            23,
+                            Math.max(0, parseInt(e.target.value) || 0),
+                          ),
+                    )
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  {t("spam.templateEndHour")}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={newTplEnd}
+                  onChange={(e) =>
+                    setNewTplEnd(
+                      e.target.value === ""
+                        ? ""
+                        : Math.min(
+                            23,
+                            Math.max(0, parseInt(e.target.value) || 0),
+                          ),
+                    )
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={addingTemplate}
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {addingTemplate ? "..." : t("spam.addTemplate")}
+            </button>
+          </form>
+        </div>
+
         {/* Global Templates List Card */}
         <div className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 space-y-6 shadow-sm shadow-slate-200/40">
           <div className="space-y-1 pb-4 border-b border-slate-100">
@@ -300,7 +377,7 @@ export default function SpamSettingsPage() {
               {t("spam.globalTemplates")}
             </h3>
             <p className="text-xs font-semibold text-slate-500">
-              Шаблоны, которые можно использовать в любых правилах рассылки.
+              {t("spam.globalTemplatesDescription")}
             </p>
           </div>
 
@@ -336,7 +413,7 @@ export default function SpamSettingsPage() {
                   <button
                     onClick={() => handleDeleteTemplate(tpl.id)}
                     className="p-2 rounded-xl hover:bg-rose-50 text-rose-500 opacity-60 group-hover:opacity-100 hover:opacity-100 transition-all"
-                    title="Удалить шаблон"
+                    title={t("spam.deleteTemplateTitle")}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -344,85 +421,6 @@ export default function SpamSettingsPage() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Template Creator Form */}
-        <div className="bg-white rounded-3xl border border-slate-200/60 p-6 space-y-6 shadow-sm shadow-slate-200/40">
-          <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug pb-3 border-b border-slate-100 flex items-center gap-2">
-            <Plus size={18} className="text-indigo-600 stroke-[2.5]" />
-            <span>{t("spam.addTemplate")}</span>
-          </h3>
-
-          <form onSubmit={handleAddGlobalTemplate} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                {t("spam.text")}
-              </label>
-              <textarea
-                value={newTplText}
-                onChange={(e) => setNewTplText(e.target.value)}
-                placeholder={t("spam.templateTextPlaceholder")}
-                rows={4}
-                required
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all resize-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Начало (0-23 MSK)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={23}
-                  value={newTplStart}
-                  onChange={(e) =>
-                    setNewTplStart(
-                      e.target.value === ""
-                        ? ""
-                        : Math.min(
-                            23,
-                            Math.max(0, parseInt(e.target.value) || 0),
-                          ),
-                    )
-                  }
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Конец (0-23 MSK)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={23}
-                  value={newTplEnd}
-                  onChange={(e) =>
-                    setNewTplEnd(
-                      e.target.value === ""
-                        ? ""
-                        : Math.min(
-                            23,
-                            Math.max(0, parseInt(e.target.value) || 0),
-                          ),
-                    )
-                  }
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={addingTemplate}
-              className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {addingTemplate ? "..." : t("spam.addTemplate")}
-            </button>
-          </form>
         </div>
 
         <NotificationMethodsSection />

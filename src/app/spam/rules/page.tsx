@@ -181,7 +181,7 @@ export default function SpamRulesPage() {
           setChatValidationMsg(data.detail || "Error validating chat ID");
         }
       } catch {
-        setChatValidationMsg("Connection error");
+        setChatValidationMsg(t("auth.connectionError"));
       } finally {
         setValidatingChat(false);
       }
@@ -277,7 +277,7 @@ export default function SpamRulesPage() {
         alert(data.detail || "Error saving spam rule");
       }
     } catch {
-      alert("Connection error");
+      alert(t("auth.connectionError"));
     } finally {
       setSavingRule(false);
     }
@@ -425,8 +425,8 @@ export default function SpamRulesPage() {
                         className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline cursor-pointer"
                       >
                         {isManualInput
-                          ? "Выбрать из недавних чатов"
-                          : "Ввести ID вручную"}
+                          ? t("spam.chooseFromRecentChats")
+                          : t("spam.enterIdManually")}
                       </button>
                     )}
                   </div>
@@ -440,7 +440,7 @@ export default function SpamRulesPage() {
                         </div>
                         <div>
                           <p className="font-bold text-slate-800 leading-snug">
-                            {clientName || "Покупатель"}
+                            {clientName || t("spam.buyer")}
                           </p>
                           <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
                             {chatId}
@@ -500,7 +500,7 @@ export default function SpamRulesPage() {
                           type="text"
                           value={clientName}
                           className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold cursor-not-allowed"
-                          placeholder="Имя клиента"
+                          placeholder={t("spam.clientName")}
                           readOnly
                         />
                       </div>
@@ -512,7 +512,7 @@ export default function SpamRulesPage() {
                         <div className="flex justify-center items-center py-8 bg-slate-50 border border-slate-100 rounded-2xl">
                           <Loader2 className="animate-spin text-purple-600 h-6 w-6" />
                           <span className="text-xs text-slate-400 ml-2">
-                            Загрузка недавних чатов...
+                            {t("spam.loadingRecentChats")}
                           </span>
                         </div>
                       ) : recentChatsError ? (
@@ -521,7 +521,7 @@ export default function SpamRulesPage() {
                         </div>
                       ) : recentChats.length === 0 ? (
                         <div className="text-center p-8 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 text-xs font-medium">
-                          Активные чаты не найдены на Wildberries.
+                          {t("spam.noRecentChatsFound")}
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 animate-fade-in">
@@ -561,7 +561,7 @@ export default function SpamRulesPage() {
                   <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
                     <Calendar size={16} className="text-purple-600" />
                     <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                      Настройки расписания и триггеров
+                      {t("spam.scheduleSettingsTitle")}
                     </span>
                   </div>
 
@@ -691,23 +691,14 @@ export default function SpamRulesPage() {
                     />
                     <div className="space-y-1.5">
                       <p className="font-bold">
-                        Как работают триггеры рассылки:
+                        {t("spam.triggersInstructionsTitle")}
                       </p>
                       <ul className="list-disc pl-4 space-y-1">
                         <li>
-                          <span className="font-semibold">
-                            1 раз в день / раз в N дней:
-                          </span>{" "}
-                          отправка ровно в указанный вами час по МСК.
+                          {t("spam.triggerInstructionOnce")}
                         </li>
                         <li>
-                          <span className="font-semibold">
-                            Рассылать бесконечно:
-                          </span>{" "}
-                          бот отправляет шаблоны по кругу (начиная заново с
-                          первого, когда закончатся). Если выключено — каждое
-                          сообщение из шаблонов отправится покупателю только
-                          один раз.
+                          {t("spam.triggerInstructionEndless")}
                         </li>
                       </ul>
                     </div>
@@ -818,7 +809,7 @@ export default function SpamRulesPage() {
                       <div className="max-h-36 overflow-y-auto border border-slate-200/70 p-3 rounded-xl bg-slate-50/30 space-y-1.5">
                         {ruleSpecificTexts.length === 0 ? (
                           <p className="text-xs text-slate-400 py-3 text-center border-2 border-dashed border-slate-100 rounded-xl">
-                            Нет специфичных шаблонов
+                            {t("spam.noSpecificTemplates")}
                           </p>
                         ) : (
                           ruleSpecificTexts.map((text, idx) => (
@@ -878,14 +869,14 @@ export default function SpamRulesPage() {
         {/* Total stats label */}
         <div className="flex justify-between items-center mb-6 bg-slate-100 px-5 py-3.5 rounded-xl border border-slate-200/70 shadow-sm animate-fade-in">
           <span className="text-sm font-semibold text-slate-700">
-            Всего правил рассылки:{" "}
+            {t("spam.totalSpamRules")}
             <span className="font-extrabold text-slate-900 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg ml-1 shadow-sm">
               {rules.length}
             </span>
           </span>
           <span className="text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:inline flex items-center gap-1">
             <MessageSquare size={12} />
-            <span>Периодические рассылки по чатам</span>
+            <span>{t("spam.periodicChatCampaignsTitle")}</span>
           </span>
         </div>
 
@@ -944,7 +935,7 @@ export default function SpamRulesPage() {
                         <div className="text-sm text-slate-700 font-semibold flex items-center gap-1.5">
                           <span>{t("spam.clientName")}:</span>
                           <span className="text-purple-700 font-extrabold">
-                            {rule.client_name || "Покупатель"}
+                            {rule.client_name || t("spam.buyer")}
                           </span>
                         </div>
 
@@ -952,8 +943,8 @@ export default function SpamRulesPage() {
                           {t("spam.frequency")}:{" "}
                           <span className="font-bold text-slate-700">
                             {rule.frequency_type === "days"
-                              ? `Каждые ${rule.interval_days} дн. в ${rule.send_hours}:00`
-                              : `${rule.send_hours.split(",").length} раз(а) в день`}
+                              ? `${t("spam.every")} ${rule.interval_days} ${t("spam.daysShort")} ${t("spam.atHour")} ${rule.send_hours}:00`
+                              : `${rule.send_hours.split(",").length} ${t("spam.timesDaily")}`}
                           </span>
                         </div>
 
@@ -961,7 +952,7 @@ export default function SpamRulesPage() {
                           <div className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
                             <Clock size={10} />
                             <span>
-                              Последняя отправка:{" "}
+                              {t("spam.lastSentAt")}{" "}
                               {formatDateTime(rule.last_sent_at)}
                             </span>
                           </div>
@@ -970,7 +961,7 @@ export default function SpamRulesPage() {
                         {/* Associated templates preview */}
                         <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                            Привязанные шаблоны сообщений:
+                            {t("spam.linkedTemplates")}
                           </span>
                           <div className="flex flex-wrap gap-1.5">
                             {rule.templates.map((tpl) => (
@@ -989,7 +980,7 @@ export default function SpamRulesPage() {
                             ))}
                             {rule.templates.length === 0 && (
                               <span className="text-[10px] text-slate-400 italic">
-                                Шаблоны не привязаны
+                                {t("spam.noLinkedTemplates")}
                               </span>
                             )}
                           </div>
@@ -1042,7 +1033,7 @@ export default function SpamRulesPage() {
                         title="View sent log"
                       >
                         <Eye size={14} />
-                        <span className="hidden sm:inline">Лог</span>
+                        <span className="hidden sm:inline">{t("spam.log")}</span>
                       </button>
 
                       <Button
@@ -1065,7 +1056,7 @@ export default function SpamRulesPage() {
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                           <Clock size={12} />
-                          <span>История отправленных сообщений</span>
+                          <span>{t("spam.sentHistoryTitle")}</span>
                         </h4>
                         <button
                           onClick={() => {
@@ -1077,12 +1068,12 @@ export default function SpamRulesPage() {
                           }}
                           className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline"
                         >
-                          Скрыть лог
+                          {t("spam.hideLog")}
                         </button>
                       </div>
                       {sentHistory[rule.id].length === 0 ? (
                         <p className="text-xs text-slate-400 text-center py-4 border border-dashed border-slate-200 bg-white rounded-xl">
-                          Сообщений по этому правилу ещё не отправлялось
+                          {t("spam.noMessagesSentForRule")}
                         </p>
                       ) : (
                         <div className="space-y-2 max-h-48 overflow-y-auto">
