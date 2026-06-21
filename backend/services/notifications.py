@@ -136,9 +136,11 @@ def build_feedback_notification_text(review: models.Review) -> str:
         [
             "",
             (
-                f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>"
-                if auto_answer
-                else "⚠️ Не получилось сгенерировать автоответ",
+                (
+                    f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>"
+                    if auto_answer
+                    else "⚠️ Не получилось сгенерировать автоответ"
+                ),
             ),
         ]
     )
@@ -576,3 +578,17 @@ async def notify_subscription_expiring_tomorrow(
             user_id=user.id,
             email_subject="Подписка истекает завтра",
         )
+
+
+async def send_password_reset_email(email: str, reset_link: str) -> None:
+    subject = "Сброс пароля | Password Reset"
+    body = (
+        "Здравствуйте!<br><br>"
+        "Вы получили это письмо, потому что запросили сброс пароля для вашей учетной записи на reAnswer.ru.<br>"
+        "Чтобы сбросить пароль, перейдите по следующей ссылке:<br><br>"
+        f"<a href='{reset_link}' style='display:inline-block;background-color:#7c3aed;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;'>Сбросить пароль / Reset Password</a><br><br>"
+        "Эта ссылка действительна в течение 60 минут.<br>"
+        "Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.<br><br>"
+        "С уважением,<br>Команда reAnswer"
+    )
+    await _send_email(email, body, subject=subject)

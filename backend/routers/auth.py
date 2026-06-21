@@ -1,14 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import Annotated
 from jose import JWTError, jwt
+import os
+from urllib.parse import urlparse
 
 import crud
 import schemas
 import database
 import auth
+from services.notifications import send_password_reset_email
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
@@ -92,6 +95,72 @@ def check_active_subscription(current_user: schemas.User = Depends(get_current_u
     if not current_user.has_active_subscription:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Active subscription required. Please activate trial or buy a subscription."
+            detail="Active subscription required. Please activate trial or buy a subscription.",
         )
     return current_user
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    request: Request,
+    body: schemas.ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db),
+):
+    user = crud.get_user_by_email(db, email=body.email)
+    if user:
+        token = auth.create_password_reset_token(user.email, user.hashed_password)
+        origin = request.headers.get("origin")
+        if not origin:
+            referer = request.headers.get("referer")
+            if referer:
+                parsed = urlparse(referer)
+                origin = f"{parsed.scheme}://{parsed.netloc}"
+            else:
+                webhook_url = os.getenv("BOT_WEBHOOK_BASE_URL", "").strip()
+                if webhook_url:
+                    origin = webhook_url
+                else:
+                    domain = os.getenv("DOMAIN", "localhost:3000").strip()
+                    origin = (
+                        f"https://{domain}"
+                        if "localhost" not in domain
+                        else f"http://{domain}"
+                    )
+
+        reset_link = f"{origin.rstrip('/')}/reset-password?token={token}"
+        background_tasks.add_task(send_password_reset_email, user.email, reset_link)
+
+    return {
+        "message": "If the email is registered, a password reset link has been sent."
+    }
+
+
+@router.post("/reset-password")
+def reset_password(
+    body: schemas.ResetPasswordRequest,
+    db: Session = Depends(database.get_db),
+):
+    try:
+        payload = jwt.decode(body.token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        email = payload.get("sub")
+        purpose = payload.get("purpose")
+        if not email or purpose != "password_reset":
+            raise HTTPException(status_code=400, detail="Invalid or expired token")
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    user = crud.get_user_by_email(db, email=email)
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    verified_email = auth.verify_password_reset_token(body.token, user.hashed_password)
+    if not verified_email or verified_email != email:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    new_hashed_password = auth.get_password_hash(body.new_password)
+    user.hashed_password = new_hashed_password
+    db.add(user)
+    db.commit()
+
+    return {"message": "Password reset successful"}

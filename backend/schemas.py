@@ -190,3 +190,12 @@ class QuestionAnswerSettingsUpdate(BaseModel):
 class QuestionAnswerSettings(BaseModel):
     question_answer_mode: str = "manual"
     question_answer_prompt: Optional[str] = None
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
