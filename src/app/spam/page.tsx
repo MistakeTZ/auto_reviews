@@ -58,7 +58,7 @@ export default function SpamDashboardPage() {
             {t("spam.title")}
           </h1>
           <p className="text-sm text-slate-500 font-semibold leading-relaxed mb-8">
-            {t("spam.timeRange")}
+            {t("spam.about")}
           </p>
 
           {loadingStats && stats.total_rules === 0 ? (

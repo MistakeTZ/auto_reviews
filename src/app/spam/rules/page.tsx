@@ -693,7 +693,8 @@ export default function SpamRulesPage() {
                       <p className="font-bold">
                         {t("spam.triggersInstructionsTitle")}
                       </p>
-                      <ul className="list-disc pl-4 space-y-1">
+                      <ul className="list-disc space-y-1">
+                        <li>{t("spam.timeRange")}</li>
                         <li>{t("spam.triggerInstructionOnce")}</li>
                         <li>{t("spam.triggerInstructionEndless")}</li>
                       </ul>
@@ -914,8 +915,13 @@ export default function SpamRulesPage() {
 
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-mono text-base font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm">
-                            {rule.chat_id}
+                          <h3
+                            title={rule.chat_id}
+                            className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm"
+                          >
+                            {rule.chat_id.length > 18
+                              ? `${rule.chat_id.slice(0, 10)}...${rule.chat_id.slice(-5)}`
+                              : rule.chat_id}
                           </h3>
                           <span
                             className={`px-2.5 py-1 text-sm font-bold rounded-lg border ${

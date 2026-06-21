@@ -597,6 +597,7 @@ export const en = {
   },
   spam: {
     title: 'Periodic Chat Distribution',
+    about: 'Set up automatic message distribution to your Wildberries chats based on specific conditions and schedules.',
     stats: 'Statistics',
     activeRules: 'Active Rules',
     pausedRules: 'Paused Rules',
