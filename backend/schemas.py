@@ -30,6 +30,9 @@ class User(UserBase):
     has_active_subscription: bool = False
     rules_count: int = 0
     notification_methods_count: int = 0
+    wb_chat_api_token: Optional[str] = None
+    notify_answers_in_chats: bool = True
+    notify_all_messages: bool = False
 
     class Config:
         from_attributes = True
@@ -51,6 +54,10 @@ class UserPublic(UserBase):
     rules_count: int = 0
     notification_methods_count: int = 0
     has_wb_api_token: bool = False
+    wb_chat_api_token: Optional[str] = None
+    notify_answers_in_chats: bool = True
+    notify_all_messages: bool = False
+    has_wb_chat_api_token: bool = False
 
     class Config:
         from_attributes = True
@@ -199,3 +206,87 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+
+class SpamMessageTemplateBase(BaseModel):
+    text: str
+    start_hour: Optional[int] = None
+    end_hour: Optional[int] = None
+    is_global: bool = True
+    rule_id: Optional[int] = None
+
+
+class SpamMessageTemplateCreate(SpamMessageTemplateBase):
+    pass
+
+
+class SpamMessageTemplateUpdate(BaseModel):
+    text: Optional[str] = None
+    start_hour: Optional[int] = None
+    end_hour: Optional[int] = None
+    is_global: Optional[bool] = None
+    rule_id: Optional[int] = None
+
+
+class SpamMessageTemplate(SpamMessageTemplateBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class SpamRuleBase(BaseModel):
+    chat_id: str
+    client_name: Optional[str] = None
+    frequency_type: str = "hours"  # 'hours' or 'days'
+    interval_days: Optional[int] = 1
+    send_hours: str = "9,13,17,21"
+    spam_endlessly: bool = False
+    is_active: bool = True
+
+
+class SpamRuleCreate(SpamRuleBase):
+    template_ids: List[int] = []  # List of global template IDs to link
+    specific_templates: List[str] = []  # List of new specific template texts to create
+
+
+class SpamRuleUpdate(BaseModel):
+    chat_id: Optional[str] = None
+    client_name: Optional[str] = None
+    frequency_type: Optional[str] = None
+    interval_days: Optional[int] = None
+    send_hours: Optional[str] = None
+    spam_endlessly: Optional[bool] = None
+    is_active: Optional[bool] = None
+    template_ids: Optional[List[int]] = None
+    specific_templates: Optional[List[str]] = None
+
+
+class SpamRule(SpamRuleBase):
+    id: int
+    user_id: int
+    last_sent_at: Optional[datetime] = None
+    last_sent_message_timestamp: int = 0
+    templates: List[SpamMessageTemplate] = []
+
+    class Config:
+        from_attributes = True
+
+
+class SpamSentMessage(BaseModel):
+    id: int
+    rule_id: int
+    text: str
+    sent_at: datetime
+    chat_id: str
+    add_time: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SpamSettingsUpdate(BaseModel):
+    wb_chat_api_token: Optional[str] = None
+    notify_answers_in_chats: Optional[bool] = None
+    notify_all_messages: Optional[bool] = None

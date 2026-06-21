@@ -29,6 +29,7 @@ from routers import (
     products,
     payments,
     questions,
+    chats,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,20 @@ def run_migrations():
             if "is_active" not in rule_columns:
                 conn.exec_driver_sql(
                     "ALTER TABLE rules ADD COLUMN is_active BOOLEAN DEFAULT 1"
+                )
+
+            user_columns = {col.get("name") for col in inspector.get_columns("users")}
+            if "wb_chat_api_token" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN wb_chat_api_token VARCHAR"
+                )
+            if "notify_answers_in_chats" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN notify_answers_in_chats BOOLEAN DEFAULT 1"
+                )
+            if "notify_all_messages" not in user_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE users ADD COLUMN notify_all_messages BOOLEAN DEFAULT 0"
                 )
 
             conn.commit()
@@ -134,6 +149,7 @@ app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
 app.include_router(questions.router, prefix="/api/questions", tags=["questions"])
 app.include_router(payments.router, prefix="/api/payments", tags=["payments"])
 app.include_router(landing.router, prefix="/api/landing", tags=["landing"])
+app.include_router(chats.router, prefix="/api/chats", tags=["chats"])
 
 setup_admin(app)
 

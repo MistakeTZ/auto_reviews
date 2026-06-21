@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Gift,
+  Send,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -175,6 +176,14 @@ export default function Sidebar() {
             <span>{t("common.autoAnswerRules")}</span>
           </Link>
           <Link
+            href="/spam"
+            onClick={() => setIsOpen(false)}
+            className={linkClass("/spam")}
+          >
+            <Send size={18} />
+            <span>{t("common.spamDistribution")}</span>
+          </Link>
+          <Link
             href="/settings"
             onClick={() => setIsOpen(false)}
             className={linkClass("/settings")}
@@ -250,6 +259,11 @@ export default function Sidebar() {
             <Link href="/rules" className={linkClass("/rules")}>
               <ShieldAlert size={18} />
               <span>{t("common.autoAnswerRules")}</span>
+            </Link>
+
+            <Link href="/spam" className={linkClass("/spam")}>
+              <Send size={18} />
+              <span>{t("common.spamDistribution")}</span>
             </Link>
 
             <Link href="/settings" className={linkClass("/settings")}>

@@ -592,3 +592,21 @@ async def send_password_reset_email(email: str, reset_link: str) -> None:
         "С уважением,<br>Команда reAnswer"
     )
     await _send_email(email, body, subject=subject)
+
+
+async def send_custom_notification(db: Session, user_id: int, text: str, subject: str = "Уведомление reAnswer") -> None:
+    methods = (
+        db.query(models.NotificationMethod)
+        .filter(
+            models.NotificationMethod.user_id == user_id,
+            models.NotificationMethod.is_active == True,
+        )
+        .all()
+    )
+    for method in methods:
+        await _send_notification_to_method(
+            method,
+            text,
+            user_id=user_id,
+            email_subject=subject,
+        )

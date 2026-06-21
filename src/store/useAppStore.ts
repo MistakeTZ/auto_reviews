@@ -72,6 +72,9 @@ interface AppState {
   rules: Rule[];
   products: Product[];
   notificationMethods: NotificationMethod[];
+  hasWbChatApiToken: boolean;
+  notifyAnswersInChats: boolean;
+  notifyAllMessages: boolean;
 
   // Subscription & Referral Fields
   subscriptionExpiresAt: string | null;
@@ -132,6 +135,9 @@ export const useAppStore = create<AppState>()(
       reviews: [],
       rules: [],
       notificationMethods: [],
+      hasWbChatApiToken: false,
+      notifyAnswersInChats: true,
+      notifyAllMessages: false,
       subscriptionExpiresAt: null,
       tariffType: null,
       trialActivated: false,
@@ -160,6 +166,9 @@ export const useAppStore = create<AppState>()(
           rules: [],
           products: [],
           notificationMethods: [],
+          hasWbChatApiToken: false,
+          notifyAnswersInChats: true,
+          notifyAllMessages: false,
           subscriptionExpiresAt: null,
           tariffType: null,
           trialActivated: false,
@@ -185,8 +194,15 @@ export const useAppStore = create<AppState>()(
               data.has_wb_api_token ??
               (data.wb_api_token && String(data.wb_api_token).trim()),
             );
+            const hasChatToken = Boolean(
+              data.has_wb_chat_api_token ??
+              (data.wb_chat_api_token && String(data.wb_chat_api_token).trim())
+            );
             set({
               apiToken: hasApiToken ? "****************" : null,
+              hasWbChatApiToken: hasChatToken,
+              notifyAnswersInChats: Boolean(data.notify_answers_in_chats ?? true),
+              notifyAllMessages: Boolean(data.notify_all_messages ?? false),
               userName: data.name,
               userUuid: data.uuid,
               subscriptionExpiresAt: data.subscription_expires_at,

@@ -8,6 +8,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     func,
+    BigInteger,
 )
 from sqlalchemy.orm import relationship
 from database import Base
@@ -23,6 +24,9 @@ class User(Base):
     wb_api_token = Column(String, nullable=True)
     sid = Column(String, nullable=True, index=True)
     uuid = Column(String, unique=True, default=lambda: str(uuid.uuid4()))
+    wb_chat_api_token = Column(String, nullable=True)
+    notify_answers_in_chats = Column(Boolean, default=True, nullable=False)
+    notify_all_messages = Column(Boolean, default=False, nullable=False)
 
     # Subscription & Referral Fields
     subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
@@ -72,6 +76,10 @@ class User(Base):
     @property
     def has_wb_api_token(self) -> bool:
         return bool((self.wb_api_token or "").strip())
+
+    @property
+    def has_wb_chat_api_token(self) -> bool:
+        return bool((self.wb_chat_api_token or "").strip())
 
 
 class Rule(Base):
@@ -198,3 +206,69 @@ class Payment(Base):
     )
 
     user = relationship("User")
+
+
+class SpamRule(Base):
+    __tablename__ = "spam_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    chat_id = Column(String, index=True)
+    client_name = Column(String, nullable=True)
+    frequency_type = Column(String, default="hours")  # 'hours' or 'days'
+    interval_days = Column(Integer, default=1, nullable=True)
+    send_hours = Column(String, default="9,13,17,21")
+    random_offset_minutes = Column(Integer, default=0)
+    spam_endlessly = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    last_sent_at = Column(DateTime(timezone=True), nullable=True)
+    last_sent_message_timestamp = Column(BigInteger, default=0)  # WB addTime response
+
+    owner = relationship("User")
+    templates = relationship("SpamMessageTemplate", secondary="spam_rule_templates")
+
+
+class SpamMessageTemplate(Base):
+    __tablename__ = "spam_message_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    rule_id = Column(Integer, ForeignKey("spam_rules.id"), nullable=True)
+    text = Column(Text)
+    start_hour = Column(Integer, nullable=True)
+    end_hour = Column(Integer, nullable=True)
+    is_global = Column(Boolean, default=True)
+
+    owner = relationship("User")
+    rule = relationship("SpamRule")
+
+
+class SpamRuleTemplate(Base):
+    __tablename__ = "spam_rule_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    rule_id = Column(Integer, ForeignKey("spam_rules.id"))
+    template_id = Column(Integer, ForeignKey("spam_message_templates.id"))
+
+
+class SpamSentMessage(Base):
+    __tablename__ = "spam_sent_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    rule_id = Column(Integer, ForeignKey("spam_rules.id"))
+    text = Column(Text)
+    sent_at = Column(DateTime(timezone=True), server_default=func.now())
+    chat_id = Column(String, index=True)
+    add_time = Column(BigInteger, nullable=True)
+
+    rule = relationship("SpamRule")
+
+
+class SpamLastFetchedEventTime(Base):
+    __tablename__ = "spam_last_fetched_event_time"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    last_event_time_ms = Column(BigInteger, nullable=False)
+
+    owner = relationship("User")
