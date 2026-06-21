@@ -8,7 +8,18 @@ export default function SpamTariffsPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="animate-fade-in">
+    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-5xl mx-auto space-y-8 animate-fade-in">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <CreditCard className="text-indigo-600" size={32} />
+          {t("spam.referralsTab")}
+        </h1>
+        <p className="text-slate-500 font-medium mt-1">
+          {t("spam.referralsAndTariffs")}
+        </p>
+      </div>
+
       <Card className="max-w-2xl mx-auto overflow-hidden border-indigo-100 bg-gradient-to-br from-white to-indigo-50/20">
         <CardContent className="p-12 text-center space-y-6">
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm">

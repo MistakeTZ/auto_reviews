@@ -316,11 +316,11 @@ export default function SpamRulesPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-800">
+    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-4xl mx-auto space-y-6 animate-fade-in">
+      <div className="flex justify-between items-center mb-8 gap-4">
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
           {t("spam.rulesTab")}
-        </h2>
+        </h1>
         {!showRuleForm && (
           <Button
             onClick={() => {
@@ -333,7 +333,7 @@ export default function SpamRulesPage() {
               setRuleSpecificTexts([]);
               setShowRuleForm(true);
             }}
-            className="flex items-center space-x-2"
+            className="flex items-center gap-2"
           >
             <Plus size={16} />
             <span>{t("spam.createRule")}</span>

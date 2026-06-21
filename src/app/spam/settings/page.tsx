@@ -151,7 +151,16 @@ export default function SpamSettingsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="pt-24 px-4 pb-12 md:p-8 w-full max-w-4xl mx-auto space-y-8 animate-fade-in">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          {t("spam.settingsTab")}
+        </h1>
+        <p className="text-sm text-slate-500 font-medium leading-relaxed">
+          {t("spam.settings")}
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* API Config Card */}
         <div className="lg:col-span-2 space-y-6">
