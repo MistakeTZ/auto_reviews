@@ -11,6 +11,7 @@ export interface SpamRule {
   id: number;
   chat_id: string;
   client_name: string | null;
+  reply_sign: string | null;
   frequency_type: string;
   interval_days: number | null;
   send_hours: string;

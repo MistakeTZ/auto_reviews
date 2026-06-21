@@ -239,6 +239,7 @@ class SpamMessageTemplate(SpamMessageTemplateBase):
 class SpamRuleBase(BaseModel):
     chat_id: str
     client_name: Optional[str] = None
+    reply_sign: Optional[str] = None
     frequency_type: str = "hours"  # 'hours' or 'days'
     interval_days: Optional[int] = 1
     send_hours: str = "9,13,17,21"
@@ -254,6 +255,7 @@ class SpamRuleCreate(SpamRuleBase):
 class SpamRuleUpdate(BaseModel):
     chat_id: Optional[str] = None
     client_name: Optional[str] = None
+    reply_sign: Optional[str] = None
     frequency_type: Optional[str] = None
     interval_days: Optional[int] = None
     send_hours: Optional[str] = None

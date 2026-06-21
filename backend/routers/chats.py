@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import httpx
+import logging
 
 import crud
 import schemas
@@ -9,6 +10,7 @@ import database
 import models
 from routers.auth import get_current_user
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -80,27 +82,69 @@ def list_spam_rules(
 
 
 @router.post("/rules", response_model=schemas.SpamRule)
-def create_spam_rule(
+async def create_spam_rule(
     rule: schemas.SpamRuleCreate,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    # Verify token is configured
-    if not (current_user.wb_chat_api_token or "").strip():
+    token = (current_user.wb_chat_api_token or "").strip()
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Wildberries chat API token must be configured before creating rules.",
         )
+
+    # Resolve reply_sign from Wildberries if not provided by client
+    if not rule.reply_sign:
+        try:
+            chats = await fetch_wb_chats(token)
+            for chat in chats:
+                if chat.get("chatID") == rule.chat_id.strip():
+                    rule.reply_sign = chat.get("replySign")
+                    if not rule.client_name:
+                        rule.client_name = chat.get("clientName")
+                    break
+        except Exception as e:
+            logger.error(f"Failed to fetch replySign during rule creation: {e}")
+
+    if not rule.reply_sign:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Could not retrieve replySign for this Chat ID. Please check if the Chat ID exists on Wildberries."
+        )
+
     return crud.create_spam_rule(db, current_user.id, rule)
 
 
 @router.put("/rules/{rule_id}", response_model=schemas.SpamRule)
-def update_spam_rule(
+async def update_spam_rule(
     rule_id: int,
     rule_in: schemas.SpamRuleUpdate,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user),
 ):
+    token = (current_user.wb_chat_api_token or "").strip()
+    
+    # If chat_id is changing, resolve the new reply_sign
+    if rule_in.chat_id is not None:
+        if not rule_in.reply_sign:
+            try:
+                chats = await fetch_wb_chats(token)
+                for chat in chats:
+                    if chat.get("chatID") == rule_in.chat_id.strip():
+                        rule_in.reply_sign = chat.get("replySign")
+                        if not rule_in.client_name:
+                            rule_in.client_name = chat.get("clientName")
+                        break
+            except Exception as e:
+                logger.error(f"Failed to fetch replySign during rule update: {e}")
+
+        if not rule_in.reply_sign:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Could not retrieve replySign for the new Chat ID. Please check if the Chat ID exists on Wildberries."
+            )
+
     db_rule = crud.update_spam_rule(db, rule_id, current_user.id, rule_in)
     if not db_rule:
         raise HTTPException(

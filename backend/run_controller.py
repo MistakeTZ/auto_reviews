@@ -189,8 +189,22 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
         client_name = rule.client_name or "Buyer"
         rendered_text = selected_template.text.replace("[name]", client_name)
 
+        reply_sign = rule.reply_sign
+        if not reply_sign:
+            reply_sign = chat.get("replySign")
+            if reply_sign:
+                rule.reply_sign = reply_sign
+                db.add(rule)
+                db.commit()
+
+        if not reply_sign:
+            logger.error(
+                "Cannot send message for rule %s: reply_sign is missing", rule.id
+            )
+            continue
+
         send_url = "https://buyer-chat-api.wildberries.ru/api/v1/seller/message"
-        payload = {"chatID": rule.chat_id, "text": rendered_text}
+        payload = {"replySign": reply_sign, "message": rendered_text}
 
         async with httpx.AsyncClient(timeout=15.0) as client:
             try:
@@ -352,6 +366,20 @@ async def check_user_chat_events(db: Session, user: User):
 async def run_controllers():
     # Controller runs as a separate service, so ensure schema exists on startup.
     Base.metadata.create_all(bind=engine)
+
+    # Ensure spam_rules has reply_sign column
+    from sqlalchemy import inspect
+    try:
+        inspector = inspect(engine)
+        with engine.connect() as conn:
+            spam_rule_columns = {col.get("name") for col in inspector.get_columns("spam_rules")}
+            if "reply_sign" not in spam_rule_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE spam_rules ADD COLUMN reply_sign VARCHAR"
+                )
+                conn.commit()
+    except Exception as e:
+        logger.warning("Failed to run spam_rules reply_sign migration in controller: %s", e)
 
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:

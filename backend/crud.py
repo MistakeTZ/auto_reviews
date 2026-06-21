@@ -608,6 +608,7 @@ def create_spam_rule(db: Session, user_id: int, rule: schemas.SpamRuleCreate):
         user_id=user_id,
         chat_id=rule.chat_id,
         client_name=rule.client_name,
+        reply_sign=rule.reply_sign,
         frequency_type=rule.frequency_type,
         interval_days=rule.interval_days,
         send_hours=rule.send_hours,

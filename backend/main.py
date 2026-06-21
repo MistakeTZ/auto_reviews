@@ -69,6 +69,14 @@ def run_migrations():
                     "ALTER TABLE users ADD COLUMN notify_all_messages BOOLEAN DEFAULT 0"
                 )
 
+            spam_rule_columns = {
+                col.get("name") for col in inspector.get_columns("spam_rules")
+            }
+            if "reply_sign" not in spam_rule_columns:
+                conn.exec_driver_sql(
+                    "ALTER TABLE spam_rules ADD COLUMN reply_sign VARCHAR"
+                )
+
             conn.commit()
 
     except Exception as e:

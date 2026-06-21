@@ -215,6 +215,7 @@ class SpamRule(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     chat_id = Column(String, index=True)
     client_name = Column(String, nullable=True)
+    reply_sign = Column(String, nullable=True)
     frequency_type = Column(String, default="hours")  # 'hours' or 'days'
     interval_days = Column(Integer, default=1, nullable=True)
     send_hours = Column(String, default="9,13,17,21")
