@@ -383,6 +383,7 @@ async def run_controllers():
                 logger.info("Running daily controller tasks...")
 
             db = SessionLocal()
+            db.expire_on_commit = False
             users = (
                 db.query(User)
                 .filter(
@@ -409,9 +410,9 @@ async def run_controllers():
             current_user_ids = set()
 
             for user in users:
-                if not user.wb_chat_api_token:
+                token = str(user.wb_api_token or "").strip()
+                if not token:
                     continue
-                token = user.wb_api_token.strip()
 
                 current_user_ids.add(user.id)
 
