@@ -674,7 +674,7 @@ export const en = {
     chatTokenLabel: 'Chat API Token',
     chatTokenPlaceholder: 'Enter WB API token with category 9',
     globalTemplatesDescription: 'Templates that can be used in any distribution rule.',
-    templateStartHour: 'Start (0-23 MSK)',
-    templateEndHour: 'End (0-23 MSK)',
+    templateStartHour: 'Start (0-23 MCK)',
+    templateEndHour: 'End (0-23 MCK)',
   }
 };

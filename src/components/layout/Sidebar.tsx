@@ -82,7 +82,16 @@ export default function Sidebar() {
     router.push("/");
   };
 
-  const isSpamMode = pathname.startsWith("/spam");
+  const [isSpamMode, setIsSpamMode] = useState(false);
+
+  useEffect(() => {
+    const isSpamRoute = pathname.startsWith("/spam");
+    const isFromSpamParam =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("from") === "spam";
+    setIsSpamMode(isSpamRoute || isFromSpamParam);
+  }, [pathname]);
+
   const mode = isSpamMode ? "respam" : "reanswer";
 
   const linkClass = (path: string, activeSpam: boolean) => {

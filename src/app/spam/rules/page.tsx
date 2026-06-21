@@ -694,12 +694,8 @@ export default function SpamRulesPage() {
                         {t("spam.triggersInstructionsTitle")}
                       </p>
                       <ul className="list-disc pl-4 space-y-1">
-                        <li>
-                          {t("spam.triggerInstructionOnce")}
-                        </li>
-                        <li>
-                          {t("spam.triggerInstructionEndless")}
-                        </li>
+                        <li>{t("spam.triggerInstructionOnce")}</li>
+                        <li>{t("spam.triggerInstructionEndless")}</li>
                       </ul>
                     </div>
                   </div>
@@ -772,7 +768,7 @@ export default function SpamRulesPage() {
                                   <Clock size={10} />
                                   <span>
                                     {tpl.start_hour}:00 - {tpl.end_hour}:00
-                                    (MSK)
+                                    (MCK)
                                   </span>
                                 </span>
                               )}
@@ -803,7 +799,9 @@ export default function SpamRulesPage() {
                           className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
                         >
                           <Plus size={12} />
-                          <span className="hidden sm:inline">{t("spam.add")}</span>
+                          <span className="hidden sm:inline">
+                            {t("spam.add")}
+                          </span>
                         </button>
                       </div>
                       <div className="max-h-36 overflow-y-auto border border-slate-200/70 p-3 rounded-xl bg-slate-50/30 space-y-1.5">
@@ -874,7 +872,7 @@ export default function SpamRulesPage() {
               {rules.length}
             </span>
           </span>
-          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:inline flex items-center gap-1">
+          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:flex items-center gap-1">
             <MessageSquare size={12} />
             <span>{t("spam.periodicChatCampaignsTitle")}</span>
           </span>
@@ -907,7 +905,7 @@ export default function SpamRulesPage() {
                   <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                     <div className="flex flex-row items-start flex-1 gap-4">
                       {/* Left icon wrapper */}
-                      <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200/60 p-3 rounded-xl min-w-[64px] select-none text-slate-400">
+                      <div className="hidden sm:flex flex-col items-center justify-center bg-slate-50 border border-slate-200/60 p-3 rounded-xl min-w-[64px] select-none text-slate-400">
                         <MessageSquare size={24} className="text-purple-600" />
                         <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
                           CHAT
@@ -916,11 +914,11 @@ export default function SpamRulesPage() {
 
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm">
+                          <h3 className="font-mono text-base font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm">
                             {rule.chat_id}
                           </h3>
                           <span
-                            className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                            className={`px-2.5 py-1 text-sm font-bold rounded-lg border ${
                               rule.is_active
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-slate-50 text-slate-500 border-slate-200"
@@ -932,14 +930,14 @@ export default function SpamRulesPage() {
                           </span>
                         </div>
 
-                        <div className="text-sm text-slate-700 font-semibold flex items-center gap-1.5">
+                        <div className="text-base text-slate-700 font-semibold flex items-center gap-1.5">
                           <span>{t("spam.clientName")}:</span>
                           <span className="text-purple-700 font-extrabold">
                             {rule.client_name || t("spam.buyer")}
                           </span>
                         </div>
 
-                        <div className="text-xs text-slate-500 font-medium">
+                        <div className="text-sm text-slate-500 font-medium">
                           {t("spam.frequency")}:{" "}
                           <span className="font-bold text-slate-700">
                             {rule.frequency_type === "days"
@@ -949,8 +947,8 @@ export default function SpamRulesPage() {
                         </div>
 
                         {rule.last_sent_at && (
-                          <div className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
-                            <Clock size={10} />
+                          <div className="text-xs text-slate-400 font-semibold flex items-center gap-1">
+                            <Clock size={12} />
                             <span>
                               {t("spam.lastSentAt")}{" "}
                               {formatDateTime(rule.last_sent_at)}
@@ -960,14 +958,14 @@ export default function SpamRulesPage() {
 
                         {/* Associated templates preview */}
                         <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                             {t("spam.linkedTemplates")}
                           </span>
                           <div className="flex flex-wrap gap-1.5">
                             {rule.templates.map((tpl) => (
                               <span
                                 key={tpl.id}
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                                className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
                                   tpl.is_global
                                     ? "bg-purple-50 text-purple-700 border-purple-100"
                                     : "bg-slate-50 text-slate-600 border-slate-200"
@@ -979,7 +977,7 @@ export default function SpamRulesPage() {
                               </span>
                             ))}
                             {rule.templates.length === 0 && (
-                              <span className="text-[10px] text-slate-400 italic">
+                              <span className="text-xs text-slate-400 italic">
                                 {t("spam.noLinkedTemplates")}
                               </span>
                             )}
@@ -1033,7 +1031,9 @@ export default function SpamRulesPage() {
                         title="View sent log"
                       >
                         <Eye size={14} />
-                        <span className="hidden sm:inline">{t("spam.log")}</span>
+                        <span className="hidden sm:inline">
+                          {t("spam.log")}
+                        </span>
                       </button>
 
                       <Button
@@ -1054,8 +1054,8 @@ export default function SpamRulesPage() {
                   {sentHistory[rule.id] !== undefined && (
                     <div className="px-6 pb-6 border-t border-slate-100 pt-4 bg-slate-50/30 animate-fade-in">
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <Clock size={12} />
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Clock size={14} />
                           <span>{t("spam.sentHistoryTitle")}</span>
                         </h4>
                         <button
@@ -1080,12 +1080,12 @@ export default function SpamRulesPage() {
                           {sentHistory[rule.id].map((h) => (
                             <div
                               key={h.id}
-                              className="flex justify-between items-center text-xs bg-white border border-slate-100 p-2.5 rounded-xl shadow-sm"
+                              className="flex justify-between items-center text-sm bg-white border border-slate-100 p-2.5 rounded-xl shadow-sm"
                             >
                               <span className="font-semibold text-slate-700">
                                 {h.text}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-bold shrink-0 ml-4">
+                              <span className="text-xs text-slate-400 font-bold shrink-0 ml-4">
                                 {formatDateTime(h.sent_at)}
                               </span>
                             </div>

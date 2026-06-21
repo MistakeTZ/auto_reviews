@@ -405,7 +405,7 @@ export default function SpamSettingsPage() {
                         <Clock size={10} />
                         <span>
                           {t("spam.allowedHours")} {tpl.start_hour}:00 -{" "}
-                          {tpl.end_hour}:00 (MSK)
+                          {tpl.end_hour}:00 (MCK)
                         </span>
                       </p>
                     )}

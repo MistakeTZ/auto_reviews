@@ -612,7 +612,7 @@ export const ru = {
     active: 'Активно',
     specificTemplates: 'Специфичные шаблоны для этого чата',
     globalTemplates: 'Глобальные шаблоны',
-    settings: 'Настройки',
+    settings: 'Управляйте расписанием и триггерами для автоматических сообщений в чатах Wildberries',
     chatToken: 'API-токен Wildberries',
     notifyAnswers: 'Уведомлять об ответах в чатах',
     notifyAll: 'Уведомлять обо всех сообщениях покупателей (даже без правил)',
@@ -674,7 +674,7 @@ export const ru = {
     chatTokenLabel: 'API Токен Чата',
     chatTokenPlaceholder: 'Введите токен WB API с категорией 9',
     globalTemplatesDescription: 'Шаблоны, которые можно использовать в любых правилах рассылки.',
-    templateStartHour: 'Начало (0-23 MSK)',
-    templateEndHour: 'Конец (0-23 MSK)',
+    templateStartHour: 'Начало (0-23 MCK)',
+    templateEndHour: 'Конец (0-23 MCK)',
   }
 };
