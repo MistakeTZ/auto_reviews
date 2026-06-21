@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Megaphone, CheckCircle, Loader2 } from "lucide-react";
 import { SpamStats, SpamSentMessage } from "./types";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
+import { formatDateTime } from "@/lib/formatDateTime";
 
 export default function SpamDashboardPage() {
   const { jwtToken } = useAppStore();
@@ -146,7 +147,7 @@ export default function SpamDashboardPage() {
                                 </span>
                               </p>
                               <span className="text-xs text-slate-400 shrink-0 ml-4 font-semibold">
-                                {new Date(msg.sent_at).toLocaleString()}
+                                {formatDateTime(msg.sent_at)}
                               </span>
                             </div>
                             <p className="text-sm text-slate-600 mt-2 font-medium bg-slate-50 border border-slate-100/60 p-3.5 rounded-2xl italic leading-relaxed">

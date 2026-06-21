@@ -5,8 +5,21 @@ import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Plus, Trash2, Play, Pause, Loader2, Edit2, Eye, Check } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Edit2,
+  Eye,
+  Check,
+  Info,
+  Calendar,
+  Clock,
+  MessageSquare,
+} from "lucide-react";
 import { SpamRule, SpamTemplate, SpamSentMessage } from "../types";
+import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
+import { formatDateTime } from "@/lib/formatDateTime";
 
 export default function SpamRulesPage() {
   const { jwtToken } = useAppStore();
@@ -307,6 +320,7 @@ export default function SpamRulesPage() {
     setRuleSpecificTexts(specifics);
 
     setShowRuleForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleRuleActive = async (rule: SpamRule) => {
@@ -351,560 +365,719 @@ export default function SpamRulesPage() {
   };
 
   return (
-    <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          {t("spam.rulesTab")}
-        </h1>
-        {!showRuleForm && (
+    <SubscriptionGuard>
+      <div className="pt-24 px-4 pb-8 md:p-8 w-full max-w-4xl mx-auto space-y-6">
+        <div className="flex justify-between items-center mb-8 gap-4">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            {t("spam.rulesTab")}
+          </h1>
           <Button
             onClick={() => {
-              setEditingRuleId(null);
-              setChatId("");
-              setClientName("");
-              setIsManualInput(false);
-              setChatValidationMsg("");
-              setSpamEndlessly(false);
-              setRuleActive(true);
-              setSelectedGlobalTplIds([]);
-              setRuleSpecificTexts([]);
-              setShowRuleForm(true);
-              loadRecentChats();
+              if (showRuleForm) {
+                setShowRuleForm(false);
+                setEditingRuleId(null);
+              } else {
+                setEditingRuleId(null);
+                setChatId("");
+                setClientName("");
+                setIsManualInput(false);
+                setChatValidationMsg("");
+                setSpamEndlessly(false);
+                setRuleActive(true);
+                setSelectedGlobalTplIds([]);
+                setRuleSpecificTexts([]);
+                setShowRuleForm(true);
+                loadRecentChats();
+              }
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95"
           >
             <Plus size={16} />
-            <span>{t("spam.createRule")}</span>
+            {showRuleForm ? t("common.cancel") : t("spam.createRule")}
           </Button>
-        )}
-      </div>
+        </div>
 
-      {/* Create/Edit Rule Form Overlay */}
-      {showRuleForm && (
-        <Card className="border-indigo-100 bg-indigo-50/10">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">
-              {editingRuleId ? t("spam.editRule") : t("spam.createRule")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateOrUpdateRule} className="space-y-4">
-              {/* Chat Selector */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-semibold text-slate-800">
-                    {t("spam.chatId")}
-                  </label>
-                  {(!chatId || isManualInput) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsManualInput(!isManualInput);
-                        setChatId("");
-                        setClientName("");
-                        setChatValidationMsg("");
-                      }}
-                      className="text-xs text-indigo-600 hover:text-indigo-700 font-bold hover:underline cursor-pointer"
-                    >
-                      {isManualInput ? "Choose from recent chats" : "Enter ID manually"}
-                    </button>
+        {/* Create/Edit Rule Form */}
+        {showRuleForm && (
+          <Card className="mb-8 border border-slate-200 shadow-lg rounded-2xl bg-white overflow-hidden animate-fade-in">
+            <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
+              <CardTitle className="text-lg font-bold text-purple-700">
+                {editingRuleId ? t("spam.editRule") : t("spam.createRule")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <form onSubmit={handleCreateOrUpdateRule} className="space-y-6">
+                {/* Chat Selector */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      {t("spam.chatId")}
+                    </label>
+                    {(!chatId || isManualInput) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsManualInput(!isManualInput);
+                          setChatId("");
+                          setClientName("");
+                          setChatValidationMsg("");
+                        }}
+                        className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline cursor-pointer"
+                      >
+                        {isManualInput
+                          ? "Выбрать из недавних чатов"
+                          : "Ввести ID вручную"}
+                      </button>
+                    )}
+                  </div>
+
+                  {chatId && !isManualInput ? (
+                    /* Selected Chat Card */
+                    <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm animate-fade-in">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
+                          <Check className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800 leading-snug">
+                            {clientName || "Покупатель"}
+                          </p>
+                          <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
+                            {chatId}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setChatId("");
+                          setClientName("");
+                          setChatValidationMsg("");
+                        }}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-semibold px-3 py-1.5 rounded-xl text-xs cursor-pointer active:scale-95 transition-all"
+                      >
+                        {t("common.cancel")}
+                      </Button>
+                    </div>
+                  ) : isManualInput ? (
+                    /* Manual input view */
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                      <div>
+                        <input
+                          type="text"
+                          value={chatId}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setChatId(val);
+                            if (!val.trim()) {
+                              setClientName("");
+                              setChatValidationMsg("");
+                            }
+                          }}
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                          placeholder="1:xxxxxxxxx"
+                          required
+                        />
+                        {validatingChat && (
+                          <div className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
+                            <Loader2
+                              size={12}
+                              className="animate-spin text-purple-600"
+                            />
+                            <span>{t("spam.checkingChat")}</span>
+                          </div>
+                        )}
+                        {chatValidationMsg && !validatingChat && (
+                          <p
+                            className={`text-xs mt-1.5 font-bold ${clientName ? "text-green-600" : "text-amber-600"}`}
+                          >
+                            {chatValidationMsg}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={clientName}
+                          className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold cursor-not-allowed"
+                          placeholder="Имя клиента"
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Selector List */
+                    <div className="space-y-3">
+                      {loadingRecentChats ? (
+                        <div className="flex justify-center items-center py-8 bg-slate-50 border border-slate-100 rounded-2xl">
+                          <Loader2 className="animate-spin text-purple-600 h-6 w-6" />
+                          <span className="text-xs text-slate-400 ml-2">
+                            Загрузка недавних чатов...
+                          </span>
+                        </div>
+                      ) : recentChatsError ? (
+                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl">
+                          {recentChatsError}
+                        </div>
+                      ) : recentChats.length === 0 ? (
+                        <div className="text-center p-8 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 text-xs font-medium">
+                          Активные чаты не найдены на Wildberries.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 animate-fade-in">
+                          {recentChats.map((chat) => (
+                            <button
+                              key={chat.chatID}
+                              type="button"
+                              onClick={() => {
+                                setChatId(chat.chatID);
+                                setClientName(chat.clientName);
+                              }}
+                              className="text-left p-3 bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50/10 rounded-xl transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 cursor-pointer"
+                            >
+                              <div className="flex justify-between items-start">
+                                <span className="font-bold text-slate-800 text-xs truncate max-w-[125px]">
+                                  {chat.clientName}
+                                </span>
+                                <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
+                                  {chat.chatID.replace(/^1:/, "")}
+                                </span>
+                              </div>
+                              {chat.lastMessageText && (
+                                <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1 italic">
+                                  &ldquo;{chat.lastMessageText}&rdquo;
+                                </p>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
-                {chatId && !isManualInput ? (
-                  /* Selected Chat Card */
-                  <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm animate-fade-in">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 leading-snug">
-                          {clientName || "Покупатель"}
-                        </p>
-                        <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
-                          {chatId}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setChatId("");
-                        setClientName("");
-                        setChatValidationMsg("");
-                      }}
-                      className="px-3 py-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-slate-200 cursor-pointer"
-                    >
-                      {t("common.cancel")}
-                    </Button>
+                {/* Scheduling Parameters */}
+                <div className="bg-slate-50/70 p-4 border border-slate-200/50 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
+                    <Calendar size={16} className="text-purple-600" />
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                      Настройки расписания и триггеров
+                    </span>
                   </div>
-                ) : isManualInput ? (
-                  /* Manual input view */
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Frequency */}
                     <div>
-                      <input
-                        type="text"
-                        value={chatId}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setChatId(val);
-                          if (!val.trim()) {
-                            setClientName("");
-                            setChatValidationMsg("");
-                          }
-                        }}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none text-slate-800 text-sm font-medium transition-all"
-                        placeholder="1:xxxxxxxxx"
-                        required
-                      />
-                      {validatingChat && (
-                        <div className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
-                          <Loader2 size={12} className="animate-spin text-indigo-600" />
-                          <span>{t("spam.checkingChat")}</span>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        {t("spam.frequency")}
+                      </label>
+                      <select
+                        value={frequencyType}
+                        onChange={(e) =>
+                          setFrequencyType(
+                            e.target.value as
+                              | "four_times"
+                              | "three_times"
+                              | "twice"
+                              | "once"
+                              | "custom_days",
+                          )
+                        }
+                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
+                      >
+                        <option value="four_times">
+                          {t("spam.fourTimesDaily")}
+                        </option>
+                        <option value="three_times">
+                          {t("spam.threeTimesDaily")}
+                        </option>
+                        <option value="twice">{t("spam.twiceDaily")}</option>
+                        <option value="once">{t("spam.onceDaily")}</option>
+                        <option value="custom_days">
+                          {t("spam.everyNDays")}
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Conditional Scheduling inputs */}
+                    {frequencyType === "custom_days" ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                            {t("spam.intervalDays")}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={intervalDays}
+                            onChange={(e) =>
+                              setIntervalDays(
+                                Math.max(1, parseInt(e.target.value) || 1),
+                              )
+                            }
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                          />
                         </div>
-                      )}
-                      {chatValidationMsg && !validatingChat && (
-                        <p className={`text-xs mt-1.5 font-bold ${clientName ? "text-green-600" : "text-amber-600"}`}>
-                          {chatValidationMsg}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        value={clientName}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold"
-                        placeholder="Client name"
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  /* Selector List */
-                  <div className="space-y-3">
-                    {loadingRecentChats ? (
-                      <div className="flex justify-center items-center py-6 bg-white border border-slate-100 rounded-2xl">
-                        <Loader2 className="animate-spin text-indigo-600 h-6 w-6" />
-                        <span className="text-xs text-slate-400 ml-2">Loading active chats...</span>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                            {t("spam.specificHourLabel")}
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            max={23}
+                            value={specificHour}
+                            onChange={(e) =>
+                              setSpecificHour(
+                                Math.min(
+                                  23,
+                                  Math.max(0, parseInt(e.target.value) || 0),
+                                ),
+                              )
+                            }
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                          />
+                        </div>
                       </div>
-                    ) : recentChatsError ? (
-                      <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl">
-                        {recentChatsError}
-                      </div>
-                    ) : recentChats.length === 0 ? (
-                      <div className="text-center p-6 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 text-xs font-medium">
-                        No active chats found on Wildberries.
+                    ) : frequencyType === "once" ? (
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                          {t("spam.specificHourLabel")}
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={23}
+                          value={specificHour}
+                          onChange={(e) =>
+                            setSpecificHour(
+                              Math.min(
+                                23,
+                                Math.max(0, parseInt(e.target.value) || 0),
+                              ),
+                            )
+                          }
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                        />
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1 animate-fade-in">
-                        {recentChats.map((chat) => (
-                          <button
-                            key={chat.chatID}
-                            type="button"
-                            onClick={() => {
-                              setChatId(chat.chatID);
-                              setClientName(chat.clientName);
-                            }}
-                            className="text-left p-3 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/10 rounded-xl transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                          {t("spam.sendHoursLabel")}
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            frequencyType === "four_times"
+                              ? "9,13,17,21"
+                              : frequencyType === "three_times"
+                                ? "9,15,21"
+                                : frequencyType === "twice"
+                                  ? "9,21"
+                                  : ""
+                          }
+                          className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold cursor-not-allowed"
+                          readOnly
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Trigger Descriptions / Trigger Help */}
+                  <div className="bg-purple-50/50 border border-purple-100 p-4 rounded-xl flex gap-3 items-start text-xs text-purple-950">
+                    <Info
+                      size={16}
+                      className="text-purple-600 mt-0.5 shrink-0"
+                    />
+                    <div className="space-y-1.5">
+                      <p className="font-bold">
+                        Как работают триггеры рассылки:
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>
+                          <span className="font-semibold">4 раза в день:</span>{" "}
+                          отправка сообщений будет происходить в 9:00, 13:00,
+                          17:00, 21:00 по МСК.
+                        </li>
+                        <li>
+                          <span className="font-semibold">3 раза в день:</span>{" "}
+                          в 9:00, 15:00, 21:00 по МСК.
+                        </li>
+                        <li>
+                          <span className="font-semibold">2 раза в день:</span>{" "}
+                          в 9:00, 21:00 по МСК.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            1 раз в день / раз в N дней:
+                          </span>{" "}
+                          отправка ровно в указанный вами час по МСК.
+                        </li>
+                        <li>
+                          <span className="font-semibold">
+                            Рассылать бесконечно:
+                          </span>{" "}
+                          бот отправляет шаблоны по кругу (начиная заново с
+                          первого, когда закончатся). Если выключено — каждое
+                          сообщение из шаблонов отправится покупателю только
+                          один раз.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Flags */}
+                <div className="flex flex-wrap gap-6 pt-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                    <input
+                      type="checkbox"
+                      checked={spamEndlessly}
+                      onChange={(e) => setSpamEndlessly(e.target.checked)}
+                      className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
+                    />
+                    <span>{t("spam.spamEndlessly")}</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                    <input
+                      type="checkbox"
+                      checked={ruleActive}
+                      onChange={(e) => setRuleActive(e.target.checked)}
+                      className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
+                    />
+                    <span className="font-semibold text-purple-700">
+                      {t("spam.active")}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Template Associations */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-100 pt-6">
+                  {/* Global Templates */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                      {t("spam.globalTemplates")}
+                    </h4>
+                    {loadingTemplates ? (
+                      <div className="flex py-6 justify-center">
+                        <Loader2
+                          size={20}
+                          className="animate-spin text-purple-600"
+                        />
+                      </div>
+                    ) : globalTemplates.length === 0 ? (
+                      <p className="text-xs text-slate-400 py-3 text-center border-2 border-dashed border-slate-100 rounded-xl">
+                        {t("spam.noTemplatesCreated")}
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200/70 p-3 rounded-xl bg-slate-50/30">
+                        {globalTemplates.map((tpl) => (
+                          <label
+                            key={tpl.id}
+                            className="flex items-start space-x-3 text-xs text-slate-600 cursor-pointer hover:bg-slate-200/50 p-2 rounded-lg transition-colors"
                           >
-                            <div className="flex justify-between items-start">
-                              <span className="font-bold text-slate-800 text-sm truncate max-w-[120px]">
-                                {chat.clientName}
+                            <input
+                              type="checkbox"
+                              checked={selectedGlobalTplIds.includes(tpl.id)}
+                              onChange={() =>
+                                toggleGlobalTemplateSelection(tpl.id)
+                              }
+                              className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 mt-0.5 h-4 w-4 cursor-pointer"
+                            />
+                            <div>
+                              <span className="font-bold text-slate-800 block leading-tight">
+                                {tpl.text}
                               </span>
-                              <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
-                                {chat.chatID.replace(/^1:/, "")}
-                              </span>
+                              {tpl.start_hour !== null && (
+                                <span className="text-[10px] text-purple-600 font-semibold mt-1 inline-flex items-center gap-1">
+                                  <Clock size={10} />
+                                  <span>
+                                    {tpl.start_hour}:00 - {tpl.end_hour}:00
+                                    (MSK)
+                                  </span>
+                                </span>
+                              )}
                             </div>
-                            {chat.lastMessageText && (
-                              <p className="text-xs text-slate-500 mt-1.5 line-clamp-1 italic">
-                                &ldquo;{chat.lastMessageText}&rdquo;
-                              </p>
-                            )}
-                          </button>
+                          </label>
                         ))}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Frequency */}
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    {t("spam.frequency")}
-                  </label>
-                  <select
-                    value={frequencyType}
-                    onChange={(e) =>
-                      setFrequencyType(
-                        e.target.value as
-                          | "four_times"
-                          | "three_times"
-                          | "twice"
-                          | "once"
-                          | "custom_days",
-                      )
-                    }
-                    className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="four_times">
-                      {t("spam.fourTimesDaily")}
-                    </option>
-                    <option value="three_times">
-                      {t("spam.threeTimesDaily")}
-                    </option>
-                    <option value="twice">{t("spam.twiceDaily")}</option>
-                    <option value="once">{t("spam.onceDaily")}</option>
-                    <option value="custom_days">{t("spam.everyNDays")}</option>
-                  </select>
+                  {/* Specific Templates Creator */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                      {t("spam.specificTemplates")}
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={newSpecificText}
+                          onChange={(e) => setNewSpecificText(e.target.value)}
+                          placeholder={t("spam.templateTextPlaceholder")}
+                          className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-xs font-medium transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddRuleSpecificText}
+                          className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
+                        >
+                          Добавить
+                        </button>
+                      </div>
+                      <div className="max-h-36 overflow-y-auto border border-slate-200/70 p-3 rounded-xl bg-slate-50/30 space-y-1.5">
+                        {ruleSpecificTexts.length === 0 ? (
+                          <p className="text-xs text-slate-400 py-3 text-center border-2 border-dashed border-slate-100 rounded-xl">
+                            Нет специфичных шаблонов
+                          </p>
+                        ) : (
+                          ruleSpecificTexts.map((text, idx) => (
+                            <div
+                              key={idx}
+                              className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100 shadow-sm text-xs"
+                            >
+                              <span className="font-bold text-slate-700 truncate mr-2 leading-tight">
+                                {text}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleRemoveRuleSpecificText(idx)
+                                }
+                                className="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-50 rounded"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Conditional Scheduling */}
-                {frequencyType === "custom_days" ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-sm font-semibold mb-1">
-                        {t("spam.intervalDays")}
-                      </label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={intervalDays}
-                        onChange={(e) =>
-                          setIntervalDays(
-                            Math.max(1, parseInt(e.target.value) || 1),
-                          )
-                        }
-                        className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold mb-1">
-                        {t("spam.specificHourLabel")}
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={23}
-                        value={specificHour}
-                        onChange={(e) =>
-                          setSpecificHour(
-                            Math.min(
-                              23,
-                              Math.max(0, parseInt(e.target.value) || 0),
-                            ),
-                          )
-                        }
-                        className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
-                ) : frequencyType === "once" ? (
-                  <div>
-                    <label className="block text-sm font-semibold mb-1">
-                      {t("spam.specificHourLabel")}
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={23}
-                      value={specificHour}
-                      onChange={(e) =>
-                        setSpecificHour(
-                          Math.min(
-                            23,
-                            Math.max(0, parseInt(e.target.value) || 0),
-                          ),
-                        )
-                      }
-                      className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-sm font-semibold mb-1">
-                      {t("spam.sendHoursLabel")}
-                    </label>
-                    <input
-                      type="text"
-                      value={
-                        frequencyType === "four_times"
-                          ? "9,13,17,21"
-                          : frequencyType === "three_times"
-                            ? "9,15,21"
-                            : frequencyType === "twice"
-                              ? "9,21"
-                              : ""
-                      }
-                      className="w-full px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-500"
-                      readOnly
-                    />
-                  </div>
-                )}
-              </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setShowRuleForm(false);
+                      setEditingRuleId(null);
+                    }}
+                    disabled={savingRule}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95"
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      savingRule ||
+                      !chatId.trim() ||
+                      (isManualInput && (validatingChat || !clientName))
+                    }
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    {savingRule ? "..." : t("spam.saveRule")}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
-              {/* Config Flags */}
-              <div className="flex space-x-6">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={spamEndlessly}
-                    onChange={(e) => setSpamEndlessly(e.target.checked)}
-                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="text-sm font-semibold text-slate-700">
-                    {t("spam.spamEndlessly")}
-                  </span>
-                </label>
+        {/* Total stats label */}
+        <div className="flex justify-between items-center mb-6 bg-slate-100 px-5 py-3.5 rounded-xl border border-slate-200/70 shadow-sm animate-fade-in">
+          <span className="text-sm font-semibold text-slate-700">
+            Всего правил рассылки:{" "}
+            <span className="font-extrabold text-slate-900 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg ml-1 shadow-sm">
+              {rules.length}
+            </span>
+          </span>
+          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:inline flex items-center gap-1">
+            <MessageSquare size={12} />
+            <span>Периодические рассылки по чатам</span>
+          </span>
+        </div>
 
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={ruleActive}
-                    onChange={(e) => setRuleActive(e.target.checked)}
-                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="text-sm font-semibold text-slate-700">
-                    {t("spam.active")}
-                  </span>
-                </label>
-              </div>
+        {/* Rules List */}
+        {loadingRules ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 size={36} className="animate-spin text-purple-600" />
+          </div>
+        ) : rules.length === 0 ? (
+          <div className="text-center py-20 text-slate-500 bg-white rounded-2xl border-2 border-dashed border-slate-200 shadow-sm">
+            <span className="text-4xl block mb-2">📋</span>
+            <span className="text-sm font-semibold">
+              {t("spam.noRulesCreated")}
+            </span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {rules.map((rule) => {
+              return (
+                <Card
+                  key={rule.id}
+                  className={`border transition-all duration-300 rounded-xl overflow-hidden ${
+                    rule.is_active === false
+                      ? "border-slate-200 bg-slate-50/50 opacity-75 hover:opacity-90"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                  }`}
+                >
+                  <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                    <div className="flex flex-row items-start flex-1 gap-4">
+                      {/* Left icon wrapper */}
+                      <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200/60 p-3 rounded-xl min-w-[64px] select-none text-slate-400">
+                        <MessageSquare size={24} className="text-purple-600" />
+                        <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                          CHAT
+                        </span>
+                      </div>
 
-              {/* Templates Association */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
-                {/* Global Template list */}
-                <div>
-                  <h4 className="text-sm font-bold text-slate-700 mb-2">
-                    {t("spam.globalTemplates")}
-                  </h4>
-                  {loadingTemplates ? (
-                    <div className="flex py-4 justify-center">
-                      <Loader2
-                        size={20}
-                        className="animate-spin text-slate-400"
-                      />
-                    </div>
-                  ) : globalTemplates.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-2">
-                      {t("spam.noTemplatesCreated")}
-                    </p>
-                  ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 p-2 rounded-lg bg-white">
-                      {globalTemplates.map((tpl) => (
-                        <label
-                          key={tpl.id}
-                          className="flex items-start space-x-2 text-xs text-slate-600 cursor-pointer hover:bg-slate-50 p-1 rounded"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedGlobalTplIds.includes(tpl.id)}
-                            onChange={() =>
-                              toggleGlobalTemplateSelection(tpl.id)
-                            }
-                            className="rounded text-purple-600 focus:ring-purple-500 mt-0.5"
-                          />
-                          <div>
-                            <span className="font-semibold block">
-                              {tpl.text}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm">
+                            {rule.chat_id}
+                          </h3>
+                          <span
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                              rule.is_active
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-slate-50 text-slate-500 border-slate-200"
+                            }`}
+                          >
+                            {rule.is_active
+                              ? t("common.active")
+                              : t("spam.pausedRules")}
+                          </span>
+                        </div>
+
+                        <div className="text-sm text-slate-700 font-semibold flex items-center gap-1.5">
+                          <span>{t("spam.clientName")}:</span>
+                          <span className="text-purple-700 font-extrabold">
+                            {rule.client_name || "Покупатель"}
+                          </span>
+                        </div>
+
+                        <div className="text-xs text-slate-500 font-medium">
+                          {t("spam.frequency")}:{" "}
+                          <span className="font-bold text-slate-700">
+                            {rule.frequency_type === "days"
+                              ? `Каждые ${rule.interval_days} дн. в ${rule.send_hours}:00`
+                              : `${rule.send_hours.split(",").length} раз(а) в день (${rule.send_hours})`}
+                          </span>
+                        </div>
+
+                        {rule.last_sent_at && (
+                          <div className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
+                            <Clock size={10} />
+                            <span>
+                              Последняя отправка:{" "}
+                              {formatDateTime(rule.last_sent_at)}
                             </span>
-                            {tpl.start_hour !== null && (
-                              <span className="text-[10px] text-indigo-500">
-                                {tpl.start_hour}:00 - {tpl.end_hour}:00 (MSK)
+                          </div>
+                        )}
+
+                        {/* Associated templates preview */}
+                        <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Привязанные шаблоны сообщений:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {rule.templates.map((tpl) => (
+                              <span
+                                key={tpl.id}
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                                  tpl.is_global
+                                    ? "bg-purple-50 text-purple-700 border-purple-100"
+                                    : "bg-slate-50 text-slate-600 border-slate-200"
+                                }`}
+                                title={tpl.text}
+                              >
+                                {tpl.text.slice(0, 30)}
+                                {tpl.text.length > 30 ? "..." : ""}
+                              </span>
+                            ))}
+                            {rule.templates.length === 0 && (
+                              <span className="text-[10px] text-slate-400 italic">
+                                Шаблоны не привязаны
                               </span>
                             )}
                           </div>
-                        </label>
-                      ))}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Chat specific templates creator */}
-                <div>
-                  <h4 className="text-sm font-bold text-slate-700 mb-2">
-                    {t("spam.specificTemplates")}
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={newSpecificText}
-                        onChange={(e) => setNewSpecificText(e.target.value)}
-                        placeholder={t("spam.templateTextPlaceholder")}
-                        className="flex-1 px-3 py-1 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAddRuleSpecificText}
-                        className="px-3 py-1 text-xs"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                    <div className="max-h-36 overflow-y-auto border border-slate-200 p-2 rounded-lg bg-white space-y-1">
-                      {ruleSpecificTexts.length === 0 ? (
-                        <p className="text-xs text-slate-400 py-1 text-center">
-                          No specific templates added
-                        </p>
-                      ) : (
-                        ruleSpecificTexts.map((text, idx) => (
-                          <div
-                            key={idx}
-                            className="flex justify-between items-center bg-slate-50 p-1.5 rounded text-xs"
-                          >
-                            <span className="font-medium truncate mr-2">
-                              {text}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveRuleSpecificText(idx)}
-                              className="text-rose-500 hover:text-rose-700"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowRuleForm(false);
-                    setEditingRuleId(null);
-                  }}
-                  disabled={savingRule}
-                >
-                  {t("common.cancel")}
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={
-                    savingRule ||
-                    !chatId.trim() ||
-                    (isManualInput && (validatingChat || !clientName))
-                  }
-                >
-                  {savingRule ? "..." : t("spam.saveRule")}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Rules List */}
-      {loadingRules ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 size={36} className="animate-spin text-indigo-600" />
-        </div>
-      ) : rules.length === 0 ? (
-        <div className="text-center py-12 text-slate-400">
-          {t("spam.noRulesCreated")}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {rules.map((rule) => {
-            return (
-              <Card
-                key={rule.id}
-                className={`border-l-4 transition-shadow hover:shadow-md ${rule.is_active ? "border-l-green-500" : "border-l-slate-300"}`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-                    <div>
-                      <div className="flex items-center space-x-3">
-                        <h3 className="font-mono text-sm font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                          {rule.chat_id}
-                        </h3>
+                    {/* Actions and toggle on right side */}
+                    <div className="sm:pl-6 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 flex flex-row sm:flex-col gap-2 min-w-[150px] items-center sm:items-stretch">
+                      <div className="flex items-center justify-between gap-2 px-1 mb-1 w-full sm:w-auto select-none">
                         <span
-                          className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${rule.is_active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}
+                          className={`text-xs font-bold ${rule.is_active ? "text-emerald-600" : "text-slate-400"}`}
                         >
                           {rule.is_active
-                            ? t("common.active")
-                            : t("spam.pausedRules")}
+                            ? t("rules.active")
+                            : t("rules.inactive")}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleRuleActive(rule)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${
+                            rule.is_active ? "bg-emerald-500" : "bg-slate-300"
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                              rule.is_active ? "translate-x-4" : "translate-x-0"
+                            }`}
+                          />
+                        </button>
                       </div>
-                      <p className="text-sm font-semibold text-slate-700 mt-2">
-                        {t("spam.clientName")}:{" "}
-                        <span className="text-indigo-600">
-                          {rule.client_name || "Покупатель"}
-                        </span>
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {t("spam.frequency")}:{" "}
-                        <span className="font-semibold text-slate-600">
-                          {rule.frequency_type === "days"
-                            ? `${t("spam.everyNDays")} (${rule.interval_days} d) at ${rule.send_hours}:00`
-                            : `${rule.send_hours.split(",").length}x daily (${t("spam.allowedHours")} ${rule.send_hours})`}
-                        </span>
-                      </p>
-                      {rule.last_sent_at && (
-                        <p className="text-[10px] text-slate-400 mt-1">
-                          Last Sent:{" "}
-                          {new Date(rule.last_sent_at).toLocaleString()}
-                        </p>
-                      )}
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2 shrink-0">
-                      <button
-                        onClick={() => toggleRuleActive(rule)}
-                        className={`p-2 rounded-xl border transition-all duration-200 ${
-                          rule.is_active
-                            ? "bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100"
-                            : "bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
-                        }`}
-                        title={rule.is_active ? "Pause" : "Start"}
-                      >
-                        {rule.is_active ? (
-                          <Pause size={16} />
-                        ) : (
-                          <Play size={16} />
-                        )}
-                      </button>
                       <button
                         onClick={() => {
                           startEditRule(rule);
                           loadRecentChats();
                         }}
-                        className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-all duration-200"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
                         title="Edit"
                       >
-                        <Edit2 size={16} />
+                        <Edit2 size={14} />
+                        <span className="hidden sm:inline">
+                          {t("rules.edit")}
+                        </span>
                       </button>
+
                       <button
                         onClick={() => fetchRuleHistory(rule.id)}
-                        className="p-2 rounded-xl border border-indigo-200 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-600 transition-all duration-200"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-600 border border-indigo-100 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
                         title="View sent log"
                       >
-                        <Eye size={16} />
+                        <Eye size={14} />
+                        <span className="hidden sm:inline">Лог</span>
                       </button>
-                      <button
+
+                      <Button
+                        variant="danger"
                         onClick={() => handleDeleteRule(rule.id)}
-                        className="p-2 rounded-xl border border-rose-200 bg-rose-50/30 hover:bg-rose-50 text-rose-600 transition-all duration-200"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
                         title="Delete"
                       >
-                        <Trash2 size={16} />
-                      </button>
+                        <Trash2 size={14} />
+                        <span className="hidden sm:inline">
+                          {t("common.delete")}
+                        </span>
+                      </Button>
                     </div>
-                  </div>
+                  </CardContent>
 
                   {/* Expandable Sent history per rule */}
                   {sentHistory[rule.id] !== undefined && (
-                    <div className="mt-4 border-t border-slate-100 pt-4 animate-fade-in">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                          Sent Messages History
+                    <div className="px-6 pb-6 border-t border-slate-100 pt-4 bg-slate-50/30 animate-fade-in">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Clock size={12} />
+                          <span>История отправленных сообщений</span>
                         </h4>
                         <button
                           onClick={() => {
@@ -914,27 +1087,27 @@ export default function SpamRulesPage() {
                               return updated;
                             });
                           }}
-                          className="text-xs text-indigo-600 hover:underline"
+                          className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline"
                         >
-                          Hide
+                          Скрыть лог
                         </button>
                       </div>
                       {sentHistory[rule.id].length === 0 ? (
-                        <p className="text-xs text-slate-400 text-center py-2">
-                          No history found for this rule
+                        <p className="text-xs text-slate-400 text-center py-4 border border-dashed border-slate-200 bg-white rounded-xl">
+                          Сообщений по этому правилу ещё не отправлялось
                         </p>
                       ) : (
-                        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
                           {sentHistory[rule.id].map((h) => (
                             <div
                               key={h.id}
-                              className="flex justify-between items-center text-xs bg-slate-50 p-2 rounded"
+                              className="flex justify-between items-center text-xs bg-white border border-slate-100 p-2.5 rounded-xl shadow-sm"
                             >
                               <span className="font-semibold text-slate-700">
                                 {h.text}
                               </span>
-                              <span className="text-slate-400 shrink-0 ml-4">
-                                {new Date(h.sent_at).toLocaleString()}
+                              <span className="text-[10px] text-slate-400 font-bold shrink-0 ml-4">
+                                {formatDateTime(h.sent_at)}
                               </span>
                             </div>
                           ))}
@@ -942,12 +1115,12 @@ export default function SpamRulesPage() {
                       )}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </SubscriptionGuard>
   );
 }
