@@ -80,12 +80,15 @@ export default function Sidebar() {
     router.push("/");
   };
 
-  const linkClass = (path: string) =>
-    `flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-medium ${
-      pathname === path
+  const linkClass = (path: string) => {
+    const isActive =
+      path === "/spam" ? pathname.startsWith("/spam") : pathname === path;
+    return `flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 font-medium ${
+      isActive
         ? "bg-indigo-50 text-indigo-700"
         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
     }`;
+  };
 
   return (
     <>
@@ -98,14 +101,14 @@ export default function Sidebar() {
         >
           <Menu size={22} />
         </button>
-        <a href="/" className="text-center">
+        <Link href="/" className="text-center">
           <h1 className="text-xl font-black text-indigo-600 tracking-tight leading-none">
             reAnswer
           </h1>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
             Wildberries
           </p>
-        </a>
+        </Link>
 
         <div className="w-10" aria-hidden="true" />
       </header>
@@ -125,14 +128,14 @@ export default function Sidebar() {
         }`}
       >
         <div className="p-6 flex justify-between items-center border-b border-slate-100">
-          <a href="/" className="text-left">
+          <Link href="/" className="text-left" onClick={() => setIsOpen(false)}>
             <h1 className="text-2xl font-black text-indigo-600 tracking-tight">
               reAnswer
             </h1>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">
               Wildberries
             </p>
-          </a>
+          </Link>
           <button
             onClick={() => setIsOpen(false)}
             className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 hover:text-rose-600 text-slate-500 transition-colors"
@@ -230,14 +233,14 @@ export default function Sidebar() {
       <aside className="w-64 hidden md:block border-r border-slate-200 bg-white shadow-sm">
         <div className="sticky top-0 h-screen grid grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden z-10">
           <div className="p-6 flex justify-left items-center">
-            <a href="/" className="text-left">
+            <Link href="/" className="text-left">
               <h1 className="text-2xl font-black text-indigo-600 tracking-tight">
                 reAnswer
               </h1>
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">
                 Wildberries
               </p>
-            </a>
+            </Link>
           </div>
 
           <nav className="min-h-0 overflow-y-auto px-4 space-y-1.5 mt-2">

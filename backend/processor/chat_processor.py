@@ -290,21 +290,3 @@ class ChatProcessor:
                 all_questions.extend(questions)
                 await asyncio.sleep(0.35)
         return all_questions
-
-    async def get_chat_history_by_nm_ids(
-        self,
-        nm_ids: List[int],
-        take: int = 30,
-    ) -> Dict[str, List[Dict]]:
-        nm_id_set = set(nm_ids)
-        chats = await self.get_chat_messages(take=1000)
-        result: Dict[str, List[Dict]] = {}
-        for chat in chats:
-            good_card = chat.get("goodCard") or {}
-            if good_card.get("nmID") in nm_id_set:
-                chat_id = str(chat.get("chatID", ""))
-                if not chat_id:
-                    continue
-                messages = await self.get_chat_history(chat_id=chat_id, take=take)
-                result[chat_id] = messages
-        return result

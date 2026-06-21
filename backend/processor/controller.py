@@ -63,7 +63,6 @@ class MainController:
 
     async def poll_once(self, full_check: bool = False):
         await asyncio.gather(
-            # self._handle_chats(),
             self._handle_questions(full_check),
             self._handle_feedbacks(full_check),
         )
@@ -91,51 +90,6 @@ class MainController:
 
             if token:
                 await sync_user_products(self.db_factory, user_id, token, False)
-
-    async def _handle_chats(self):
-        chats = await self.processor.get_chat_messages(take=50)
-        for chat in chats:
-            chat_id = str(chat.get("chatID", ""))
-            reply_sign = chat.get("replySign")
-            if not chat_id or not reply_sign:
-                continue
-
-            messages = await self.processor.get_chat_history(chat_id=chat_id, take=30)
-            if not messages:
-                continue
-
-            normalized = self._normalize_messages(messages)
-            if not normalized:
-                continue
-
-            pending_client_message = self._get_pending_client_message(normalized)
-            if pending_client_message is None:
-                continue
-
-            signature = f"{chat_id}:{pending_client_message['id']}:{pending_client_message['timestamp']}"
-            if signature in self._processed_chat_signatures:
-                continue
-
-            gpt_payload = await self._decide_chat_reply(chat, normalized)
-            if not gpt_payload.get("is_send"):
-                self._processed_chat_signatures.add(signature)
-                continue
-
-            answer = str(gpt_payload.get("answer", "")).strip()
-            if not answer:
-                self._processed_chat_signatures.add(signature)
-                continue
-
-            response = await self.processor.send_message(
-                reply_sign=reply_sign, text=answer
-            )
-            if self._is_success_response(response):
-                self._processed_chat_signatures.add(signature)
-                logger.info("[chat] sent answer for chat_id=%s", chat_id)
-            else:
-                logger.warning(
-                    "[chat] failed to send answer for chat_id=%s: %s", chat_id, response
-                )
 
     async def _handle_questions(self, full_check: bool = False):
         question_mode = "manual"
