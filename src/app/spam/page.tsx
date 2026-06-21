@@ -117,7 +117,6 @@ export default function SpamPage() {
     "four_times" | "three_times" | "twice" | "once" | "custom_days"
   >("four_times");
   const [intervalDays, setIntervalDays] = useState(1);
-  const [customSendHours, setCustomSendHours] = useState("9,13,17,21");
   const [specificHour, setSpecificHour] = useState(9);
   const [spamEndlessly, setSpamEndlessly] = useState(false);
   const [ruleActive, setRuleActive] = useState(true);
@@ -630,22 +629,6 @@ export default function SpamPage() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="hover:scale-[1.01] transition-transform duration-200">
-              <CardContent className="p-6 flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 rounded-xl text-purple-600">
-                  <SettingsIcon size={22} />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">
-                    {t("spam.chatToken")}
-                  </p>
-                  <p className="text-sm font-black text-slate-800 mt-2 truncate">
-                    {hasWbChatApiToken ? "✓ Configured" : "✗ Not set"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Last Sent Messages */}
@@ -878,8 +861,15 @@ export default function SpamPage() {
                         </label>
                         <input
                           type="text"
-                          value={customSendHours}
-                          onChange={(e) => setCustomSendHours(e.target.value)}
+                          value={
+                            frequencyType === "four_times"
+                              ? "9,13,17,21"
+                              : frequencyType === "three_times"
+                              ? "9,15,21"
+                              : frequencyType === "twice"
+                              ? "9,21"
+                              : ""
+                          }
                           className="w-full px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-500"
                           readOnly
                         />
