@@ -23,6 +23,9 @@ export const en = {
     backToHome: 'Back to Home',
     contact: 'Support',
     sitemap: 'Sitemap',
+    switchService: 'Switch Module',
+    reviewsAndAI: 'Reviews & AI Replies',
+    chatCampaigns: 'Periodic Chat Campaigns',
   },
   cookie: {
     text: 'Our website uses cookies to improve user experience, analytics, and service operations. By continuing to use the site, you agree to our use of cookies in accordance with our',

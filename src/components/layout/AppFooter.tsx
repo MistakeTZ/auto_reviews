@@ -53,13 +53,21 @@ export default function AppFooter({
       <div className={containerClass}>
         <div className="flex items-center gap-2">
           <div className={brandIconClass}>
-            <MessageCircle size={brandIconSize} className={brandIconColorClass} />
+            <MessageCircle
+              size={brandIconSize}
+              className={brandIconColorClass}
+            />
           </div>
           <span className={brandTextClass}>reAnswer</span>
         </div>
 
         <div className={linksClass}>
-          <Link href="https://t.me/+375259863436" className={linkClass} target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://t.me/+375259863436"
+            className={linkClass}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {t("common.contact")}
           </Link>
           <Link href="/privacy" className={linkClass}>
@@ -70,9 +78,6 @@ export default function AppFooter({
           </Link>
           <Link href="/legal" className={linkClass}>
             {t("common.legalInfo")}
-          </Link>
-          <Link href="/sitemap.xml" className={linkClass}>
-            {t("common.sitemap")}
           </Link>
         </div>
 

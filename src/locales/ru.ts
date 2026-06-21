@@ -3,7 +3,7 @@ export const ru = {
     login: 'Войти',
     logout: 'Выйти',
     signUp: 'Регистрация',
-    dashboard: 'Обзор',
+    dashboard: 'Дэшборд',
     spamDistribution: 'Рассылки',
     reviewsInbox: 'Отзывы',
     questionsInbox: 'Вопросы',
@@ -22,7 +22,10 @@ export const ru = {
     legalInfo: 'Юридическая информация',
     backToHome: 'На главную',
     contact: 'Поддержка',
-    sitemap: 'Карта сайта'
+    sitemap: 'Карта сайта',
+    switchService: 'Сменить модуль',
+    reviewsAndAI: 'Отзывы и AI автоответы',
+    chatCampaigns: 'Периодические рассылки',
   },
   cookie: {
     text: 'Наш сайт использует файлы cookie для улучшения пользовательского опыта, аналитики и работы сервиса. Продолжая использовать сайт, вы соглашаетесь с использованием файлов cookie в соответствии с нашей',
