@@ -109,6 +109,12 @@ export const en = {
     pricingComboBadge: 'Profitable',
     pricingFeatureIncluded: 'Auto-replies using GPT or templates\n1 notification method\nUp to 10 reply rules\n\nFull access to all features\nUp to 5 notification methods\nUp to 100 reply rules\n\nEverything in Subscription\nPeriodic chat campaigns in reSpam\nPriority support for both modules',
     pricingBtn: 'Start for free',
+    otherServices: 'Other our services',
+    otherServicesTitle: 'Grow with our additional module',
+    otherServicesSubtitle: 'Need to automate chat campaigns too? Try reSpam and build a full communication stack for your Wildberries store.',
+    otherServicesReSpamTitle: 'reSpam for periodic chat campaigns',
+    otherServicesReSpamDesc: 'Launch careful, automated campaigns in Wildberries chats with anti-spam logic, random send offsets, and instant manager notifications in Telegram.',
+    otherServicesCta: 'Open reSpam',
     faqSubtitle: 'FAQ',
     faqTitle: 'Frequently Asked Questions',
     faq1Q: 'Is it safe for my WB account?',
@@ -743,6 +749,9 @@ export const en = {
     alertsDesc3: 'Manage campaign statuses directly from your chat app.',
     alertsVisualPhone: 'Telegram Notification',
     alertsVisualAlert: '🚨 Auto-pause triggered: Client replied in chat #7291. "When will my dress be shipped?" Manager action needed.',
+    
+    protectionTitle: 'Anti-Fingerprint',
+    protectionDesc: 'Dynamic system simulation ensuring native interactions.',
     
     howTag: 'SIMPLE SETUP',
     howTitle: 'Three Steps to Automated Success',
