@@ -18,7 +18,7 @@ export default function HeroSection({
   return (
     <section className="hero-section overflow-hidden bg-[#F7FAFC] px-4 py-12 lg:px-8">
       <div className="hero-container mx-auto flex max-w-[1200px] flex-col items-center gap-8 lg:flex-row lg:gap-16">
-        <div className="hero-content flex flex-1 flex-col items-center lg:items-start text-center lg:text-left">
+        <div className="hero-content flex flex-1 flex-col items-center lg:items-start">
           <Reveal
             as="span"
             className="eyebrow mb-4 inline-flex items-center gap-1.5 text-[0.82rem] font-bold uppercase tracking-[2px] text-indigo-700 bg-indigo-50 border border-indigo-100/60 px-3 py-1.5 rounded-full"
@@ -80,51 +80,22 @@ export default function HeroSection({
         </div>
 
         <Reveal
-          className="hero-visual flex flex-1 justify-center lg:justify-end w-full"
+          className="hero-visual flex flex-1 justify-center lg:justify-end"
           direction="right"
           delay={220}
         >
-          {/* A beautiful visual mockup of the spam dashboard and schedules */}
-          <div className="image-container w-full max-w-[550px] bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-slate-300 font-mono text-xs flex flex-col gap-4">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-              <div className="flex gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-500/80" />
-                <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <span className="w-3 h-3 rounded-full bg-green-500/80" />
-              </div>
-              <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">reSpam Console v1.0</span>
-            </div>
-
-            {/* Mock Rule Block */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2">
-              <div className="flex justify-between items-center text-[10px] text-slate-400">
-                <span>RULE: Promo Coupon Mailing</span>
-                <span className="text-emerald-500 font-semibold uppercase tracking-wider">● ACTIVE</span>
-              </div>
-              <div className="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/40 text-[11px] text-indigo-300 font-semibold">
-                frequency: "Every 3 days" | hour: 14:00 (MCK)
-              </div>
-              <div className="text-slate-400 mt-1 italic text-[11px]">
-                &ldquo;Hello [name]! Thanks for choosing our brand. Here is a 15% promo coupon: WBCOUPON15...&rdquo;
-              </div>
-            </div>
-
-            {/* Timeline logs simulating the scheduling */}
-            <div className="space-y-2">
-              <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Activity Log</div>
-              <div className="flex items-center justify-between bg-slate-950/60 border border-slate-900 px-3 py-2 rounded-xl">
-                <span className="text-slate-400">14:00:00 — Triggered</span>
-                <span className="text-slate-500 font-semibold">Waiting offset</span>
-              </div>
-              <div className="flex items-center justify-between bg-slate-950/60 border border-slate-900 px-3 py-2 rounded-xl">
-                <span className="text-indigo-400">14:12:37 — Offset applied</span>
-                <span className="text-indigo-500 font-semibold">+12m 37s</span>
-              </div>
-              <div className="flex items-center justify-between bg-emerald-950/40 border border-emerald-900/40 px-3 py-2 rounded-xl">
-                <span className="text-emerald-400">14:12:38 — Sent to Buyer Anna</span>
-                <span className="text-emerald-500 font-semibold">SUCCESS</span>
-              </div>
-            </div>
+          <div className="image-container w-full max-w-[550px] overflow-hidden rounded-[24px] shadow-[0_20px_40px_rgba(10,25,47,0.08)]">
+            <picture>
+              <source media="(max-width: 769px)" srcSet="/spam_sm.webp" />
+              <source media="(min-width: 770px)" srcSet="/spam_md.webp" />
+              <img
+                src="/spam_md.webp"
+                alt={t("spamLanding.heroImageAlt")}
+                fetchPriority="high"
+                decoding="async"
+                className="h-full w-full object-cover object-center"
+              />
+            </picture>
           </div>
         </Reveal>
       </div>
