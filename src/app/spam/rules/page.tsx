@@ -749,9 +749,26 @@ export default function SpamRulesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-100 pt-6">
                   {/* Global Templates */}
                   <div>
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                      {t("spam.globalTemplates")}
-                    </h4>
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        {t("spam.globalTemplates")}
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedGlobalTplIds(
+                            globalTemplates.map((tpl) => tpl.id),
+                          )
+                        }
+                        disabled={
+                          globalTemplates.length === 0 ||
+                          selectedGlobalTplIds.length === globalTemplates.length
+                        }
+                        className="text-[11px] font-bold text-purple-600 hover:text-purple-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+                      >
+                        {t("spam.selectAll")}
+                      </button>
+                    </div>
                     {loadingTemplates ? (
                       <div className="flex py-6 justify-center">
                         <Loader2

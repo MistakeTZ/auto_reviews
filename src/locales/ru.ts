@@ -617,6 +617,7 @@ export const ru = {
     active: 'Активно',
     specificTemplates: 'Специфичные шаблоны для этого чата',
     globalTemplates: 'Глобальные шаблоны',
+    selectAll: 'Выбрать все',
     settings: 'Управляйте расписанием и триггерами для автоматических сообщений в чатах Wildberries',
     chatToken: 'API-токен Wildberries',
     notifyAnswers: 'Уведомлять об ответах в чатах',
