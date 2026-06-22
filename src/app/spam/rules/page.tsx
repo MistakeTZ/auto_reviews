@@ -1040,12 +1040,13 @@ export default function SpamRulesPage() {
                   >
                     {t("common.cancel")}
                   </Button>
-                  <Button
+                   <Button
                     type="submit"
                     disabled={
                       savingRule ||
-                      !chatId.trim() ||
-                      (isManualInput && (validatingChat || !clientName))
+                      (editingRuleId
+                        ? !chatId.trim() || (isManualInput && (validatingChat || !clientName))
+                        : selectedChats.length === 0)
                     }
                     className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                   >
