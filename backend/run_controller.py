@@ -77,6 +77,62 @@ def get_hour_offset(rule_id: int, date_str: str, hour: int) -> int:
     return int(h, 16) % 21  # 0 to 20 minutes
 
 
+def _extract_media_line(message: dict | None) -> str:
+    if not message:
+        return ""
+
+    attachments = message.get("attachments") or {}
+    video_icons: list[str] = []
+    photo_icons: list[str] = []
+
+    images = attachments.get("images") or []
+    if images:
+        photo_icons.extend(["🖼️"] * len(images))
+
+    files = attachments.get("files") or []
+    for f in files:
+        ctype = str(f.get("contentType") or "").lower()
+        if "video" in ctype:
+            video_icons.append("🎥")
+        elif "image" in ctype:
+            photo_icons.append("🖼️")
+
+    if not video_icons and not photo_icons:
+        return ""
+
+    return " ".join(video_icons + photo_icons)
+
+
+async def _send_chat_message_notification(
+    db: Session,
+    user_id: int,
+    client_name: str,
+    message: dict,
+    *,
+    stopped: bool = False,
+):
+
+    msg_text = message.get("text") or "без текста"
+    media_line = _extract_media_line(message)
+
+    title = (
+        "💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>"
+        if stopped
+        else "💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>"
+    )
+    body = [title, f"👤 Покупатель: {client_name}"]
+    if media_line:
+        body.append(media_line)
+    body.extend(["", f"<i>{msg_text}</i>"])
+
+    subject = "Новое сообщение в чате"
+    if stopped:
+        body.extend(["", "❗️ Рассылка остановлена."])
+        subject = "Сообщение в чате | Рассылка остановлена"
+
+    await send_custom_notification(db, user_id, "\n".join(body), subject=subject)
+
+
 async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
     token = user.wb_chat_api_token.strip()
     rules = (
@@ -126,15 +182,12 @@ async def process_user_spam_rules(db: Session, user: User, now_utc: datetime):
                     client_name = (
                         rule.client_name or chat.get("clientName") or "Покупатель"
                     )
-                    msg_text = last_msg.get("text") or "без текста"
-                    notif_text = (
-                        f"💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>\n"
-                        f"👤 Покупатель: {client_name}\n\n"
-                        f"<i>{msg_text}</i>\n\n"
-                        f"❗️ Рассылка остановлена."
-                    )
-                    await send_custom_notification(
-                        db, user.id, notif_text, subject="Рассылка остановлена"
+                    await _send_chat_message_notification(
+                        db,
+                        user.id,
+                        client_name,
+                        last_msg,
+                        stopped=True,
                     )
                     continue
 
@@ -287,27 +340,7 @@ async def check_user_chat_events(db: Session, user: User):
                     ):
                         chat_id = event.get("chatID")
                         client_name = event.get("clientName") or "Покупатель"
-                        msg_text = event.get("message", {}).get("text") or "без текста"
-
-                        attachments = event.get("message", {}).get("attachments") or {}
-                        video_icons = []
-                        photo_icons = []
-
-                        images = attachments.get("images") or []
-                        if images:
-                            photo_icons.extend(["🖼️"] * len(images))
-
-                        files = attachments.get("files") or []
-                        for f in files:
-                            ctype = str(f.get("contentType") or "").lower()
-                            if "video" in ctype:
-                                video_icons.append("🎥")
-                            elif "image" in ctype:
-                                photo_icons.append("🖼️")
-
-                        media_line = ""
-                        if video_icons or photo_icons:
-                            media_line = " ".join(video_icons + photo_icons)
+                        message = event.get("message") or {}
 
                         rule = (
                             db.query(models.SpamRule)
@@ -328,41 +361,21 @@ async def check_user_chat_events(db: Session, user: User):
                                     rule.id,
                                 )
 
-                            notif_body = [
-                                "💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>",
-                                f"👤 Покупатель: {client_name}",
-                            ]
-                            if media_line:
-                                notif_body.append(media_line)
-                            notif_body.extend(
-                                [f"<i>{msg_text}</i>", "", "❗️ Рассылка остановлена."]
-                            )
-
-                            notif_text = "\n".join(notif_body)
-                            await send_custom_notification(
+                            await _send_chat_message_notification(
                                 db,
                                 user.id,
-                                notif_text,
-                                subject="Сообщение в чате | Рассылка остановлена",
+                                client_name,
+                                message,
+                                stopped=True,
                             )
 
                         else:
                             if user.notify_all_messages:
-                                notif_body = [
-                                    "💬 <b>НОВОЕ СООБЩЕНИЕ В ЧАТЕ</b>",
-                                    f"👤 Покупатель: {client_name}",
-                                    "",
-                                ]
-                                if media_line:
-                                    notif_body.append(media_line)
-                                notif_body.append(f"<i>{msg_text}</i>")
-
-                                notif_text = "\n".join(notif_body)
-                                await send_custom_notification(
+                                await _send_chat_message_notification(
                                     db,
                                     user.id,
-                                    notif_text,
-                                    subject="Новое сообщение в чате",
+                                    client_name,
+                                    message,
                                 )
 
             else:

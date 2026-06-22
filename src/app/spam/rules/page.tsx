@@ -54,7 +54,7 @@ export default function SpamRulesPage() {
   const [sendHoursInput, setSendHoursInput] = useState("9,13,17,21");
   const [intervalDays, setIntervalDays] = useState(1);
   const [specificHour, setSpecificHour] = useState(9);
-  const [spamEndlessly, setSpamEndlessly] = useState(false);
+  const [spamNotEndlessly, setSpamNotEndlessly] = useState(true);
   const [ruleActive, setRuleActive] = useState(true);
   const [selectedGlobalTplIds, setSelectedGlobalTplIds] = useState<number[]>(
     [],
@@ -270,7 +270,7 @@ export default function SpamRulesPage() {
           frequency_type: finalFreqType,
           interval_days: finalIntervalDays,
           send_hours: finalSendHours,
-          spam_endlessly: spamEndlessly,
+          spam_endlessly: !spamNotEndlessly,
           is_active: ruleActive,
           template_ids: selectedGlobalTplIds,
           specific_templates: ruleSpecificTexts,
@@ -286,7 +286,7 @@ export default function SpamRulesPage() {
           frequency_type: finalFreqType,
           interval_days: finalIntervalDays,
           send_hours: finalSendHours,
-          spam_endlessly: spamEndlessly,
+          spam_endlessly: !spamNotEndlessly,
           is_active: ruleActive,
           template_ids: selectedGlobalTplIds,
           specific_templates: ruleSpecificTexts,
@@ -309,7 +309,7 @@ export default function SpamRulesPage() {
         setClientName("");
         setSelectedChats([]);
         setSendHoursInput("9,13,17,21");
-        setSpamEndlessly(false);
+        setSpamNotEndlessly(true);
         setRuleActive(true);
         setSelectedGlobalTplIds([]);
         setRuleSpecificTexts([]);
@@ -329,7 +329,7 @@ export default function SpamRulesPage() {
     setEditingRuleId(rule.id);
     setChatId(rule.chat_id);
     setClientName(rule.client_name || "");
-    setSpamEndlessly(rule.spam_endlessly);
+    setSpamNotEndlessly(!rule.spam_endlessly);
     setRuleActive(rule.is_active);
     setIsManualInput(false);
 
@@ -429,7 +429,7 @@ export default function SpamRulesPage() {
                 setSelectedChats([]);
                 setIsManualInput(false);
                 setChatValidationMsg("");
-                setSpamEndlessly(false);
+                setSpamNotEndlessly(true);
                 setRuleActive(true);
                 setSendHoursInput("9,13,17,21");
                 setSelectedGlobalTplIds([]);
@@ -882,8 +882,8 @@ export default function SpamRulesPage() {
                   <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 hover:text-slate-900 transition-colors font-medium">
                     <input
                       type="checkbox"
-                      checked={spamEndlessly}
-                      onChange={(e) => setSpamEndlessly(e.target.checked)}
+                      checked={spamNotEndlessly}
+                      onChange={(e) => setSpamNotEndlessly(e.target.checked)}
                       className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 h-4.5 w-4.5 cursor-pointer"
                     />
                     <span>{t("spam.spamEndlessly")}</span>
