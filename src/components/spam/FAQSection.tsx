@@ -30,7 +30,7 @@ export default function FAQSection({ t }: FAQSectionProps) {
         contentVisibility: "auto",
         containIntrinsicSize: "900px",
         paddingBottom: "5rem",
-        paddingTop: "5rem",
+        paddingTop: "3rem",
       }}
     >
       <div className="mx-auto mb-12 max-w-[1200px] text-center">

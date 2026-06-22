@@ -33,19 +33,19 @@ export default function TestimonialsSection({
   const testimonialsData = [
     {
       id: "testimonial1",
-      avatar: "/avatar_alexey.webp",
+      avatar: "/avatar_ilya.webp",
       verifiedBadge: "5+ hours saved per week",
       verifiedBadgeRu: "5+ часов сэкономлено в неделю",
     },
     {
       id: "testimonial2",
-      avatar: "/avatar_maria.webp",
+      avatar: "/avatar_anya.webp",
       verifiedBadge: "0 warnings",
       verifiedBadgeRu: "0 штрафов",
     },
     {
       id: "testimonial3",
-      avatar: "/avatar_dmitry.webp",
+      avatar: "/avatar_alina.webp",
       verifiedBadge: "24/7 instant replies",
       verifiedBadgeRu: "Ответы 24/7",
     },

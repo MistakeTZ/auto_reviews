@@ -33,48 +33,48 @@ export default function HowItWorksSection({ t }: HowItWorksSectionProps) {
       <div className="max-w-[1100px] mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 relative">
         {/* Step 1 */}
         <Reveal
-          className="flex flex-col items-center md:items-start text-center md:text-left bg-slate-50/50 border border-slate-100 p-6 rounded-3xl hover:shadow-md hover:border-slate-200 transition-all duration-300"
+          className="group relative flex flex-col items-center md:items-start text-center md:text-left bg-[linear-gradient(150deg,#ffffff_0%,#f9fafb_55%,#f3f4f6_100%)] border border-[rgba(71,85,105,0.1)] p-8 rounded-[24px] shadow-[0_4px_16px_rgba(15,23,42,0.08)] hover:shadow-[0_16px_40px_rgba(15,23,42,0.15)] hover:border-[rgba(99,102,241,0.2)] transition-all duration-300 hover:-translate-y-1"
           delay={120}
         >
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 font-extrabold flex items-center justify-center text-lg mb-5 shadow-sm">
+          <div className="w-14 h-14 rounded-[16px] bg-[linear-gradient(135deg,#818cf8_0%,#6366f1_100%)] text-white font-extrabold flex items-center justify-center text-lg mb-6 shadow-[0_8px_20px_rgba(99,102,241,0.3)] group-hover:shadow-[0_12px_28px_rgba(99,102,241,0.4)] transition-all duration-300">
             1
           </div>
-          <h3 className="text-base font-bold text-slate-900 mb-2">
+          <h3 className="text-[1.05rem] font-bold text-slate-900 mb-3">
             {t("spamLanding.howStep1Title")}
           </h3>
-          <p className="text-slate-500 text-xs leading-relaxed m-0">
+          <p className="text-slate-600 text-sm leading-relaxed m-0 font-medium">
             {t("spamLanding.howStep1Desc")}
           </p>
         </Reveal>
 
         {/* Step 2 */}
         <Reveal
-          className="flex flex-col items-center md:items-start text-center md:text-left bg-slate-50/50 border border-slate-100 p-6 rounded-3xl hover:shadow-md hover:border-slate-200 transition-all duration-300"
+          className="group relative flex flex-col items-center md:items-start text-center md:text-left bg-[linear-gradient(150deg,#ffffff_0%,#f9fafb_55%,#f3f4f6_100%)] border border-[rgba(71,85,105,0.1)] p-8 rounded-[24px] shadow-[0_4px_16px_rgba(15,23,42,0.08)] hover:shadow-[0_16px_40px_rgba(15,23,42,0.15)] hover:border-[rgba(99,102,241,0.2)] transition-all duration-300 hover:-translate-y-1"
           delay={180}
         >
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 font-extrabold flex items-center justify-center text-lg mb-5 shadow-sm">
+          <div className="w-14 h-14 rounded-[16px] bg-[linear-gradient(135deg,#818cf8_0%,#6366f1_100%)] text-white font-extrabold flex items-center justify-center text-lg mb-6 shadow-[0_8px_20px_rgba(99,102,241,0.3)] group-hover:shadow-[0_12px_28px_rgba(99,102,241,0.4)] transition-all duration-300">
             2
           </div>
-          <h3 className="text-base font-bold text-slate-900 mb-2">
+          <h3 className="text-[1.05rem] font-bold text-slate-900 mb-3">
             {t("spamLanding.howStep2Title")}
           </h3>
-          <p className="text-slate-500 text-xs leading-relaxed m-0">
+          <p className="text-slate-600 text-sm leading-relaxed m-0 font-medium">
             {t("spamLanding.howStep2Desc")}
           </p>
         </Reveal>
 
         {/* Step 3 */}
         <Reveal
-          className="flex flex-col items-center md:items-start text-center md:text-left bg-slate-50/50 border border-slate-100 p-6 rounded-3xl hover:shadow-md hover:border-slate-200 transition-all duration-300"
+          className="group relative flex flex-col items-center md:items-start text-center md:text-left bg-[linear-gradient(150deg,#ffffff_0%,#f9fafb_55%,#f3f4f6_100%)] border border-[rgba(71,85,105,0.1)] p-8 rounded-[24px] shadow-[0_4px_16px_rgba(15,23,42,0.08)] hover:shadow-[0_16px_40px_rgba(15,23,42,0.15)] hover:border-[rgba(99,102,241,0.2)] transition-all duration-300 hover:-translate-y-1"
           delay={240}
         >
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 font-extrabold flex items-center justify-center text-lg mb-5 shadow-sm">
+          <div className="w-14 h-14 rounded-[16px] bg-[linear-gradient(135deg,#818cf8_0%,#6366f1_100%)] text-white font-extrabold flex items-center justify-center text-lg mb-6 shadow-[0_8px_20px_rgba(99,102,241,0.3)] group-hover:shadow-[0_12px_28px_rgba(99,102,241,0.4)] transition-all duration-300">
             3
           </div>
-          <h3 className="text-base font-bold text-slate-900 mb-2">
+          <h3 className="text-[1.05rem] font-bold text-slate-900 mb-3">
             {t("spamLanding.howStep3Title")}
           </h3>
-          <p className="text-slate-500 text-xs leading-relaxed m-0">
+          <p className="text-slate-600 text-sm leading-relaxed m-0 font-medium">
             {t("spamLanding.howStep3Desc")}
           </p>
         </Reveal>

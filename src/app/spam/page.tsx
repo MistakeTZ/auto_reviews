@@ -12,6 +12,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import HowItWorksSection from "@/components/spam/HowItWorksSection";
 import PricingSection from "@/components/spam/PricingSection";
 import FAQSection from "@/components/spam/FAQSection";
+import OtherServicesSection from "@/components/landing/OtherServicesSection";
 import "../landing.css";
 
 function ReSpamLandingPageContent() {
@@ -91,6 +92,9 @@ function ReSpamLandingPageContent() {
           isAuthenticated={isAuthenticated}
           registerHref={registerHref}
         />
+
+        {/* OtherServicesSection: Link back to reAnswer */}
+        <OtherServicesSection t={t} isAuthenticated={isAuthenticated} targetService="reanswer" />
 
         {/* FAQSection: Address technical token protections and webhook safety constraints */}
         <FAQSection t={t} />
