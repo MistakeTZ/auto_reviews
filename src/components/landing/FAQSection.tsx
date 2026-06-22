@@ -11,10 +11,10 @@ type FAQSectionProps = {
 export default function FAQSection({ t }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const faqItems = [1, 2, 3, 4].map((num) => {
+  const faqItems = [1, 2, 3].map((num) => {
     return {
-      q: t(`spamLanding.faq${num}Q`),
-      a: t(`spamLanding.faq${num}A`),
+      q: t(`landing.faq${num}Q`),
+      a: t(`landing.faq${num}A`),
     };
   });
 
@@ -23,11 +23,20 @@ export default function FAQSection({ t }: FAQSectionProps) {
   };
 
   return (
-    <section id="faq" className="bg-white px-4 py-16 lg:px-8 lg:py-20">
+    <section
+      id="faq"
+      className="pricing-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: "900px",
+        paddingBottom: "5rem",
+        paddingTop: "5rem",
+      }}
+    >
       <div className="mx-auto mb-12 max-w-[1200px] text-center">
         <Reveal
           as="span"
-          className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/50"
+          className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
           direction="up"
         >
           {t("landing.faqTitle") || "FAQ"}
@@ -38,7 +47,7 @@ export default function FAQSection({ t }: FAQSectionProps) {
           direction="up"
           delay={90}
         >
-          {t("landing.faqTitle") || "Frequently Asked Questions"}
+          {t("landing.faqTitle") || "Частые вопросы"}
         </Reveal>
       </div>
 
@@ -48,7 +57,8 @@ export default function FAQSection({ t }: FAQSectionProps) {
           return (
             <Reveal
               key={index}
-              className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-slate-50/30 hover:bg-slate-50 transition-colors duration-200"
+              className="border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm bg-white hover:bg-slate-50 transition-colors duration-200"
+              direction="up"
               delay={120 + index * 50}
             >
               <button
@@ -67,7 +77,7 @@ export default function FAQSection({ t }: FAQSectionProps) {
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-5 pt-0 text-slate-500 text-xs font-semibold leading-relaxed border-t border-slate-100 bg-white/50">
+                <div className="px-5 pb-5 pt-0 text-slate-500 text-sm font-semibold leading-relaxed border-t border-slate-100 bg-slate-50/10">
                   <p className="m-0 pt-4">{item.a}</p>
                 </div>
               )}

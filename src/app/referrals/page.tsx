@@ -61,7 +61,7 @@ function ReferralsPageContent() {
           : "Комбо: Отзывы + чаты Wildberries",
       price: "1190 ₽",
       amount: "1190.00",
-      badge: language === "en" ? "Save 290 ₽" : "Выгода 290 ₽",
+      badge: language === "en" ? "Profitable" : "Выгодно",
     },
   ];
 

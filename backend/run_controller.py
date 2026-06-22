@@ -351,15 +351,14 @@ async def check_user_chat_events(db: Session, user: User):
                             .first()
                         )
 
-                        if rule:
-                            if rule.is_active:
-                                rule.is_active = False
-                                db.add(rule)
-                                db.commit()
-                                logger.info(
-                                    "EventPoller: Pausing active rule %s because buyer messaged",
-                                    rule.id,
-                                )
+                        if rule and rule.is_active:
+                            rule.is_active = False
+                            db.add(rule)
+                            db.commit()
+                            logger.info(
+                                "EventPoller: Pausing active rule %s because buyer messaged",
+                                rule.id,
+                            )
 
                             await _send_chat_message_notification(
                                 db,

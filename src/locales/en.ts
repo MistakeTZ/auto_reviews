@@ -111,7 +111,7 @@ export const en = {
     faqTitle: 'Frequently Asked Questions',
     faq1Q: 'Is it safe for my WB account?',
     faq1A: 'Absolutely. We work exclusively through the official Wildberries API protocols. The service does not have access to accounts, price management, or warehouses. You retain 100% control.',    faq2Q: 'Can I test it before paying?',
-    faq2A: 'Yes! We offer 7 days of free testing on all plans without linking a card.',
+    faq2A: 'Yes! We offer 30 days of free testing on all plans without linking a card.',
     faq3Q: 'What if the review or question is complex or negative?',
     faq3A: 'You can set up rules so that auto-replies are sent only to 5-star reviews without text, and leave complex reviews and questions for manual response.',
     scenariosTitle: 'Ready-to-use scenarios for your auto-replies',
@@ -778,7 +778,7 @@ export const en = {
     pricingComboFeature2: 'Full access to reAnswer (Auto-Replies)',
     pricingComboFeature3: 'GPT-powered review and question replies',
     pricingComboFeature4: 'Priority 24/7 VIP support',
-    pricingComboBadge: 'Save 290 ₽',
+    pricingComboBadge: 'Profitable',
     
     faqTitle: 'Frequently Asked Questions',
     faq1Q: 'Is it safe to automate Wildberries chats?',

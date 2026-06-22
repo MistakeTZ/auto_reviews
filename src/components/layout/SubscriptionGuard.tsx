@@ -81,7 +81,7 @@ export default function SubscriptionGuard({
   const trialExpiredDesc = isSpamMode
     ? language === "ru"
       ? "Ваш бесплатный пробный период reSpam закончился. Приобретите полную подписку на 1 месяц, чтобы автоматизация рассылок продолжала приносить поведению вашего бизнеса пользу, или приглашайте друзей и получайте по 7 дней бесплатно!"
-      : "Your free trial period for reSpam has ended. Purchase a full subscription for 1 month to keep spam automation benefiting your business, or invite friends and get 7 days free!"
+      : "Your free trial period for reSpam has ended. Purchase a full subscription for 1 month to keep spam automation benefiting your business, or invite friends and get 30 days free!"
     : t("subscription.trialExpiredDesc");
 
   const expiredTitle = isSpamMode

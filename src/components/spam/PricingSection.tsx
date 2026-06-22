@@ -118,10 +118,6 @@ export default function PricingSection({
                 <Check size={16} className="text-emerald-500 shrink-0" />
                 <span>{t("spamLanding.pricingPremiumFeature3")}</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingPremiumFeature4")}</span>
-              </li>
             </ul>
           </div>
 

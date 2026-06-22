@@ -15,6 +15,7 @@ import SecurityGuaranteesSection from "@/components/landing/SecurityGuaranteesSe
 import PricingSection from "@/components/landing/PricingSection";
 import EngineersForSellersSection from "@/components/landing/EngineersForSellersSection";
 import "./landing.css";
+import FAQSection from "@/components/landing/FAQSection";
 
 function LandingPageContent() {
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
@@ -97,6 +98,7 @@ function LandingPageContent() {
           isAuthenticated={isAuthenticated}
           registerHref={registerHref}
         />
+        <FAQSection t={t} />
       </main>
     </div>
   );

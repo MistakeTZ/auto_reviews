@@ -15,7 +15,7 @@ from routers.auth import get_current_user, check_active_spam_subscription
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-WB_CHATS_CACHE_TTL_SECONDS = 30 * 60
+WB_CHATS_CACHE_TTL_SECONDS = 10 * 60
 _wb_chats_cache: dict[str, tuple[float, List[dict]]] = {}
 
 
