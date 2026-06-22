@@ -278,6 +278,23 @@ class SpamRuleUpdate(BaseModel):
     specific_templates: Optional[List[str]] = None
 
 
+class ChatIdWithName(BaseModel):
+    chat_id: str
+    client_name: Optional[str] = None
+    reply_sign: Optional[str] = None
+
+
+class SpamRulesBulkCreate(BaseModel):
+    chats: List[ChatIdWithName]
+    frequency_type: str = "hours"
+    interval_days: Optional[int] = 1
+    send_hours: str = "9,13,17,21"
+    spam_endlessly: bool = False
+    is_active: bool = True
+    template_ids: List[int] = []
+    specific_templates: List[str] = []
+
+
 class SpamRule(SpamRuleBase):
     id: int
     user_id: int

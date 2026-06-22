@@ -42,6 +42,9 @@ export default function SpamRulesPage() {
   const [editingRuleId, setEditingRuleId] = useState<number | null>(null);
   const [chatId, setChatId] = useState("");
   const [clientName, setClientName] = useState("");
+  const [selectedChats, setSelectedChats] = useState<
+    { chatID: string; clientName: string }[]
+  >([]);
   const [isManualInput, setIsManualInput] = useState(false);
   const [validatingChat, setValidatingChat] = useState(false);
   const [chatValidationMsg, setChatValidationMsg] = useState("");
@@ -203,14 +206,17 @@ export default function SpamRulesPage() {
 
   const handleCreateOrUpdateRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatId.trim()) return;
+
+    if (editingRuleId) {
+      if (!chatId.trim()) return;
+    } else {
+      if (selectedChats.length === 0) {
+        alert(t("spam.noChatsSelected"));
+        return;
+      }
+    }
 
     setSavingRule(true);
-
-    let finalChatId = chatId.trim();
-    if (!finalChatId.startsWith("1:")) {
-      finalChatId = `1:${finalChatId}`;
-    }
 
     let finalSendHours = "9,13,17,21";
     let finalIntervalDays = 1;
@@ -246,24 +252,45 @@ export default function SpamRulesPage() {
       finalFreqType = "days";
     }
 
-    const payload = {
-      chat_id: finalChatId,
-      client_name: clientName || null,
-      frequency_type: finalFreqType,
-      interval_days: finalIntervalDays,
-      send_hours: finalSendHours,
-      spam_endlessly: spamEndlessly,
-      is_active: ruleActive,
-      template_ids: selectedGlobalTplIds,
-      specific_templates: ruleSpecificTexts,
-    };
-
     try {
       let url = `${API_URL}/chats/rules`;
       let method = "POST";
+      let payload: Record<string, unknown> = {};
+
       if (editingRuleId) {
+        let finalChatId = chatId.trim();
+        if (!finalChatId.startsWith("1:")) {
+          finalChatId = `1:${finalChatId}`;
+        }
         url = `${API_URL}/chats/rules/${editingRuleId}`;
         method = "PUT";
+        payload = {
+          chat_id: finalChatId,
+          client_name: clientName || null,
+          frequency_type: finalFreqType,
+          interval_days: finalIntervalDays,
+          send_hours: finalSendHours,
+          spam_endlessly: spamEndlessly,
+          is_active: ruleActive,
+          template_ids: selectedGlobalTplIds,
+          specific_templates: ruleSpecificTexts,
+        };
+      } else {
+        url = `${API_URL}/chats/rules/bulk`;
+        method = "POST";
+        payload = {
+          chats: selectedChats.map((c) => ({
+            chat_id: c.chatID,
+            client_name: c.clientName || null,
+          })),
+          frequency_type: finalFreqType,
+          interval_days: finalIntervalDays,
+          send_hours: finalSendHours,
+          spam_endlessly: spamEndlessly,
+          is_active: ruleActive,
+          template_ids: selectedGlobalTplIds,
+          specific_templates: ruleSpecificTexts,
+        };
       }
 
       const res = await fetch(url, {
@@ -280,6 +307,7 @@ export default function SpamRulesPage() {
         setEditingRuleId(null);
         setChatId("");
         setClientName("");
+        setSelectedChats([]);
         setSendHoursInput("9,13,17,21");
         setSpamEndlessly(false);
         setRuleActive(true);
@@ -393,10 +421,12 @@ export default function SpamRulesPage() {
               if (showRuleForm) {
                 setShowRuleForm(false);
                 setEditingRuleId(null);
+                setSelectedChats([]);
               } else {
                 setEditingRuleId(null);
                 setChatId("");
                 setClientName("");
+                setSelectedChats([]);
                 setIsManualInput(false);
                 setChatValidationMsg("");
                 setSpamEndlessly(false);
@@ -427,147 +457,274 @@ export default function SpamRulesPage() {
               <form onSubmit={handleCreateOrUpdateRule} className="space-y-6">
                 {/* Chat Selector */}
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      {t("spam.chatId")}
-                    </label>
-                    {(!chatId || isManualInput) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsManualInput(!isManualInput);
-                          setChatId("");
-                          setClientName("");
-                          setChatValidationMsg("");
-                        }}
-                        className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline cursor-pointer"
-                      >
-                        {isManualInput
-                          ? t("spam.chooseFromRecentChats")
-                          : t("spam.enterIdManually")}
-                      </button>
-                    )}
-                  </div>
-
-                  {chatId && !isManualInput ? (
-                    /* Selected Chat Card */
-                    <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm animate-fade-in">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
-                          <Check className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-800 leading-snug">
-                            {clientName || t("spam.buyer")}
-                          </p>
-                          <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
-                            {chatId}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setChatId("");
-                          setClientName("");
-                          setChatValidationMsg("");
-                        }}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-semibold px-3 py-1.5 rounded-xl text-xs cursor-pointer active:scale-95 transition-all"
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                    </div>
-                  ) : isManualInput ? (
-                    /* Manual input view */
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                      <div>
-                        <input
-                          type="text"
-                          value={chatId}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setChatId(val);
-                            if (!val.trim()) {
-                              setClientName("");
-                              setChatValidationMsg("");
-                            }
-                          }}
-                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
-                          placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                          required
-                        />
-                        {validatingChat && (
-                          <div className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
-                            <Loader2
-                              size={12}
-                              className="animate-spin text-purple-600"
-                            />
-                            <span>{t("spam.checkingChat")}</span>
+                  {editingRuleId ? (
+                    /* Editing mode: Single chat display */
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        {t("spam.chatId")}
+                      </label>
+                      <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
+                            <Check className="h-5 w-5" />
                           </div>
-                        )}
-                        {chatValidationMsg && !validatingChat && (
-                          <p
-                            className={`text-xs mt-1.5 font-bold ${clientName ? "text-green-600" : "text-amber-600"}`}
-                          >
-                            {chatValidationMsg}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <input
-                          type="text"
-                          value={clientName}
-                          className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold cursor-not-allowed"
-                          placeholder={t("spam.clientName")}
-                          readOnly
-                        />
+                          <div>
+                            <p className="font-bold text-slate-800 leading-snug">
+                              {clientName || t("spam.buyer")}
+                            </p>
+                            <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
+                              {chatId}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    /* Selector List */
-                    <div className="space-y-3">
-                      {loadingRecentChats ? (
-                        <div className="flex justify-center items-center py-8 bg-slate-50 border border-slate-100 rounded-2xl">
-                          <Loader2 className="animate-spin text-purple-600 h-6 w-6" />
-                          <span className="text-xs text-slate-400 ml-2">
-                            {t("spam.loadingRecentChats")}
-                          </span>
-                        </div>
-                      ) : recentChatsError ? (
-                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl">
-                          {recentChatsError}
-                        </div>
-                      ) : recentChats.length === 0 ? (
-                        <div className="text-center p-8 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 text-xs font-medium">
-                          {t("spam.noRecentChatsFound")}
+                    /* Creation mode: Bulk selection enabled */
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          {t("spam.chatId")}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsManualInput(!isManualInput);
+                            setChatId("");
+                            setClientName("");
+                            setChatValidationMsg("");
+                          }}
+                          className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline cursor-pointer"
+                        >
+                          {isManualInput
+                            ? t("spam.chooseFromRecentChats")
+                            : t("spam.enterIdManually")}
+                        </button>
+                      </div>
+
+                      {isManualInput ? (
+                        /* Manual input view */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                          <div>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={chatId}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setChatId(val);
+                                  if (!val.trim()) {
+                                    setClientName("");
+                                    setChatValidationMsg("");
+                                  }
+                                }}
+                                className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
+                                placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                              />
+                              <Button
+                                type="button"
+                                disabled={!chatId.trim() || validatingChat}
+                                onClick={() => {
+                                  let normalized = chatId.trim();
+                                  if (!normalized.startsWith("1:")) {
+                                    normalized = `1:${normalized}`;
+                                  }
+                                  if (
+                                    !selectedChats.some(
+                                      (c) => c.chatID === normalized,
+                                    )
+                                  ) {
+                                    setSelectedChats((prev) => [
+                                      ...prev,
+                                      {
+                                        chatID: normalized,
+                                        clientName: clientName || "Покупатель",
+                                      },
+                                    ]);
+                                  }
+                                  setChatId("");
+                                  setClientName("");
+                                  setChatValidationMsg("");
+                                }}
+                                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 shrink-0"
+                              >
+                                {t("spam.addToList")}
+                              </Button>
+                            </div>
+                            {validatingChat && (
+                              <div className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
+                                <Loader2
+                                  size={12}
+                                  className="animate-spin text-purple-600"
+                                />
+                                <span>{t("spam.checkingChat")}</span>
+                              </div>
+                            )}
+                            {chatValidationMsg && !validatingChat && (
+                              <p
+                                className={`text-xs mt-1.5 font-bold ${clientName ? "text-green-600" : "text-amber-600"}`}
+                              >
+                                {chatValidationMsg}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              value={clientName}
+                              className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold cursor-not-allowed"
+                              placeholder={t("spam.clientName")}
+                              readOnly
+                            />
+                          </div>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 animate-fade-in">
-                          {recentChats.map((chat) => (
+                        /* Selector List */
+                        <div className="space-y-3">
+                          {recentChats.length > 0 && (
+                            <div className="flex justify-end mb-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedChats((prev) => {
+                                    const next = [...prev];
+                                    recentChats.forEach((rc) => {
+                                      if (
+                                        !next.some(
+                                          (c) => c.chatID === rc.chatID,
+                                        )
+                                      ) {
+                                        next.push({
+                                          chatID: rc.chatID,
+                                          clientName: rc.clientName,
+                                        });
+                                      }
+                                    });
+                                    return next;
+                                  });
+                                }}
+                                className="text-xs text-purple-600 hover:text-purple-700 font-bold hover:underline cursor-pointer"
+                              >
+                                {t("spam.selectAll")}
+                              </button>
+                            </div>
+                          )}
+
+                          {loadingRecentChats ? (
+                            <div className="flex justify-center items-center py-8 bg-slate-50 border border-slate-100 rounded-2xl">
+                              <Loader2 className="animate-spin text-purple-600 h-6 w-6" />
+                              <span className="text-xs text-slate-400 ml-2">
+                                {t("spam.loadingRecentChats")}
+                              </span>
+                            </div>
+                          ) : recentChatsError ? (
+                            <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl">
+                              {recentChatsError}
+                            </div>
+                          ) : recentChats.length === 0 ? (
+                            <div className="text-center p-8 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 text-xs font-medium">
+                              {t("spam.noRecentChatsFound")}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 animate-fade-in">
+                              {recentChats.map((chat) => {
+                                const isSelected = selectedChats.some(
+                                  (c) => c.chatID === chat.chatID,
+                                );
+                                return (
+                                  <button
+                                    key={chat.chatID}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setSelectedChats((prev) =>
+                                          prev.filter(
+                                            (c) => c.chatID !== chat.chatID,
+                                          ),
+                                        );
+                                      } else {
+                                        setSelectedChats((prev) => [
+                                          ...prev,
+                                          {
+                                            chatID: chat.chatID,
+                                            clientName: chat.clientName,
+                                          },
+                                        ]);
+                                      }
+                                    }}
+                                    className={`text-left p-3 rounded-xl transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 cursor-pointer ${
+                                      isSelected
+                                        ? "bg-purple-50/50 border-purple-400 border-2"
+                                        : "bg-white border-slate-200 border hover:border-purple-300 hover:bg-purple-50/10"
+                                    }`}
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <span className="font-bold text-slate-800 text-xs truncate max-w-[125px] flex items-center gap-1">
+                                        {isSelected && (
+                                          <Check className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+                                        )}
+                                        {chat.clientName}
+                                      </span>
+                                      <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
+                                        {chat.chatID.replace(/^1:/, "")}
+                                      </span>
+                                    </div>
+                                    {chat.lastMessageText && (
+                                      <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1 italic">
+                                        &ldquo;{chat.lastMessageText}&rdquo;
+                                      </p>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Selected Chats List Summary */}
+                      {selectedChats.length > 0 && (
+                        <div className="space-y-2 mt-4 animate-fade-in">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                              {t("spam.selectedChats")} ({selectedChats.length})
+                            </span>
                             <button
-                              key={chat.chatID}
                               type="button"
-                              onClick={() => {
-                                setChatId(chat.chatID);
-                                setClientName(chat.clientName);
-                              }}
-                              className="text-left p-3 bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50/10 rounded-xl transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 cursor-pointer"
+                              onClick={() => setSelectedChats([])}
+                              className="text-xs text-red-600 hover:text-red-700 font-bold hover:underline cursor-pointer"
                             >
-                              <div className="flex justify-between items-start">
-                                <span className="font-bold text-slate-800 text-xs truncate max-w-[125px]">
+                              {t("spam.clearAll")}
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-40 overflow-y-auto">
+                            {selectedChats.map((chat) => (
+                              <div
+                                key={chat.chatID}
+                                className="flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm animate-fade-in"
+                              >
+                                <span className="text-xs font-bold text-slate-800">
                                   {chat.clientName}
                                 </span>
-                                <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
-                                  {chat.chatID.replace(/^1:/, "")}
+                                <span className="text-[10px] text-slate-400 font-mono font-semibold">
+                                  ({chat.chatID.replace(/^1:/, "")})
                                 </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedChats((prev) =>
+                                      prev.filter(
+                                        (c) => c.chatID !== chat.chatID,
+                                      ),
+                                    )
+                                  }
+                                  className="text-slate-400 hover:text-red-500 transition-colors p-0.5 text-xs font-bold"
+                                >
+                                  &times;
+                                </button>
                               </div>
-                              {chat.lastMessageText && (
-                                <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1 italic">
-                                  &ldquo;{chat.lastMessageText}&rdquo;
-                                </p>
-                              )}
-                            </button>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>

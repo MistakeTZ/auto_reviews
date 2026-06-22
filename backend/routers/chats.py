@@ -69,7 +69,7 @@ async def get_recent_chats(
     sorted_chats = sorted(chats, key=get_timestamp, reverse=True)
 
     recent = []
-    for chat in sorted_chats[:10]:
+    for chat in sorted_chats[:100]:
         recent.append(
             {
                 "chatID": chat.get("chatID"),
@@ -165,6 +165,77 @@ async def create_spam_rule(
         )
 
     return crud.create_spam_rule(db, current_user.id, rule)
+
+
+@router.post("/rules/bulk", response_model=List[schemas.SpamRule])
+async def create_spam_rules_bulk(
+    bulk_input: schemas.SpamRulesBulkCreate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(check_active_spam_subscription),
+):
+    token = (current_user.wb_chat_api_token or "").strip()
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Wildberries chat API token must be configured before creating rules.",
+        )
+
+    if not bulk_input.chats:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one chat must be selected.",
+        )
+
+    # Fetch WB chats to resolve reply signs
+    wb_chats = []
+    try:
+        wb_chats = await fetch_wb_chats(token)
+    except Exception as e:
+        logger.error(f"Failed to fetch replySign during bulk rule creation: {e}")
+
+    wb_chats_map = {chat.get("chatID"): chat for chat in wb_chats}
+
+    created_rules = []
+    for chat_input in bulk_input.chats:
+        chat_id_stripped = chat_input.chat_id.strip()
+        final_chat_id = (
+            chat_id_stripped
+            if chat_id_stripped.startswith("1:")
+            else f"1:{chat_id_stripped}"
+        )
+
+        reply_sign = chat_input.reply_sign
+        client_name = chat_input.client_name
+
+        wb_chat = wb_chats_map.get(final_chat_id)
+        if wb_chat:
+            if not reply_sign:
+                reply_sign = wb_chat.get("replySign")
+            if not client_name:
+                client_name = wb_chat.get("clientName")
+
+        if not reply_sign:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Could not retrieve replySign for Chat ID {final_chat_id}. Please check if the Chat ID exists on Wildberries.",
+            )
+
+        rule_create = schemas.SpamRuleCreate(
+            chat_id=final_chat_id,
+            client_name=client_name or "Покупатель",
+            reply_sign=reply_sign,
+            frequency_type=bulk_input.frequency_type,
+            interval_days=bulk_input.interval_days,
+            send_hours=bulk_input.send_hours,
+            spam_endlessly=bulk_input.spam_endlessly,
+            is_active=bulk_input.is_active,
+            template_ids=bulk_input.template_ids,
+            specific_templates=bulk_input.specific_templates,
+        )
+        db_rule = crud.create_spam_rule(db, current_user.id, rule_create)
+        created_rules.append(db_rule)
+
+    return created_rules
 
 
 @router.put("/rules/{rule_id}", response_model=schemas.SpamRule)
