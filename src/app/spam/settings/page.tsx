@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Plus,
   Clock,
+  Info,
 } from "lucide-react";
 import { SpamTemplate } from "../types";
 import HelpSection from "@/components/settings/HelpSection";
@@ -44,6 +45,7 @@ export default function SpamSettingsPage() {
   const [newTplStart, setNewTplStart] = useState<number | "">("");
   const [newTplEnd, setNewTplEnd] = useState<number | "">("");
   const [addingTemplate, setAddingTemplate] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState<"start" | "end" | null>(null);
 
   const loadTemplates = useCallback(async () => {
     if (!jwtToken) return;
@@ -315,8 +317,23 @@ export default function SpamSettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  {t("spam.templateStartHour")}
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 relative">
+                  <span>{t("spam.templateStartHour")}</span>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setActiveTooltip("start")}
+                    onMouseLeave={() => setActiveTooltip(null)}
+                    onClick={() => setActiveTooltip(activeTooltip === "start" ? null : "start")}
+                    className="text-slate-400 hover:text-indigo-600 transition-colors p-0.5 focus:outline-none cursor-pointer"
+                  >
+                    <Info size={12} className="cursor-help shrink-0" />
+                  </button>
+                  {activeTooltip === "start" && (
+                    <div className="absolute bottom-full left-0 mb-2 w-60 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-xl z-50 leading-relaxed normal-case font-medium animate-fade-in">
+                      {t("spam.templateHourInfoTooltip")}
+                      <div className="absolute top-full left-4 border-4 border-transparent border-t-slate-900" />
+                    </div>
+                  )}
                 </label>
                 <input
                   type="number"
@@ -337,8 +354,23 @@ export default function SpamSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  {t("spam.templateEndHour")}
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 relative">
+                  <span>{t("spam.templateEndHour")}</span>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setActiveTooltip("end")}
+                    onMouseLeave={() => setActiveTooltip(null)}
+                    onClick={() => setActiveTooltip(activeTooltip === "end" ? null : "end")}
+                    className="text-slate-400 hover:text-indigo-600 transition-colors p-0.5 focus:outline-none cursor-pointer"
+                  >
+                    <Info size={12} className="cursor-help shrink-0" />
+                  </button>
+                  {activeTooltip === "end" && (
+                    <div className="absolute bottom-full right-0 mb-2 w-60 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-xl z-50 leading-relaxed normal-case font-medium animate-fade-in">
+                      {t("spam.templateHourInfoTooltip")}
+                      <div className="absolute top-full right-4 border-4 border-transparent border-t-slate-900" />
+                    </div>
+                  )}
                 </label>
                 <input
                   type="number"

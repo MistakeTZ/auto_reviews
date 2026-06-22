@@ -63,6 +63,10 @@ export default function SpamRulesPage() {
   const [newSpecificText, setNewSpecificText] = useState("");
   const [savingRule, setSavingRule] = useState(false);
 
+  // Filters & Sorting State
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [sortBy, setSortBy] = useState<"last_sent" | "new" | "old">("last_sent");
+
   const [recentChats, setRecentChats] = useState<
     { chatID: string; clientName: string; lastMessageText: string }[]
   >([]);
@@ -408,6 +412,28 @@ export default function SpamRulesPage() {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
+
+  const filteredAndSortedRules = [...rules]
+    .filter((rule) => {
+      if (statusFilter === "active") return rule.is_active !== false;
+      if (statusFilter === "inactive") return rule.is_active === false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "new") {
+        return b.id - a.id;
+      }
+      if (sortBy === "old") {
+        return a.id - b.id;
+      }
+      // sortBy === "last_sent"
+      if (a.last_sent_at && b.last_sent_at) {
+        return new Date(b.last_sent_at).getTime() - new Date(a.last_sent_at).getTime();
+      }
+      if (a.last_sent_at) return -1;
+      if (b.last_sent_at) return 1;
+      return b.id - a.id;
+    });
 
   return (
     <SubscriptionGuard>
@@ -1072,6 +1098,54 @@ export default function SpamRulesPage() {
           </span>
         </div>
 
+        {/* Filters and Sorting Controls */}
+        {rules.length > 0 && (
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 border border-slate-200/60 p-4 rounded-2xl shadow-sm mb-6 animate-fade-in">
+            {/* Status Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                {t("spam.status")}:
+              </span>
+              <div className="inline-flex rounded-xl p-0.5 bg-slate-100 border border-slate-200/50">
+                {(["all", "active", "inactive"] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setStatusFilter(filter)}
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                      statusFilter === filter
+                        ? "bg-white text-purple-700 shadow-sm font-bold"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {filter === "all"
+                      ? t("spam.filterAll")
+                      : filter === "active"
+                        ? t("spam.filterActive")
+                        : t("spam.filterInactive")}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sorting */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
+                {t("spam.sortBy")}:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "last_sent" | "new" | "old")}
+                className="px-3 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/25 cursor-pointer text-slate-700 w-full sm:w-auto"
+              >
+                <option value="last_sent">{t("spam.sortLastSent")}</option>
+                <option value="new">{t("spam.sortNew")}</option>
+                <option value="old">{t("spam.sortOld")}</option>
+              </select>
+            </div>
+          </div>
+        )}
+
         {/* Rules List */}
         {loadingRules ? (
           <div className="flex justify-center items-center py-20">
@@ -1084,9 +1158,16 @@ export default function SpamRulesPage() {
               {t("spam.noRulesCreated")}
             </span>
           </div>
+        ) : filteredAndSortedRules.length === 0 ? (
+          <div className="text-center py-20 text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <span className="text-3xl block mb-2">🔍</span>
+            <span className="text-sm font-semibold text-slate-600">
+              {t("spam.noRulesMatchFilters")}
+            </span>
+          </div>
         ) : (
           <div className="space-y-4">
-            {rules.map((rule) => {
+            {filteredAndSortedRules.map((rule) => {
               return (
                 <Card
                   key={rule.id}
