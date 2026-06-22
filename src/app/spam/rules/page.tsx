@@ -48,6 +48,7 @@ export default function SpamRulesPage() {
   const [frequencyType, setFrequencyType] = useState<
     "four_times" | "three_times" | "twice" | "once" | "custom_days"
   >("four_times");
+  const [sendHoursInput, setSendHoursInput] = useState("9,13,17,21");
   const [intervalDays, setIntervalDays] = useState(1);
   const [specificHour, setSpecificHour] = useState(9);
   const [spamEndlessly, setSpamEndlessly] = useState(false);
@@ -216,13 +217,25 @@ export default function SpamRulesPage() {
     let finalFreqType = "hours";
 
     if (frequencyType === "four_times") {
-      finalSendHours = "9,13,17,21";
+      finalSendHours = sendHoursInput
+        .split(",")
+        .map((h) => h.trim())
+        .filter(Boolean)
+        .join(",");
       finalFreqType = "hours";
     } else if (frequencyType === "three_times") {
-      finalSendHours = "9,15,21";
+      finalSendHours = sendHoursInput
+        .split(",")
+        .map((h) => h.trim())
+        .filter(Boolean)
+        .join(",");
       finalFreqType = "hours";
     } else if (frequencyType === "twice") {
-      finalSendHours = "9,21";
+      finalSendHours = sendHoursInput
+        .split(",")
+        .map((h) => h.trim())
+        .filter(Boolean)
+        .join(",");
       finalFreqType = "hours";
     } else if (frequencyType === "once") {
       finalSendHours = String(specificHour);
@@ -267,6 +280,7 @@ export default function SpamRulesPage() {
         setEditingRuleId(null);
         setChatId("");
         setClientName("");
+        setSendHoursInput("9,13,17,21");
         setSpamEndlessly(false);
         setRuleActive(true);
         setSelectedGlobalTplIds([]);
@@ -300,10 +314,13 @@ export default function SpamRulesPage() {
       const hours = rule.send_hours.split(",").map((h) => h.trim());
       if (hours.length === 4) {
         setFrequencyType("four_times");
+        setSendHoursInput(rule.send_hours);
       } else if (hours.length === 3) {
         setFrequencyType("three_times");
+        setSendHoursInput(rule.send_hours);
       } else if (hours.length === 2) {
         setFrequencyType("twice");
+        setSendHoursInput(rule.send_hours);
       } else {
         setFrequencyType("once");
         const hour = parseInt(hours[0]);
@@ -384,6 +401,7 @@ export default function SpamRulesPage() {
                 setChatValidationMsg("");
                 setSpamEndlessly(false);
                 setRuleActive(true);
+                setSendHoursInput("9,13,17,21");
                 setSelectedGlobalTplIds([]);
                 setRuleSpecificTexts([]);
                 setShowRuleForm(true);
@@ -573,16 +591,23 @@ export default function SpamRulesPage() {
                       </label>
                       <select
                         value={frequencyType}
-                        onChange={(e) =>
-                          setFrequencyType(
-                            e.target.value as
-                              | "four_times"
-                              | "three_times"
-                              | "twice"
-                              | "once"
-                              | "custom_days",
-                          )
-                        }
+                        onChange={(e) => {
+                          const nextType = e.target.value as
+                            | "four_times"
+                            | "three_times"
+                            | "twice"
+                            | "once"
+                            | "custom_days";
+                          setFrequencyType(nextType);
+
+                          if (nextType === "four_times") {
+                            setSendHoursInput("9,13,17,21");
+                          } else if (nextType === "three_times") {
+                            setSendHoursInput("9,15,21");
+                          } else if (nextType === "twice") {
+                            setSendHoursInput("9,21");
+                          }
+                        }}
                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all cursor-pointer"
                       >
                         <option value="four_times">
@@ -667,17 +692,10 @@ export default function SpamRulesPage() {
                         </label>
                         <input
                           type="text"
-                          value={
-                            frequencyType === "four_times"
-                              ? "9,13,17,21"
-                              : frequencyType === "three_times"
-                                ? "9,15,21"
-                                : frequencyType === "twice"
-                                  ? "9,21"
-                                  : ""
-                          }
-                          className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-semibold cursor-not-allowed"
-                          readOnly
+                          value={sendHoursInput}
+                          onChange={(e) => setSendHoursInput(e.target.value)}
+                          placeholder="9,13,17,21"
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500/25 focus:border-purple-500 outline-none text-slate-800 text-sm font-medium transition-all"
                         />
                       </div>
                     )}
