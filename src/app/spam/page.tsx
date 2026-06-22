@@ -7,9 +7,7 @@ import { useEffect, useState, Suspense } from "react";
 import Header from "@/components/spam/Header";
 import HeroSection from "@/components/spam/HeroSection";
 import TrustBarSection from "@/components/spam/TrustBarSection";
-import SmartSchedulingSection from "@/components/spam/SmartSchedulingSection";
-import AutoPauseSafetySection from "@/components/spam/AutoPauseSafetySection";
-import BotAlertsSection from "@/components/spam/BotAlertsSection";
+import AutomationBentoSection from "@/components/spam/AutomationBentoSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import HowItWorksSection from "@/components/spam/HowItWorksSection";
 import PricingSection from "@/components/spam/PricingSection";
@@ -78,15 +76,8 @@ function ReSpamLandingPageContent() {
         {/* TrustBarSection: Showcase brand safety and operational metrics */}
         <TrustBarSection t={t} language={language} />
 
-        {/* SmartSchedulingSection: Showcases automated frequency intervals, hours, and randomized offsets */}
-        <SmartSchedulingSection t={t} />
-
-        {/* AutoPauseSafetySection: Highlights the core event-driven reconciliation system */}
-        {/* that catches client messages and automatically pauses active rules to mimic real human action */}
-        <AutoPauseSafetySection t={t} />
-
-        {/* BotAlertsSection: Spotlights deep integrations with interactive Telegram & MAX bots */}
-        <BotAlertsSection t={t} language={language} />
+        {/* AutomationBentoSection: Unified scheduling, auto-pause safety, and Telegram alerts in one bento grid */}
+        <AutomationBentoSection t={t} />
 
         {/* TestimonialsSection: Loved by Sellers reviews */}
         <TestimonialsSection t={t} prefix="spamLanding" />

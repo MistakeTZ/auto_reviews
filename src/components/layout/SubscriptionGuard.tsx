@@ -56,7 +56,7 @@ export default function SubscriptionGuard({
   // If not active, show the premium lock screen
   const isTrialNotStarted = !trialAct;
   const isTrialExpired = trialAct && tariff === "trial";
-  const trialDays = 30 + Math.max(0, Number(bonusDays || 0));
+  const trialDays = 14 + Math.max(0, Number(bonusDays || 0));
 
   const trialNotStartedTitle = isSpamMode
     ? language === "ru"
@@ -81,7 +81,7 @@ export default function SubscriptionGuard({
   const trialExpiredDesc = isSpamMode
     ? language === "ru"
       ? "Ваш бесплатный пробный период reSpam закончился. Приобретите полную подписку на 1 месяц, чтобы автоматизация рассылок продолжала приносить поведению вашего бизнеса пользу, или приглашайте друзей и получайте по 7 дней бесплатно!"
-      : "Your free trial period for reSpam has ended. Purchase a full subscription for 1 month to keep spam automation benefiting your business, or invite friends and get 30 days free!"
+      : "Your free trial period for reSpam has ended. Purchase a full subscription for 1 month to keep spam automation benefiting your business, or invite friends and get 7 days free!"
     : t("subscription.trialExpiredDesc");
 
   const expiredTitle = isSpamMode

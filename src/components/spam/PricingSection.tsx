@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
 type PricingSectionProps = {
@@ -9,6 +9,49 @@ type PricingSectionProps = {
   isAuthenticated: boolean;
   registerHref: string;
 };
+
+const SPAM_PRICING_PLANS = [
+  {
+    titleKey: "spamLanding.pricingTrialTitle",
+    priceKey: "spamLanding.pricingTrialPrice",
+    descKey: "spamLanding.pricingTrialDesc",
+    periodKey: "spamLanding.pricingTrialPeriod",
+    featureKeys: [
+      "spamLanding.pricingTrialFeature1",
+      "spamLanding.pricingTrialFeature2",
+      "spamLanding.pricingTrialFeature3",
+    ],
+    isPopular: false,
+    href: "register",
+  },
+  {
+    titleKey: "spamLanding.pricingPremiumTitle",
+    priceKey: "spamLanding.pricingPremiumPrice",
+    descKey: "spamLanding.pricingPremiumDesc",
+    periodKey: "spamLanding.pricingPremiumPeriod",
+    featureKeys: [
+      "spamLanding.pricingPremiumFeature1",
+      "spamLanding.pricingPremiumFeature2",
+      "spamLanding.pricingPremiumFeature3",
+    ],
+    isPopular: true,
+    href: "tariffs",
+  },
+  {
+    titleKey: "spamLanding.pricingComboTitle",
+    priceKey: "spamLanding.pricingComboPrice",
+    descKey: "spamLanding.pricingComboDesc",
+    periodKey: "spamLanding.pricingComboPeriod",
+    featureKeys: [
+      "spamLanding.pricingComboFeature1",
+      "spamLanding.pricingComboFeature2",
+      "spamLanding.pricingComboFeature3",
+      "spamLanding.pricingComboFeature4",
+    ],
+    isPopular: false,
+    href: "tariffs",
+  },
+];
 
 export default function PricingSection({
   t,
@@ -18,170 +61,107 @@ export default function PricingSection({
   return (
     <section
       id="pricing"
-      className="bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20 border-b border-slate-100"
+      className="pricing-section bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "900px", paddingBottom: "2.5rem" }}
     >
-      <div className="mx-auto mb-16 max-w-[1200px] text-center">
+      <Reveal
+        className="pricing-header mx-auto mb-16 max-w-[1200px] text-center"
+        direction="up"
+      >
         <Reveal
           as="span"
-          className="about-us-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
-          direction="up"
+          className="why-choose-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
         >
           {t("spamLanding.pricingTag")}
         </Reveal>
         <Reveal
           as="h2"
-          className="m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]"
-          direction="up"
+          className="why-choose-title m-0 text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.2] tracking-[-0.5px] text-[#0A192F]"
           delay={90}
         >
           {t("spamLanding.pricingTitle")}
         </Reveal>
-      </div>
+      </Reveal>
 
-      <div className="max-w-[1200px] mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-        {/* Tier 1: Free Trial */}
-        <Reveal
-          className="bg-white border border-slate-100 rounded-3xl p-6 lg:p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-200 transition-all duration-300 relative"
-          delay={120}
-        >
-          <div>
-            <h3 className="text-lg font-extrabold text-slate-900 mb-1">
-              {t("spamLanding.pricingTrialTitle")}
+      <div className="pricing-grid mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-3">
+        {SPAM_PRICING_PLANS.map((plan, idx) => (
+          <Reveal
+            key={idx}
+            className={`pricing-card flex flex-col rounded-[24px] border p-10 transition duration-200 hover:-translate-y-1.5 ${
+              plan.isPopular
+                ? "border-transparent bg-[linear-gradient(145deg,#0A192F_0%,#1f366c_100%)] text-white shadow-[0_20px_40px_rgba(10,25,47,0.2)] hover:shadow-[0_24px_48px_rgba(10,25,47,0.28)]"
+                : "border-[rgba(10,25,47,0.08)] bg-white text-[#0A192F] hover:border-[rgba(37,48,217,0.15)] hover:shadow-[0_20px_40px_rgba(10,25,47,0.08)]"
+            }`}
+            direction={plan.isPopular ? "zoom" : "up"}
+            delay={120 + idx * 95}
+          >
+            <h3
+              className={`m-0 mb-2 text-[1.3rem] font-bold ${
+                plan.isPopular ? "text-white" : "text-[#0A192F]"
+              }`}
+            >
+              {t(plan.titleKey)}
             </h3>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-6">
-              {t("spamLanding.pricingTrialDesc")}
+            <p
+              className={`pricing-card-desc mb-6 text-[0.95rem] leading-[1.5] ${
+                plan.isPopular ? "text-white/80" : "text-[#4A5568]"
+              }`}
+            >
+              {t(plan.descKey)}
             </p>
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-black text-slate-900">
-                {t("spamLanding.pricingTrialPrice")}
+            <div className="pricing-price-wrap mb-8 flex items-baseline gap-1">
+              <span
+                className={`pricing-price text-[3rem] font-extrabold leading-none ${
+                  plan.isPopular ? "text-white" : "text-[#0A192F]"
+                }`}
+              >
+                {t(plan.priceKey)}
               </span>
-              <span className="text-slate-400 text-xs font-bold uppercase">
-                {t("spamLanding.pricingTrialPeriod")}
+              <span
+                className={`pricing-period text-[0.95rem] font-semibold ${
+                  plan.isPopular ? "text-white/70" : "text-[#4A5568]"
+                }`}
+              >
+                {t(plan.periodKey)}
               </span>
             </div>
-            
-            <ul className="space-y-3.5 pl-0 m-0 list-none text-xs font-semibold text-slate-600 border-t border-slate-100 pt-6">
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingTrialFeature1")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingTrialFeature2")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingTrialFeature3")}</span>
-              </li>
+            <ul className="pricing-features mb-8 flex flex-1 list-none flex-col gap-3 p-0">
+              {plan.featureKeys.map((featureKey) => (
+                <li
+                  key={featureKey}
+                  className={`flex items-center gap-3 text-[0.95rem] font-medium ${
+                    plan.isPopular ? "text-white/90" : "text-[#4A5568]"
+                  }`}
+                >
+                  <i className={plan.isPopular ? "text-[#ff3d71]" : "text-[#2530D9]"}>
+                    <Check size={16} />
+                  </i>
+                  <span>{t(featureKey)}</span>
+                </li>
+              ))}
             </ul>
-          </div>
-
-          <Link
-            href={isAuthenticated ? "/spam/dashboard" : registerHref}
-            className="mt-8 btn-secondary inline-flex min-h-[3rem] items-center justify-center rounded-xl border-2 border-slate-800 bg-transparent px-5 text-sm font-bold text-slate-800 transition duration-200 hover:bg-slate-50 cursor-pointer"
-          >
-            {isAuthenticated ? t("common.dashboard") : t("landing.getStarted") || "Start Free"}
-          </Link>
-        </Reveal>
-
-        {/* Tier 2: Standing Premium */}
-        <Reveal
-          className="bg-white border border-slate-100 rounded-3xl p-6 lg:p-8 shadow-sm flex flex-col justify-between hover:shadow-md hover:border-slate-200 transition-all duration-300 relative"
-          delay={180}
-        >
-          <div>
-            <h3 className="text-lg font-extrabold text-slate-900 mb-1">
-              {t("spamLanding.pricingPremiumTitle")}
-            </h3>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-6">
-              {t("spamLanding.pricingPremiumDesc")}
-            </p>
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-black text-slate-900">
-                {t("spamLanding.pricingPremiumPrice")}
-              </span>
-              <span className="text-slate-400 text-xs font-bold uppercase">
-                {t("spamLanding.pricingPremiumPeriod")}
-              </span>
-            </div>
-            
-            <ul className="space-y-3.5 pl-0 m-0 list-none text-xs font-semibold text-slate-600 border-t border-slate-100 pt-6">
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingPremiumFeature1")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingPremiumFeature2")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-emerald-500 shrink-0" />
-                <span>{t("spamLanding.pricingPremiumFeature3")}</span>
-              </li>
-            </ul>
-          </div>
-
-          <Link
-            href={isAuthenticated ? "/spam/tariffs" : registerHref}
-            className="mt-8 btn-primary inline-flex min-h-[3rem] items-center justify-center rounded-xl border-2 border-[#0A192F] bg-[#0A192F] px-5 text-sm font-bold text-white shadow-sm transition duration-200 hover:bg-[#1f366c] hover:border-[#1f366c] cursor-pointer"
-          >
-            {isAuthenticated ? t("spam.referralsAndTariffs") || "Buy" : t("landing.getStarted") || "Start Now"}
-          </Link>
-        </Reveal>
-
-        {/* Tier 3: Combo Pack (Recommended) */}
-        <Reveal
-          className="bg-white border-2 border-indigo-600 rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col justify-between relative"
-          delay={240}
-        >
-          {/* Best value badge */}
-          <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-white bg-gradient-to-r from-indigo-600 to-purple-600 px-3.5 py-1.5 rounded-full shadow-md">
-            <Sparkles size={11} /> {t("spamLanding.pricingComboBadge") || "COMBO"}
-          </span>
-
-          <div>
-            <h3 className="text-lg font-extrabold text-slate-900 mb-1 mt-1">
-              {t("spamLanding.pricingComboTitle")}
-            </h3>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-6">
-              {t("spamLanding.pricingComboDesc")}
-            </p>
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {t("spamLanding.pricingComboPrice")}
-              </span>
-              <span className="text-slate-400 text-xs font-bold uppercase">
-                {t("spamLanding.pricingComboPeriod")}
-              </span>
-            </div>
-            
-            <ul className="space-y-3.5 pl-0 m-0 list-none text-xs font-semibold text-slate-600 border-t border-slate-100 pt-6">
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-indigo-600 shrink-0 animate-pulse" />
-                <span className="text-slate-900 font-bold">{t("spamLanding.pricingComboFeature1")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-indigo-600 shrink-0" />
-                <span>{t("spamLanding.pricingComboFeature2")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-indigo-600 shrink-0" />
-                <span>{t("spamLanding.pricingComboFeature3")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Check size={16} className="text-indigo-600 shrink-0" />
-                <span>{t("spamLanding.pricingComboFeature4")}</span>
-              </li>
-            </ul>
-          </div>
-
-          <Link
-            href={isAuthenticated ? "/spam/tariffs" : registerHref}
-            className="mt-8 btn-primary inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-indigo-600 text-white px-5 text-sm font-bold shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition duration-200 cursor-pointer"
-          >
-            {isAuthenticated ? t("spam.referralsAndTariffs") || "Buy" : t("landing.getStarted") || "Start Combo"}
-          </Link>
-        </Reveal>
+            <Link
+              href={
+                isAuthenticated
+                  ? plan.href === "tariffs"
+                    ? "/spam/tariffs"
+                    : "/spam/dashboard"
+                  : registerHref
+              }
+              className={`inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 px-7 text-[0.98rem] font-bold tracking-[0.01em] transition duration-200 hover:-translate-y-0.5 active:translate-y-0 active:shadow-none ${
+                plan.isPopular
+                  ? "border-[#0A192F] bg-[#0A192F] text-white shadow-[0_10px_20px_rgba(10,25,47,0.12)] hover:border-[#1f366c] hover:bg-[#1f366c] hover:shadow-[0_14px_26px_rgba(10,25,47,0.18)]"
+                  : "border-[#0A192F] bg-transparent text-[#0A192F] hover:bg-[rgba(10,25,47,0.06)] hover:shadow-[0_8px_16px_rgba(10,25,47,0.1)]"
+              }`}
+            >
+              {isAuthenticated
+                ? plan.href === "tariffs"
+                  ? t("spam.referralsAndTariffs")
+                  : t("common.dashboard")
+                : t("landing.pricingBtn")}
+            </Link>
+          </Reveal>
+        ))}
       </div>
     </section>
   );

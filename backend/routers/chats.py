@@ -11,6 +11,7 @@ import schemas
 import database
 import models
 from routers.auth import get_current_user, check_active_spam_subscription
+from services.data import TRIAL_DAYS
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -352,7 +353,7 @@ def update_spam_settings(
             current_user.respam_trial_activated = True
             now = datetime.now(timezone.utc)
             trial_days = (
-                max(int(current_user.respam_registration_bonus_days or 0), 0) + 30
+                max(int(current_user.respam_registration_bonus_days or 0), 0) + TRIAL_DAYS
             )
             current_user.respam_subscription_expires_at = now + timedelta(
                 days=trial_days

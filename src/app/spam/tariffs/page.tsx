@@ -465,39 +465,48 @@ function ReferralsPageContent() {
 
             {/* Visual selector for plan options */}
             <div className="space-y-3 mb-6">
-              {planOptions.map((option) => (
-                <div
-                  key={option.id}
-                  onClick={() => setSelectedPlan(option.id as any)}
-                  className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
-                    selectedPlan === option.id
-                      ? "border-violet-600 bg-violet-50/40"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  }`}
-                >
-                  {option.badge && (
-                    <div className="absolute top-0 right-0 bg-violet-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-xl">
-                      {option.badge}
+              {planOptions.map((option) => {
+                const isProfitable = !!option.badge;
+                const isSelected = selectedPlan === option.id;
+                return (
+                  <div
+                    key={option.id}
+                    onClick={() => setSelectedPlan(option.id as any)}
+                    style={isProfitable ? { borderWidth: "2px" } : {}}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex justify-between items-center relative overflow-hidden ${
+                      isProfitable
+                        ? isSelected
+                          ? "border-[#2530D9] bg-[linear-gradient(150deg,#f4f6ff_0%,#ffffff_55%,#eef1ff_100%)] shadow-[0_8px_24px_rgba(37,48,217,0.18),0_0_0_1px_rgba(37,48,217,0.14)]"
+                          : "border-[#2530D9] bg-[linear-gradient(150deg,#f4f6ff_0%,#ffffff_55%,#eef1ff_100%)] shadow-[0_4px_16px_rgba(37,48,217,0.12),0_0_0_1px_rgba(37,48,217,0.1)] hover:shadow-[0_8px_24px_rgba(37,48,217,0.2)]"
+                        : isSelected
+                          ? "border-violet-600 bg-violet-50/40"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    {option.badge && (
+                      <div className="absolute -top-px right-3 translate-y-0 inline-flex items-center gap-1 whitespace-nowrap rounded-b-lg bg-[linear-gradient(135deg,#2530D9_0%,#4f5be8_100%)] px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-[0_4px_10px_rgba(37,48,217,0.4)]">
+                        {option.badge}
+                      </div>
+                    )}
+                    <div>
+                      <p className={`font-extrabold text-sm ${isProfitable ? "text-[#0A192F]" : "text-slate-800"}`}>
+                        {option.title}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {option.desc}
+                      </p>
                     </div>
-                  )}
-                  <div>
-                    <p className="font-extrabold text-sm text-slate-800">
-                      {option.title}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {option.desc}
-                    </p>
+                    <div className="text-right">
+                      <span className={`font-black text-lg ${isProfitable ? "text-[#2530D9]" : "text-slate-900"}`}>
+                        {option.price}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                        {t("referrals.buyPeriod")}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="font-black text-slate-900 text-lg">
-                      {option.price}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">
-                      {t("referrals.buyPeriod")}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <Button

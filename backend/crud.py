@@ -8,6 +8,7 @@ from auth import get_password_hash
 from prompts import DEFAULT_GPT_RULE_PROMPT
 import uuid
 from datetime import datetime, timezone, timedelta
+from services.data import TRIAL_DAYS, PREMIUM_PLAN_DAYS
 
 
 def get_user(db: Session, user_id: int):
@@ -140,7 +141,7 @@ def update_user_token(db: Session, user_id: int, token: str, sid: Optional[str] 
             now = datetime.now(timezone.utc)
             # september_first = datetime(2026, 9, 1, 9, tzinfo=timezone.utc)
 
-            trial_days = max(int(db_user.registration_bonus_days or 0), 0) + 30
+            trial_days = max(int(db_user.registration_bonus_days or 0), 0) + TRIAL_DAYS
             db_user.subscription_expires_at = now + timedelta(days=trial_days)
             db_user.registration_bonus_days = 0
             db_user.tariff_type = "trial"
@@ -235,9 +236,11 @@ def buy_service_subscription(db: Session, user_id: int, service_type: str):
             current_expiry = current_expiry.replace(timezone.utc)
 
         if current_expiry and current_expiry > now:
-            db_user.subscription_expires_at = current_expiry + timedelta(days=30)
+            db_user.subscription_expires_at = current_expiry + timedelta(
+                days=PREMIUM_PLAN_DAYS
+            )
         else:
-            db_user.subscription_expires_at = now + timedelta(days=30)
+            db_user.subscription_expires_at = now + timedelta(days=PREMIUM_PLAN_DAYS)
         db_user.tariff_type = "full"
 
     elif service_type == "respam":
@@ -246,9 +249,11 @@ def buy_service_subscription(db: Session, user_id: int, service_type: str):
             current_expiry = current_expiry.replace(timezone.utc)
 
         if current_expiry and current_expiry > now:
-            db_user.respam_subscription_expires_at = current_expiry + timedelta(days=30)
+            db_user.respam_subscription_expires_at = current_expiry + timedelta(
+                days=PREMIUM_PLAN_DAYS
+            )
         else:
-            db_user.respam_subscription_expires_at = now + timedelta(days=30)
+            db_user.respam_subscription_expires_at = now + timedelta(days=PREMIUM_PLAN_DAYS)
         db_user.respam_tariff_type = "full"
 
     elif service_type == "both":
@@ -258,9 +263,11 @@ def buy_service_subscription(db: Session, user_id: int, service_type: str):
             current_expiry = current_expiry.replace(timezone.utc)
 
         if current_expiry and current_expiry > now:
-            db_user.subscription_expires_at = current_expiry + timedelta(days=30)
+            db_user.subscription_expires_at = current_expiry + timedelta(
+                days=PREMIUM_PLAN_DAYS
+            )
         else:
-            db_user.subscription_expires_at = now + timedelta(days=30)
+            db_user.subscription_expires_at = now + timedelta(days=PREMIUM_PLAN_DAYS)
         db_user.tariff_type = "full"
 
         # 2. reSpam
@@ -270,10 +277,10 @@ def buy_service_subscription(db: Session, user_id: int, service_type: str):
 
         if current_expiry_spam and current_expiry_spam > now:
             db_user.respam_subscription_expires_at = current_expiry_spam + timedelta(
-                days=30
+                days=PREMIUM_PLAN_DAYS
             )
         else:
-            db_user.respam_subscription_expires_at = now + timedelta(days=30)
+            db_user.respam_subscription_expires_at = now + timedelta(days=PREMIUM_PLAN_DAYS)
         db_user.respam_tariff_type = "full"
 
     db.commit()

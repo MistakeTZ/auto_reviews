@@ -487,7 +487,7 @@ function ReferralsPageContent() {
                   }`}
                 >
                   {option.badge && (
-                    <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-xl">
+                    <div className="absolute top-1 right-0 bg-indigo-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl-xl">
                       {option.badge}
                     </div>
                   )}

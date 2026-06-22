@@ -1,13 +1,23 @@
 "use client";
 
 import Reveal from "@/components/ui/Reveal";
+import { useSpamLandingStats } from "@/hooks/useSpamLandingStats";
 
 type TrustBarSectionProps = {
   t: (key: string) => string;
   language: string;
 };
 
-export default function TrustBarSection({ t }: TrustBarSectionProps) {
+export default function TrustBarSection({ t, language }: TrustBarSectionProps) {
+  const totalMessages = useSpamLandingStats();
+
+  const stat1Value =
+    totalMessages === null
+      ? t("spamLanding.trustSent")
+      : new Intl.NumberFormat(language === "ru" ? "ru-RU" : "en-US").format(
+          totalMessages,
+        );
+
   return (
     <section className="trust-bar-section border-y border-[#E2E8F0] bg-white py-10">
       <div className="trust-bar-container mx-auto flex max-w-[1000px] flex-col items-center justify-between gap-4 px-4 md:flex-row md:gap-6 lg:px-6">
@@ -17,7 +27,7 @@ export default function TrustBarSection({ t }: TrustBarSectionProps) {
         >
           <div className="flex flex-wrap items-center justify-center gap-2">
             <strong className="text-[clamp(1.2rem,2vw,1.5rem)] font-extrabold text-[#0A192F]">
-              {t("spamLanding.trustSent")}
+              {stat1Value}
             </strong>
             <span className="h-2 w-2 rounded-full bg-[#22C55E] shadow-[0_0_0_4px_rgba(34,197,94,0.2)] animate-pulse" />
           </div>

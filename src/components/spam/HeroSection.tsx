@@ -35,7 +35,6 @@ export default function HeroSection({
             <span className="relative inline-block bg-gradient-to-r from-indigo-600 to-purple-600 bg-[length:220%_220%] bg-clip-text text-transparent">
               {t("spamLanding.heroTitleHighlight")}
             </span>
-            {t("spamLanding.heroTitleSuffix")}
           </Reveal>
 
           <Reveal
