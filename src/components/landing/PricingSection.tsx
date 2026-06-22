@@ -116,7 +116,7 @@ export default function PricingSection({
             </p>
             <div className="pricing-price-wrap mb-8 flex items-baseline gap-1">
               <span
-                className={`pricing-price text-[3rem] font-extrabold leading-none ${
+                className={`pricing-price text-[2rem] sm:text-[3rem] font-extrabold leading-none ${
                   plan.isPopular
                     ? "text-white"
                     : plan.isProfitable
