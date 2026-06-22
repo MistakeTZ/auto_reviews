@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
 type HeroSectionProps = {
@@ -21,10 +21,9 @@ export default function HeroSection({
         <div className="hero-content flex flex-1 flex-col items-center lg:items-start">
           <Reveal
             as="span"
-            className="eyebrow mb-4 inline-flex items-center gap-1.5 text-[0.82rem] font-bold uppercase tracking-[2px] text-indigo-700 bg-indigo-50 border border-indigo-100/60 px-3 py-1.5 rounded-full"
+            className="eyebrow mb-4 text-[0.85rem] font-bold uppercase tracking-[2px] text-[#1f366c]"
             delay={120}
           >
-            <Sparkles size={14} className="text-indigo-600" />
             {t("spamLanding.heroTag")}
           </Reveal>
           <Reveal

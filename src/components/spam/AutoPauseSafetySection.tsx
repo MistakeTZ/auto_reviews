@@ -1,7 +1,7 @@
 "use client";
 
 import Reveal from "@/components/ui/Reveal";
-import { MessageSquare, RefreshCw, EyeOff, UserCheck } from "lucide-react";
+import { MessageSquare, RefreshCw, UserCheck } from "lucide-react";
 
 type AutoPauseSafetySectionProps = {
   t: (key: string) => string;
@@ -11,7 +11,7 @@ export default function AutoPauseSafetySection({ t }: AutoPauseSafetySectionProp
   return (
     <section
       id="auto-pause"
-      className="bg-white px-4 py-16 lg:px-8 lg:py-20 border-b border-slate-100"
+      className="bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20 border-b border-slate-100"
     >
       <div className="max-w-[1200px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Visual schematic diagram */}
@@ -59,7 +59,7 @@ export default function AutoPauseSafetySection({ t }: AutoPauseSafetySectionProp
           <div>
             <Reveal
               as="span"
-              className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/50"
+              className="about-us-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
               direction="up"
             >
               {t("spamLanding.pauseTag")}

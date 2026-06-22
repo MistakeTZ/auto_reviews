@@ -39,7 +39,7 @@ export default function FAQSection({ t }: FAQSectionProps) {
           className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
           direction="up"
         >
-          {t("landing.faqTitle") || "FAQ"}
+          FAQ
         </Reveal>
         <Reveal
           as="h2"

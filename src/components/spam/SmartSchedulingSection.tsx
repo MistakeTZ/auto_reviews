@@ -1,7 +1,7 @@
 "use client";
 
 import Reveal from "@/components/ui/Reveal";
-import { Clock, Calendar, ShieldCheck, HelpCircle } from "lucide-react";
+import { Clock, Calendar, ShieldCheck } from "lucide-react";
 
 type SmartSchedulingSectionProps = {
   t: (key: string) => string;
@@ -16,7 +16,7 @@ export default function SmartSchedulingSection({ t }: SmartSchedulingSectionProp
       <div className="mx-auto mb-12 max-w-[1200px] text-center">
         <Reveal
           as="span"
-          className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/50"
+          className="about-us-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
           direction="up"
         >
           {t("spamLanding.schedulingTag")}

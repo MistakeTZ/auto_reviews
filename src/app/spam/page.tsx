@@ -10,6 +10,7 @@ import TrustBarSection from "@/components/spam/TrustBarSection";
 import SmartSchedulingSection from "@/components/spam/SmartSchedulingSection";
 import AutoPauseSafetySection from "@/components/spam/AutoPauseSafetySection";
 import BotAlertsSection from "@/components/spam/BotAlertsSection";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import HowItWorksSection from "@/components/spam/HowItWorksSection";
 import PricingSection from "@/components/spam/PricingSection";
 import FAQSection from "@/components/spam/FAQSection";
@@ -86,6 +87,9 @@ function ReSpamLandingPageContent() {
 
         {/* BotAlertsSection: Spotlights deep integrations with interactive Telegram & MAX bots */}
         <BotAlertsSection t={t} language={language} />
+
+        {/* TestimonialsSection: Loved by Sellers reviews */}
+        <TestimonialsSection t={t} prefix="spamLanding" />
 
         {/* HowItWorksSection: Walkthrough connecting Wildberries chat tokens safely */}
         <HowItWorksSection t={t} />

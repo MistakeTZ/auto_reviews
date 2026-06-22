@@ -108,6 +108,7 @@ export const en = {
     pricingEnterprisePeriod: '/ 7 days',
     pricingFeatureIncluded: 'Auto-replies using GPT or templates\n1 notification method\nUp to 10 reply rules\n\nFull access to all features\nUp to 5 notification methods\nUp to 100 reply rules\n\nAll features available by subscription\nNo limit on invited friends\nOptimize your routine together',
     pricingBtn: 'Start for free',
+    faqSubtitle: 'FAQ',
     faqTitle: 'Frequently Asked Questions',
     faq1Q: 'Is it safe for my WB account?',
     faq1A: 'Absolutely. We work exclusively through the official Wildberries API protocols. The service does not have access to accounts, price management, or warehouses. You retain 100% control.',    faq2Q: 'Can I test it before paying?',
@@ -789,5 +790,23 @@ export const en = {
     faq3A: 'As soon as a customer writes any message in the chat, the campaign for that specific customer is paused. You will receive an alert in Telegram so your team can reply manually.',
     faq4Q: 'Can I cancel my subscription at any time?',
     faq4A: 'Absolutely. There are no long-term contracts. You can cancel your subscription with one click in your settings.',
+    testimonial1: {
+      text: '"Previously, we had to manually remind customers in WB chats about our new collections and discounts, spending a lot of time on it. We set up reSpam: created distribution rules for recent chats. Now the bot does neat periodic campaigns automatically. It is very convenient that the system pauses if the customer replies — we immediately catch the dialogue in Telegram. Sales grew, routine disappeared!"',
+      author: 'Aleksey V.',
+      role: 'Brand of basic clothing (SKU ~60)',
+      link: 'https://www.wildberries.am/seller/1293748',
+    },
+    testimonial2: {
+      text: '"I was very worried about potential spam complaints in chats and blocks from Wildberries. But reSpam pleased me: the built-in random sending offset (up to 20 minutes) and automatic pausing on the first customer reply make the campaign completely safe and natural. Over a month, we sent 1500+ messages with promo codes, zero complaints, and repeat sales grew by 18%."',
+      author: 'Maria S.',
+      role: 'Shop of cosmetics and beauty accessories',
+      link: 'https://www.wildberries.am/seller/413023',
+    },
+    testimonial3: {
+      text: '"We use chat campaigns to upsell accessories for our main products. For example, a day after purchase, we message the client offering compatible cables or cases with a discount. Thanks to integration with the Telegram bot, managers see all client replies in real time and close deals quickly. reSpam paid off in the very first week!"',
+      author: 'Dmitry K.',
+      role: 'Electronics and car goods',
+      link: 'https://www.wildberries.am/seller/4271462',
+    },
   }
 };

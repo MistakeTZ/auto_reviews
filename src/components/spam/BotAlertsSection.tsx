@@ -20,7 +20,7 @@ export default function BotAlertsSection({ t }: BotAlertsSectionProps) {
           <div>
             <Reveal
               as="span"
-              className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/50"
+              className="about-us-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
               direction="up"
             >
               {t("spamLanding.alertsTag")}
@@ -68,35 +68,35 @@ export default function BotAlertsSection({ t }: BotAlertsSectionProps) {
         {/* Telegram Chat mockup */}
         <div className="lg:col-span-6 w-full flex justify-center">
           <Reveal
-            className="w-full max-w-[420px] bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl relative"
+            className="w-full max-w-[420px] bg-slate-50 border border-slate-200 rounded-3xl p-5 shadow-xl relative"
             direction="up"
             delay={200}
           >
             {/* Header phone status bar */}
-            <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold mb-4 font-mono">
+            <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold mb-4 font-mono">
               <span>LTE 12:45 PM</span>
-              <span className="text-sky-500 font-semibold flex items-center gap-1">
-                <Send size={10} /> Telegram
+              <span className="text-[#229ED9] font-semibold flex items-center gap-1">
+                <Send size={10} className="fill-[#229ED9]" /> Telegram
               </span>
             </div>
 
             {/* Telegram App chat window wrapper */}
-            <div className="bg-slate-950 border border-slate-900 rounded-2xl p-4 space-y-4">
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-900">
+            <div className="bg-[#e8ecef] border border-slate-200 rounded-2xl p-4 space-y-4">
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/60">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-[#229ED9] text-white flex items-center justify-center font-bold text-xs">
                     RS
                   </div>
                   <div>
-                    <h5 className="text-[11px] font-bold text-white leading-none">reSpam Bot</h5>
-                    <span className="text-[9px] text-slate-500 leading-none">official bot assistant</span>
+                    <h5 className="text-[11px] font-bold text-slate-800 leading-none">reSpam Bot</h5>
+                    <span className="text-[9px] text-slate-400 leading-none">official bot assistant</span>
                   </div>
                 </div>
-                <span className="text-[9px] text-slate-500 font-bold font-mono">12:44</span>
+                <span className="text-[9px] text-slate-400 font-bold font-mono">12:44</span>
               </div>
 
               {/* Message block */}
-              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-3.5 text-xs text-slate-300 font-mono shadow-sm">
+              <div className="bg-white border border-slate-200/50 rounded-2xl p-3.5 text-xs text-slate-700 font-mono shadow-sm">
                 <p className="m-0 leading-relaxed text-[11px]">
                   {t("spamLanding.alertsVisualAlert")}
                 </p>
@@ -104,10 +104,10 @@ export default function BotAlertsSection({ t }: BotAlertsSectionProps) {
 
               {/* Bot action buttons mock */}
               <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
-                <div className="bg-slate-900 border border-slate-800 text-center py-2.5 rounded-xl text-sky-400 hover:bg-slate-850 cursor-pointer transition-colors">
+                <div className="bg-white border border-slate-200 text-center py-2.5 rounded-xl text-[#229ED9] hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
                   Resume campaign
                 </div>
-                <div className="bg-slate-900 border border-slate-800 text-center py-2.5 rounded-xl text-slate-400 hover:bg-slate-850 cursor-pointer transition-colors">
+                <div className="bg-white border border-slate-200 text-center py-2.5 rounded-xl text-slate-500 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
                   Open WB Chat
                 </div>
               </div>

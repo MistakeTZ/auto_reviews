@@ -9,11 +9,13 @@ import Image from "next/image";
 
 type TestimonialsSectionProps = {
   t: (key: string) => string;
+  prefix?: "landing" | "spamLanding";
 };
 
-
-
-export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
+export default function TestimonialsSection({
+  t,
+  prefix = "landing",
+}: TestimonialsSectionProps) {
   const [expandedTestimonials, setExpandedTestimonials] = useState<number[]>(
     [],
   );
@@ -50,10 +52,10 @@ export default function TestimonialsSection({ t }: TestimonialsSectionProps) {
   ];
 
   const testimonials = testimonialsData.map((data) => ({
-    text: t(`landing.${data.id}.text`),
-    author: t(`landing.${data.id}.author`),
-    role: t(`landing.${data.id}.role`),
-    link: t(`landing.${data.id}.link`),
+    text: t(`${prefix}.${data.id}.text`),
+    author: t(`${prefix}.${data.id}.author`),
+    role: t(`${prefix}.${data.id}.role`),
+    link: t(`${prefix}.${data.id}.link`),
     avatar: data.avatar,
     badge: language === "ru" ? data.verifiedBadgeRu : data.verifiedBadge,
   }));

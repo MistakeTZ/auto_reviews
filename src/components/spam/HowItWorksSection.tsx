@@ -10,12 +10,12 @@ export default function HowItWorksSection({ t }: HowItWorksSectionProps) {
   return (
     <section
       id="how-it-works"
-      className="bg-white px-4 py-16 lg:px-8 lg:py-20 border-b border-slate-100"
+      className="bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fb_100%)] px-4 py-16 lg:px-8 lg:py-20 border-b border-slate-100"
     >
       <div className="mx-auto mb-16 max-w-[1200px] text-center">
         <Reveal
           as="span"
-          className="mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/50"
+          className="about-us-eyebrow mb-3 inline-block text-[0.78rem] font-bold uppercase tracking-[1.6px] text-[#1f366c]"
           direction="up"
         >
           {t("spamLanding.howTag")}
