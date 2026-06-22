@@ -211,11 +211,12 @@ export default function Sidebar() {
 
             {/* Hover/Click Switch Option (Premium Popover Modal) */}
             <div
-              className={`absolute left-6 right-6 top-[72px] z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 transition-all duration-200 origin-top ${
+              className={`absolute left-3 right-6 top-[72px] z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 transition-all duration-200 origin-top ${
                 showMobileSwitcher
                   ? "block scale-100 opacity-100 translate-y-0"
                   : "hidden group-hover:block group-hover:scale-100 group-hover:opacity-100 animate-in fade-in slide-in-from-top-2"
               }`}
+              style={{ minWidth: "230px" }}
             >
               {/* Little arrow pointing up */}
               <div className="absolute -top-2 left-12 w-4 h-4 bg-white border-t border-l border-slate-200/80 rotate-45" />

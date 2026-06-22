@@ -140,11 +140,17 @@ export default function SpamDashboardPage() {
                           <div className="w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 bg-emerald-500 shadow-sm shadow-emerald-200" />
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
-                              <p className="font-bold text-slate-800 text-sm">
-                                {t("spam.chatId")}:{" "}
-                                <span className="font-mono text-xs text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded font-bold">
-                                  {msg.chat_id}
-                                </span>
+                              <p className="font-bold text-slate-800 text-sm flex items-center gap-1">
+                                <span>{t("spam.chatId")}:</span>{" "}
+                                <a
+                                  href={`https://seller.wildberries.ru/chat-with-clients?chatId=${msg.chat_id.replace(/^1:/, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={msg.chat_id}
+                                  className="font-mono text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 px-1.5 py-0.5 rounded font-bold transition-colors hover:underline inline-block"
+                                >
+                                  {msg.chat_id.replace(/^1:/, "")}
+                                </a>
                               </p>
                               <span className="text-xs text-slate-400 shrink-0 ml-4 font-semibold">
                                 {formatDateTime(msg.sent_at)}

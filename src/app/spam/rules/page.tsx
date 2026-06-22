@@ -499,7 +499,7 @@ export default function SpamRulesPage() {
                               {clientName || t("spam.buyer")}
                             </p>
                             <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
-                              {chatId}
+                              {chatId.replace(/^1:/, "")}
                             </p>
                           </div>
                         </div>
@@ -1191,11 +1191,18 @@ export default function SpamRulesPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <h3
                             title={rule.chat_id}
-                            className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm"
+                            className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm hover:bg-purple-50/50 hover:border-purple-200 transition-colors"
                           >
-                            {rule.chat_id.length > 18
-                              ? `${rule.chat_id.slice(0, 10)}...${rule.chat_id.slice(-5)}`
-                              : rule.chat_id}
+                            <a
+                              href={`https://seller.wildberries.ru/chat-with-clients?chatId=${rule.chat_id.replace(/^1:/, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors block"
+                            >
+                              {rule.chat_id.replace(/^1:/, "").length > 18
+                                ? `${rule.chat_id.replace(/^1:/, "").slice(0, 10)}...${rule.chat_id.replace(/^1:/, "").slice(-5)}`
+                                : rule.chat_id.replace(/^1:/, "")}
+                            </a>
                           </h3>
                           <span
                             className={`px-2.5 py-1 text-sm font-bold rounded-lg border ${
@@ -1242,7 +1249,7 @@ export default function SpamRulesPage() {
                             {t("spam.linkedTemplates")}
                           </span>
                           <div className="flex flex-wrap gap-1.5">
-                            {rule.templates.map((tpl) => (
+                            {rule.templates.slice(0, 2).map((tpl) => (
                               <span
                                 key={tpl.id}
                                 className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
@@ -1256,6 +1263,14 @@ export default function SpamRulesPage() {
                                 {tpl.text.length > 30 ? "..." : ""}
                               </span>
                             ))}
+                            {rule.templates.length > 2 && (
+                              <span
+                                className="text-xs font-bold px-2 py-0.5 rounded-md border bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100/85 transition-colors cursor-help"
+                                title={rule.templates.slice(2).map((tpl) => tpl.text).join("\n")}
+                              >
+                                + {rule.templates.length - 2}
+                              </span>
+                            )}
                             {rule.templates.length === 0 && (
                               <span className="text-xs text-slate-400 italic">
                                 {t("spam.noLinkedTemplates")}
