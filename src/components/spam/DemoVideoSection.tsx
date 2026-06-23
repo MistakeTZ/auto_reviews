@@ -9,8 +9,8 @@ type DemoVideoSectionProps = {
   t: (key: string) => string;
 };
 
-const MOBILE_VIDEO_URL = "https://youtu.be/nKznZP_mzuE";
-const DESKTOP_VIDEO_URL = "https://youtu.be/nKznZP_mzuE";
+const MOBILE_VIDEO_ID = "u9tRrFW70uU";
+const DESKTOP_VIDEO_ID = "nKznZP_mzuE";
 
 function getYoutubeVideoId(url: string) {
   try {
@@ -29,8 +29,7 @@ export default function DemoVideoSection({ t }: DemoVideoSectionProps) {
   const isMobileVideo = useMobile(768);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const selectedVideoUrl = isMobileVideo ? MOBILE_VIDEO_URL : DESKTOP_VIDEO_URL;
-  const videoId = getYoutubeVideoId(selectedVideoUrl);
+  const videoId = isMobileVideo ? MOBILE_VIDEO_ID : DESKTOP_VIDEO_ID;
   const videoTitle = isMobileVideo
     ? t("spamLanding.demoMobileTitle")
     : t("spamLanding.demoDesktopTitle");
@@ -39,9 +38,9 @@ export default function DemoVideoSection({ t }: DemoVideoSectionProps) {
     ? "aspect-[9/16] max-w-[340px]"
     : "aspect-video max-w-[850px]";
 
-  if (!videoId) {
-    return null;
-  }
+  // if (!videoId) {
+  //   return null;
+  // }
 
   return (
     <section
