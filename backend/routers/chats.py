@@ -248,6 +248,32 @@ async def update_spam_rule(
 ):
     token = (current_user.wb_chat_api_token or "").strip()
 
+    db_rule = crud.get_spam_rule(db, rule_id, current_user.id)
+    if not db_rule:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Spam rule not found."
+        )
+
+    # If changes is_active to true, fetch last message addTimestamp
+    if rule_in.is_active is True and not db_rule.is_active:
+        target_chat_id = (
+            rule_in.chat_id if rule_in.chat_id is not None else db_rule.chat_id
+        )
+        if token:
+            try:
+                chats = await fetch_wb_chats(token)
+                for chat in chats:
+                    if chat.get("chatID") == target_chat_id.strip():
+                        last_msg = chat.get("lastMessage") or {}
+                        last_msg_ts = last_msg.get("addTimestamp")
+                        if last_msg_ts:
+                            db_rule.last_sent_message_timestamp = last_msg_ts
+                        break
+            except Exception as e:
+                logger.error(
+                    f"Failed to fetch last message timestamp during rule activation: {e}"
+                )
+
     # If chat_id is changing, resolve the new reply_sign
     if rule_in.chat_id is not None:
         if not rule_in.reply_sign:
@@ -269,10 +295,6 @@ async def update_spam_rule(
             )
 
     db_rule = crud.update_spam_rule(db, rule_id, current_user.id, rule_in)
-    if not db_rule:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Spam rule not found."
-        )
     return db_rule
 
 
@@ -353,7 +375,8 @@ def update_spam_settings(
             current_user.respam_trial_activated = True
             now = datetime.now(timezone.utc)
             trial_days = (
-                max(int(current_user.respam_registration_bonus_days or 0), 0) + TRIAL_DAYS
+                max(int(current_user.respam_registration_bonus_days or 0), 0)
+                + TRIAL_DAYS
             )
             current_user.respam_subscription_expires_at = now + timedelta(
                 days=trial_days
