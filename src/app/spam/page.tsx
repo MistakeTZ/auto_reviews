@@ -9,6 +9,7 @@ import HeroSection from "@/components/spam/HeroSection";
 import TrustBarSection from "@/components/spam/TrustBarSection";
 import AutomationBentoSection from "@/components/spam/AutomationBentoSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import DemoVideoSection from "@/components/spam/DemoVideoSection";
 import HowItWorksSection from "@/components/spam/HowItWorksSection";
 import PricingSection from "@/components/spam/PricingSection";
 import FAQSection from "@/components/spam/FAQSection";
@@ -82,6 +83,8 @@ function ReSpamLandingPageContent() {
 
         {/* TestimonialsSection: Loved by Sellers reviews */}
         <TestimonialsSection t={t} prefix="spamLanding" />
+
+        <DemoVideoSection t={t} />
 
         {/* HowItWorksSection: Walkthrough connecting Wildberries chat tokens safely */}
         <HowItWorksSection t={t} />

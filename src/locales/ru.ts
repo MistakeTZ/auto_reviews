@@ -757,6 +757,10 @@ export const ru = {
     
     protectionTitle: 'Защита от блокировок',
     protectionDesc: 'Динамическая симуляция системы для обеспечения естественных и безопасных взаимодействий.',
+    demoTag: 'ЖИВОЕ ДЕМО',
+    demoTitle: 'Посмотрите, как reSpam работает на практике',
+    demoMobileTitle: 'Мобильное демо-видео reSpam',
+    demoDesktopTitle: 'Десктопное демо-видео reSpam',
     
     howTag: 'ПРОСТАЯ НАСТРОЙКА',
     howTitle: 'Три шага к автоматическим продажам',

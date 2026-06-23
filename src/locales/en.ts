@@ -757,6 +757,10 @@ export const en = {
     
     protectionTitle: 'Anti-Fingerprint',
     protectionDesc: 'Dynamic system simulation ensuring native interactions.',
+    demoTag: 'LIVE DEMO',
+    demoTitle: 'See how reSpam works in practice',
+    demoMobileTitle: 'reSpam mobile demo video',
+    demoDesktopTitle: 'reSpam desktop demo video',
     
     howTag: 'SIMPLE SETUP',
     howTitle: 'Three Steps to Automated Success',

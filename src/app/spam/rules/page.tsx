@@ -1238,7 +1238,7 @@ export default function SpamRulesPage() {
                   <button
                     type="button"
                     onClick={() => handleCopyRule(rule)}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-purple-600 transition-all active:scale-95 shadow-sm cursor-pointer z-10"
+                    className="absolute top-3 sm:top-1 right-3 p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-purple-600 transition-all active:scale-95 shadow-sm cursor-pointer z-10"
                     title={t("spam.copyRule")}
                   >
                     <Copy size={14} />
