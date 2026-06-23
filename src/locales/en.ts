@@ -618,6 +618,7 @@ export const en = {
     lastSentMessages: 'Last Sent Messages',
     createRule: 'Create Spam Rule',
     editRule: 'Edit Spam Rule',
+    copyRule: 'Copy Rule',
     chatId: 'Chat ID',
     clientName: 'Client Name',
     checkingChat: 'Checking Chat ID...',

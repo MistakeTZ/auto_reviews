@@ -619,6 +619,7 @@ export const ru = {
     lastSentMessages: 'Последние отправленные сообщения',
     createRule: 'Новое правило',
     editRule: 'Редактировать правило',
+    copyRule: 'Копировать правило',
     chatId: 'ID чата',
     clientName: 'Имя клиента',
     checkingChat: 'Проверяем ID чата...',

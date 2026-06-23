@@ -16,6 +16,7 @@ import {
   Calendar,
   Clock,
   MessageSquare,
+  Copy,
 } from "lucide-react";
 import { SpamRule, SpamTemplate, SpamSentMessage } from "../types";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
@@ -64,8 +65,12 @@ export default function SpamRulesPage() {
   const [savingRule, setSavingRule] = useState(false);
 
   // Filters & Sorting State
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  const [sortBy, setSortBy] = useState<"last_sent" | "new" | "old">("last_sent");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+  const [sortBy, setSortBy] = useState<"last_sent" | "new" | "old">(
+    "last_sent",
+  );
 
   const [recentChats, setRecentChats] = useState<
     { chatID: string; clientName: string; lastMessageText: string }[]
@@ -372,6 +377,53 @@ export default function SpamRulesPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleCopyRule = (rule: SpamRule) => {
+    setEditingRuleId(null);
+    setChatId("");
+    setClientName("");
+    setSelectedChats([]);
+    setChatValidationMsg("");
+    setIsManualInput(false);
+
+    setSpamNotEndlessly(!rule.spam_endlessly);
+    setRuleActive(rule.is_active);
+
+    if (rule.frequency_type === "days") {
+      setFrequencyType("custom_days");
+      setIntervalDays(rule.interval_days || 1);
+      const hour = parseInt(rule.send_hours.split(",")[0]);
+      setSpecificHour(isNaN(hour) ? 9 : hour);
+    } else {
+      const hours = rule.send_hours.split(",").map((h) => h.trim());
+      if (hours.length === 4) {
+        setFrequencyType("four_times");
+        setSendHoursInput(rule.send_hours);
+      } else if (hours.length === 3) {
+        setFrequencyType("three_times");
+        setSendHoursInput(rule.send_hours);
+      } else if (hours.length === 2) {
+        setFrequencyType("twice");
+        setSendHoursInput(rule.send_hours);
+      } else {
+        setFrequencyType("once");
+        const hour = parseInt(hours[0]);
+        setSpecificHour(isNaN(hour) ? 9 : hour);
+      }
+    }
+
+    const globals = rule.templates.filter((t) => t.is_global).map((t) => t.id);
+    setSelectedGlobalTplIds(globals);
+
+    const specifics = rule.templates
+      .filter((t) => !t.is_global)
+      .map((t) => t.text);
+    setRuleSpecificTexts(specifics);
+
+    setShowRuleForm(true);
+    loadRecentChats();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const toggleRuleActive = async (rule: SpamRule) => {
     try {
       const res = await fetch(`${API_URL}/chats/rules/${rule.id}`, {
@@ -428,7 +480,10 @@ export default function SpamRulesPage() {
       }
       // sortBy === "last_sent"
       if (a.last_sent_at && b.last_sent_at) {
-        return new Date(b.last_sent_at).getTime() - new Date(a.last_sent_at).getTime();
+        return (
+          new Date(b.last_sent_at).getTime() -
+          new Date(a.last_sent_at).getTime()
+        );
       }
       if (a.last_sent_at) return -1;
       if (b.last_sent_at) return 1;
@@ -1066,12 +1121,13 @@ export default function SpamRulesPage() {
                   >
                     {t("common.cancel")}
                   </Button>
-                   <Button
+                  <Button
                     type="submit"
                     disabled={
                       savingRule ||
                       (editingRuleId
-                        ? !chatId.trim() || (isManualInput && (validatingChat || !clientName))
+                        ? !chatId.trim() ||
+                          (isManualInput && (validatingChat || !clientName))
                         : selectedChats.length === 0)
                     }
                     className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
@@ -1135,7 +1191,9 @@ export default function SpamRulesPage() {
               </span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "last_sent" | "new" | "old")}
+                onChange={(e) =>
+                  setSortBy(e.target.value as "last_sent" | "new" | "old")
+                }
                 className="px-3 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/25 cursor-pointer text-slate-700 w-full sm:w-auto"
               >
                 <option value="last_sent">{t("spam.sortLastSent")}</option>
@@ -1171,12 +1229,20 @@ export default function SpamRulesPage() {
               return (
                 <Card
                   key={rule.id}
-                  className={`border transition-all duration-300 rounded-xl overflow-hidden ${
+                  className={`relative border transition-all duration-300 rounded-xl overflow-hidden ${
                     rule.is_active === false
                       ? "border-slate-200 bg-slate-50/50 opacity-75 hover:opacity-90"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
                   }`}
                 >
+                  <button
+                    type="button"
+                    onClick={() => handleCopyRule(rule)}
+                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-purple-600 transition-all active:scale-95 shadow-sm cursor-pointer z-10"
+                    title={t("spam.copyRule")}
+                  >
+                    <Copy size={14} />
+                  </button>
                   <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                     <div className="flex flex-row items-start flex-1 gap-4">
                       {/* Left icon wrapper */}
@@ -1266,7 +1332,10 @@ export default function SpamRulesPage() {
                             {rule.templates.length > 2 && (
                               <span
                                 className="text-xs font-bold px-2 py-0.5 rounded-md border bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-100/85 transition-colors cursor-help"
-                                title={rule.templates.slice(2).map((tpl) => tpl.text).join("\n")}
+                                title={rule.templates
+                                  .slice(2)
+                                  .map((tpl) => tpl.text)
+                                  .join("\n")}
                               >
                                 + {rule.templates.length - 2}
                               </span>
