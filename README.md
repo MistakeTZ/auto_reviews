@@ -55,7 +55,7 @@ An automated, AI-powered system designed for Wildberries marketplace sellers to 
 │   ├── services/             # Core service integrations (Yookassa, notifications, products)
 │   ├── database.py           # DB connection setup
 │   ├── models.py             # SQLAlchemy DB schemas
-│   ├── run_controller.py     # Script to launch the background processing task
+│   ├── controller_runner.py  # Script to launch the background processing task
 │   └── bot.py                # Telegram & MAX bot runner and webhooks handler
 ├── nginx/                    # Reverse proxy configurations
 │   └── default.conf          # Nginx routing rules mapping /api and /admin to backend
@@ -144,7 +144,7 @@ uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 In separate terminals, run the controller and the messenger bot client:
 ```bash
 # Start background worker/controller (fetches and replies to reviews)
-python -m backend.run_controller
+python -m backend.controller_runner
 
 # Start Telegram & MAX bot runner
 python backend/bot.py

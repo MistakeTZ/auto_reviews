@@ -70,7 +70,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: ["python", "-m", "backend.run_controller"]
+    command: ["python", "-m", "backend.controller_runner"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
