@@ -10,7 +10,7 @@ import aiosmtplib
 import httpx
 from sqlalchemy.orm import Session
 
-import models
+import database.models as models
 
 logger = logging.getLogger(__name__)
 

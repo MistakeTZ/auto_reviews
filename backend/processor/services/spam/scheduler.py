@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from models import SpamRule
+from database.models import SpamRule
 from processor.utils.hashing import get_hour_offset
 
 

@@ -3,7 +3,7 @@ import os
 import uuid
 import httpx
 from sqlalchemy.orm import Session
-import models
+import database.models as models
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +136,7 @@ async def verify_and_process_payment(db: Session, yookassa_payment_id: str) -> b
     if yookassa_payment_id.startswith("mock_"):
         payment.status = "succeeded"
         # Update user subscription
-        import crud
+        import database.crud as crud
 
         crud.buy_service_subscription(
             db, user_id=payment.user_id, service_type=payment.service_type or "reanswer"
@@ -163,7 +163,7 @@ async def verify_and_process_payment(db: Session, yookassa_payment_id: str) -> b
             if status == "succeeded":
                 payment.status = "succeeded"
                 # Update user subscription
-                import crud
+                import database.crud as crud
 
                 crud.buy_service_subscription(
                     db,

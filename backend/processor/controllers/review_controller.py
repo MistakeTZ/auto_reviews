@@ -1,8 +1,8 @@
 import logging
 from typing import Callable, List, Any, Dict, Optional
-from models import Rule
-from schemas import ReviewCreate
-from crud import get_rules, get_reviews, upsert_review
+from database.models import Rule
+from database.schemas import ReviewCreate
+from database.crud import get_rules, get_reviews, upsert_review
 from processor.chat_processor import ChatProcessor
 from processor.controllers.feedback_generator import FeedbackGenerator
 from services.notifications import notify_review_processed

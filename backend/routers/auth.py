@@ -7,9 +7,9 @@ from jose import JWTError, jwt
 import os
 from urllib.parse import urlparse
 
-import crud
-import schemas
-import database
+import database.crud as crud
+import database.schemas as schemas
+import database.database as database
 import auth
 from services.notifications import send_password_reset_email
 

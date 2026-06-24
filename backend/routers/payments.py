@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-import database
+import database.database as database
 from routers.auth import get_current_user
-from models import User, Payment
+from database.models import User, Payment
 from services.yookassa_service import (
     create_yookassa_payment,
     verify_and_process_payment,

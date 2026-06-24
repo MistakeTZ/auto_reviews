@@ -4,7 +4,7 @@ from typing import Callable, Dict, List
 import httpx
 from sqlalchemy.orm import Session
 
-import crud
+import database.crud as crud
 
 logger = logging.getLogger(__name__)
 

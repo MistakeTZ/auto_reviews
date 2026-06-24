@@ -7,8 +7,8 @@ from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
-from database import engine
-from models import (
+from database.database import engine
+from database.models import (
     NmIDs,
     NotificationMethod,
     Question,

@@ -1,10 +1,10 @@
 import logging
 from typing import Callable, Optional
-from models import Question, User as DbUser
-from schemas import QuestionCreate
-from crud import upsert_question
+from database.models import Question, User as DbUser
+from database.schemas import QuestionCreate
+from database.crud import upsert_question
 from processor.chat_processor import ChatProcessor
-from processor.gpt import AsyncOpenAIClient
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from services.question_replies import (
     classify_question_reply_state,
     generate_question_reply_text,

@@ -9,9 +9,9 @@ import httpx
 # Ensure we can import modules from backend/
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from database import SessionLocal
-import models
-import crud
+from database.database import SessionLocal
+import database.models as models
+import database.crud as crud
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"

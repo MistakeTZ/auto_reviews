@@ -6,10 +6,10 @@ import logging
 import time
 from datetime import datetime, timedelta, timezone
 
-import crud
-import schemas
-import database
-import models
+import database.crud as crud
+import database.schemas as schemas
+import database.database as database
+import database.models as models
 from routers.auth import get_current_user, check_active_spam_subscription
 from services.data import TRIAL_DAYS
 

@@ -1,5 +1,5 @@
 import logging
-from processor.gpt import AsyncOpenAIClient
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from prompts import FEEDBACK_REPLY_SUFFIX
 
 logger = logging.getLogger("feedback_generator")

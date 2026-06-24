@@ -1,6 +1,6 @@
 import json
 
-from processor.gpt import AsyncOpenAIClient
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from prompts import (
     QUESTION_ANSWER_STATE_SYSTEM_PROMPT,
     QUESTION_REPLY_SYSTEM_PROMPT,

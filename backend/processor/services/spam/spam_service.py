@@ -2,8 +2,8 @@ import random
 import logging
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
-import crud
-from models import User, SpamRule
+import database.crud as crud
+from database.models import User, SpamRule
 from processor.services.wb.chat_client import WBChatClient
 from processor.services.spam.scheduler import SpamScheduler
 from processor.services.spam.notifications import SpamNotificationService

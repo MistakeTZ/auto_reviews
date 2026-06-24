@@ -1,16 +1,16 @@
 import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import crud
-import database
+import database.crud as crud
+import database.database as database
 from routers.auth import get_current_user
-from models import User
+from database.models import User
 from pydantic import BaseModel
 from services.wb_products import sync_user_products
 import base64
 import json
 from datetime import datetime
-import schemas
+import database.schemas as schemas
 from typing import List, Optional
 import os
 
@@ -257,7 +257,7 @@ def referrals_list(
     db: Session = Depends(database.get_db),
     current_user: User = Depends(get_current_user),
 ):
-    from models import User as DbUser
+    from database.models import User as DbUser
 
     referrals = db.query(DbUser).filter(DbUser.referred_by_id == current_user.id).all()
     return [

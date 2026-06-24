@@ -6,8 +6,8 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Optional, Protocol
 
-from database import SessionLocal
-import models
+from database.database import SessionLocal
+import database.models as models
 import httpx
 from processor.chat_processor import ChatProcessor
 

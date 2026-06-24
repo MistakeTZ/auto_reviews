@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-import database
-import crud
-import schemas
-from models import User, Question, NmIDs
+import database.database as database
+import database.crud as crud
+import database.schemas as schemas
+from database.models import User, Question, NmIDs
 from processor.chat_processor import ChatProcessor
-from processor.gpt import AsyncOpenAIClient
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from services.question_replies import generate_question_reply_text
 from routers.auth import check_active_subscription
 

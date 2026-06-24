@@ -1,8 +1,8 @@
 import time
 import logging
 from sqlalchemy.orm import Session
-import models
-from models import User, SpamRule
+import database.models as models
+from database.models import User, SpamRule
 from processor.services.wb.chat_client import WBChatClient
 from processor.services.spam.notifications import SpamNotificationService
 

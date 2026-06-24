@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect
 
 from admin import setup_admin
-from backend.routers import landing
+from routers import landing
 from bot import (
     BotType,
     MaxBotClient,
@@ -19,8 +19,8 @@ from bot import (
     parse_tg_update,
     process_update,
 )
-from database import engine
-from models import Base
+from database.database import engine
+from database.models import Base
 from routers import (
     auth,
     rules,

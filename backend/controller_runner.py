@@ -5,9 +5,9 @@ import time
 from datetime import datetime, timezone
 from sqlalchemy import inspect
 
-from database import SessionLocal, Base, engine
-from models import User
-from processor.gpt import AsyncOpenAIClient
+from database.database import SessionLocal, Base, engine
+from database.models import User
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from services.notifications import notify_subscription_expiring_tomorrow
 from processor.services.wb.chat_client import WBChatClient
 from processor.services.spam.spam_service import SpamService

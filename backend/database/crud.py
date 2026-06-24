@@ -2,8 +2,8 @@ import json
 from typing import Optional
 
 from sqlalchemy.orm import Session
-import models
-import schemas
+import database.models as models
+import database.schemas as schemas
 from auth import get_password_hash
 from prompts import DEFAULT_GPT_RULE_PROMPT
 import uuid

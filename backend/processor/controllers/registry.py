@@ -1,7 +1,7 @@
 import asyncio
 from typing import Callable, Dict
 from processor.chat_processor import ChatProcessor
-from processor.gpt import AsyncOpenAIClient
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from processor.controllers.review_controller import ReviewController
 from processor.controllers.question_controller import QuestionController
 from processor.controllers.feedback_generator import FeedbackGenerator

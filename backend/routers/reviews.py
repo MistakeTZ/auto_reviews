@@ -4,13 +4,13 @@ from typing import List, Optional
 import os
 import logging
 
-import crud
-import schemas
-import database
+import database.crud as crud
+import database.schemas as schemas
+import database.database as database
 from routers.auth import check_active_subscription
-from models import User, Review
+from database.models import User, Review
 from pydantic import BaseModel
-from processor.gpt import AsyncOpenAIClient
+from processor.services.gpt.gpt import AsyncOpenAIClient
 from prompts import REVIEW_REPLY_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from models import User
+from database.models import User
 from processor.utils.datetime import normalize_dt
 
 

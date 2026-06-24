@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import Dict
-import crud
-import database
+import database.crud as crud
+import database.database as database
 from routers.auth import check_active_subscription
-from models import User
+from database.models import User
 from pydantic import BaseModel
 from services.wb_products import sync_user_products
 

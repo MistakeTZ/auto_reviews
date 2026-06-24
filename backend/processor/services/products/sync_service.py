@@ -1,5 +1,5 @@
-from database import SessionLocal
-from models import NmIDs
+from database.database import SessionLocal
+from database.models import NmIDs
 
 
 class ProductSyncService:
