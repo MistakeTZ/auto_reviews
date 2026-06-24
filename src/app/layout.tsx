@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${ptSans.variable} ${inter.className} bg-slate-50 text-slate-900 flex min-h-screen antialiased overflow-x-hidden`}
+        className={`${inter.variable} ${ptSans.variable} ${inter.className} bg-slate-50 text-slate-900 flex min-h-screen antialiased overflow-x-clip`}
       >
         <Script id="yandex-metrika" strategy="afterInteractive">
           {`

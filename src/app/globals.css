@@ -58,7 +58,7 @@
   html {
     scroll-behavior: smooth;
     background-color: var(--background);
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
@@ -68,7 +68,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {

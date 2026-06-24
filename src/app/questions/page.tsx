@@ -30,6 +30,22 @@ import { useAppStore } from "@/store/useAppStore";
 import { formatDateTime } from "@/lib/formatDateTime";
 import "./questions.css";
 
+const getPaginationRange = (currentPage: number, totalPages: number) => {
+  const pages: (number | string)[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    if (currentPage <= 4) {
+      pages.push(1, 2, 3, 4, 5, "...", totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+    }
+  }
+  return pages;
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 const PAGE_SIZE = 10;
 
@@ -1007,11 +1023,21 @@ function QuestionsPageContent() {
                   ← {t("questions.back")}
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (p) => (
+                {getPaginationRange(safeCurrentPage, totalPages).map((p, idx) => {
+                  if (p === "...") {
+                    return (
+                      <span
+                        key={`dots-${idx}`}
+                        className="px-3 py-2 text-sm font-bold text-slate-400 select-none cursor-default"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
                     <button
                       key={p}
-                      onClick={() => setCurrentPage(p)}
+                      onClick={() => setCurrentPage(p as number)}
                       className={`rounded-xl px-4 py-2 text-sm font-bold transition-all shadow-sm ${
                         safeCurrentPage === p
                           ? "bg-indigo-600 text-white shadow-indigo-200"
@@ -1020,8 +1046,8 @@ function QuestionsPageContent() {
                     >
                       {p}
                     </button>
-                  ),
-                )}
+                  );
+                })}
 
                 <button
                   onClick={() =>
