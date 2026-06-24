@@ -30,26 +30,50 @@ export default function TestimonialsSection({
 
   const language = useAppStore((state) => state.language);
 
-  const testimonialsData = [
+  const landingTestimonials = [
     {
       id: "testimonial1",
-      avatar: "/avatar_ilya.webp",
+      avatar: "/avatar_alexey.webp",
       verifiedBadge: "5+ hours saved per week",
       verifiedBadgeRu: "5+ часов сэкономлено в неделю",
     },
     {
       id: "testimonial2",
-      avatar: "/avatar_anya.webp",
+      avatar: "/avatar_maria.webp",
       verifiedBadge: "0 warnings",
       verifiedBadgeRu: "0 штрафов",
     },
     {
       id: "testimonial3",
-      avatar: "/avatar_alina.webp",
+      avatar: "/avatar_dmitry.webp",
       verifiedBadge: "24/7 instant replies",
       verifiedBadgeRu: "Ответы 24/7",
     },
   ];
+
+  const spamTestimonials = [
+    {
+      id: "testimonial1",
+      avatar: "/avatar_ilya.webp",
+      verifiedBadge: "1000+ chats processed",
+      verifiedBadgeRu: "1000+ чатов обработано",
+    },
+    {
+      id: "testimonial2",
+      avatar: "/avatar_anya.webp",
+      verifiedBadge: "0 spam reports",
+      verifiedBadgeRu: "0 жалоб на спам",
+    },
+    {
+      id: "testimonial3",
+      avatar: "/avatar_alina.webp",
+      verifiedBadge: "Paid off in 1 week",
+      verifiedBadgeRu: "Окупился за неделю",
+    },
+  ];
+
+  const testimonialsData =
+    prefix === "spamLanding" ? spamTestimonials : landingTestimonials;
 
   const testimonials = testimonialsData.map((data) => ({
     text: t(`${prefix}.${data.id}.text`),
@@ -125,7 +149,10 @@ export default function TestimonialsSection({
                         className="inline-flex items-center gap-1 text-[0.95rem] font-bold text-[#0A192F] transition hover:text-[#2530D9] hover:underline"
                       >
                         {testimonial.author}
-                        <ExternalLink size={12} className="text-[#2530D9] shrink-0" />
+                        <ExternalLink
+                          size={12}
+                          className="text-[#2530D9] shrink-0"
+                        />
                       </a>
                     ) : (
                       <h3 className="m-0 text-[0.95rem] font-bold text-[#0A192F]">

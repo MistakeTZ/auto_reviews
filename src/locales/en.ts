@@ -811,21 +811,21 @@ export const en = {
     faq4A: 'Absolutely. There are no long-term contracts. You can cancel your subscription with one click in your settings.',
     testimonial1: {
       text: '"Previously, we had to manually remind customers in WB chats about our new collections and discounts, spending a lot of time on it. We set up reSpam: created distribution rules for recent chats. Now the bot does neat periodic campaigns automatically. It is very convenient that the system pauses if the customer replies — we immediately catch the dialogue in Telegram. Sales grew, routine disappeared!"',
-      author: 'Aleksey V.',
-      role: 'Brand of basic clothing (SKU ~60)',
-      link: 'https://www.wildberries.ru/seller/1293748',
+      author: 'Ilya S.',
+      role: 'Electronics seller (1000+ chats)',
+      link: 'https://www.wildberries.ru/seller/4203923',
     },
     testimonial2: {
       text: '"I was very worried about potential spam complaints in chats and blocks from Wildberries. But reSpam pleased me: the built-in random sending offset (up to 20 minutes) and automatic pausing on the first customer reply make the campaign completely safe and natural. Over a month, we sent 1500+ messages with promo codes, zero complaints, and repeat sales grew by 18%."',
-      author: 'Maria S.',
-      role: 'Shop of cosmetics and beauty accessories',
-      link: 'https://www.wildberries.ru/seller/413023',
+      author: 'Anna D.',
+      role: 'Wildberries Manager',
+      link: '',
     },
     testimonial3: {
       text: '"We use chat campaigns to upsell accessories for our main products. For example, a day after purchase, we message the client offering compatible cables or cases with a discount. Thanks to integration with the Telegram bot, managers see all client replies in real time and close deals quickly. reSpam paid off in the very first week!"',
-      author: 'Dmitry K.',
-      role: 'Electronics and car goods',
-      link: 'https://www.wildberries.ru/seller/4271462',
+      author: 'Alina S.',
+      role: 'Toy store owner',
+      link: 'https://www.wildberries.ru/seller/4222116',
     },
   }
 };
