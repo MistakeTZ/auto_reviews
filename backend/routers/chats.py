@@ -256,23 +256,7 @@ async def update_spam_rule(
 
     # If changes is_active to true, fetch last message addTimestamp
     if rule_in.is_active is True and not db_rule.is_active:
-        target_chat_id = (
-            rule_in.chat_id if rule_in.chat_id is not None else db_rule.chat_id
-        )
-        if token:
-            try:
-                chats = await fetch_wb_chats(token)
-                for chat in chats:
-                    if chat.get("chatID") == target_chat_id.strip():
-                        last_msg = chat.get("lastMessage") or {}
-                        last_msg_ts = last_msg.get("addTimestamp")
-                        if last_msg_ts:
-                            db_rule.last_sent_message_timestamp = last_msg_ts
-                        break
-            except Exception as e:
-                logger.error(
-                    f"Failed to fetch last message timestamp during rule activation: {e}"
-                )
+        rule_in.last_sent_message_timestamp = 0
 
     # If chat_id is changing, resolve the new reply_sign
     if rule_in.chat_id is not None:

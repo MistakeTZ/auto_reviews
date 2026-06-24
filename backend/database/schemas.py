@@ -276,6 +276,7 @@ class SpamRuleUpdate(BaseModel):
     is_active: Optional[bool] = None
     template_ids: Optional[List[int]] = None
     specific_templates: Optional[List[str]] = None
+    last_sent_message_timestamp: Optional[int] = None
 
 
 class ChatIdWithName(BaseModel):

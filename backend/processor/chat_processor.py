@@ -125,21 +125,6 @@ class ChatProcessor:
         )
         return res.get("data", {}).get("questions", []) if isinstance(res, dict) else []
 
-    async def get_chat_messages(
-        self,
-        take: int = 20,
-    ) -> List[Dict]:
-        url = "https://buyer-chat-api.wildberries.ru/api/v1/seller/chats"
-        res = await self._get(
-            url,
-            params={"limit": take, "offset": 0},
-        )
-        if isinstance(res, list):
-            return res
-        if isinstance(res, dict):
-            return res.get("result", res.get("chats", []))
-        return []
-
     async def get_chat_events(
         self,
         next_cursor: Optional[int] = None,
@@ -154,48 +139,6 @@ class ChatProcessor:
             params=params,
         )
         return res.get("result", {}) if isinstance(res, dict) else {}
-
-    async def get_chat_history(
-        self,
-        chat_id: str,
-        take: int = 30,
-        offset: int = 0,
-    ) -> List[Dict]:
-        # Wildberries chat APIs have had small path/payload differences over time,
-        # so we try a couple of known variants.
-        endpoints = [
-            (
-                "https://buyer-chat-api.wildberries.ru/api/v1/seller/chat/history",
-                {"chatID": chat_id, "limit": take, "offset": offset},
-            ),
-            (
-                "https://buyer-chat-api.wildberries.ru/api/v1/seller/chat/messages",
-                {"chatID": chat_id, "limit": take, "offset": offset},
-            ),
-            (
-                f"https://buyer-chat-api.wildberries.ru/api/v1/seller/chats/{chat_id}/messages",
-                {"limit": take, "offset": offset},
-            ),
-        ]
-
-        for url, params in endpoints:
-            try:
-                res = await self._get(url, params=params)
-            except Exception:
-                continue
-
-            if isinstance(res, list):
-                return res
-            if isinstance(res, dict):
-                result = res.get("result", res)
-                if isinstance(result, list):
-                    return result
-                if isinstance(result, dict):
-                    for key in ("messages", "items", "data"):
-                        candidate = result.get(key)
-                        if isinstance(candidate, list):
-                            return candidate
-        return []
 
     async def answer_feedback(
         self,

@@ -65,9 +65,6 @@ class SpamService:
             active_rules.append(rule)
 
         # Выполнение отправки сообщений по расписанию
-        moscow_now = now_utc + datetime.resolution.__class__(
-            hours=3
-        )  # Перевод в МСК для оценки темплейтов
         current_hour = (now_utc + datetime.resolution.__class__(hours=3)).hour
 
         for rule in active_rules:
