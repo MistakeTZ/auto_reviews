@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Megaphone } from "lucide-react";
 import FlagSwitcher from "@/components/ui/FlagSwitcher";
 import { useScrolled } from "@/hooks/useScrolled";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 
 type HeaderProps = {
   t: (key: string) => string;
@@ -46,7 +47,7 @@ export default function Header({
           </button>
           {isAuthenticated ? (
             <Link
-              href={process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" ? "/dashboard" : "/spam/dashboard"}
+              href={checkIsSpamApp() ? "/dashboard" : "/spam/dashboard"}
               className="btn-get-consultation inline-flex items-center justify-center rounded-xl border-2 border-[#0A192F] bg-[#0A192F] px-6 py-3 text-[0.95rem] font-semibold text-white shadow-[0_10px_20px_rgba(10,25,47,0.12)] transition duration-200 hover:border-[#1f366c] hover:bg-[#1f366c] hover:shadow-[0_14px_26px_rgba(10,25,47,0.18)]"
             >
               {t("common.dashboard")}

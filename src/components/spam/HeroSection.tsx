@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 
 type HeroSectionProps = {
   t: (key: string) => string;
@@ -51,7 +52,7 @@ export default function HeroSection({
           >
             <div className="flex flex-col gap-4 sm:flex-row w-full sm:w-auto">
               <Link
-                href={isAuthenticated ? (process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" ? "/dashboard" : "/spam/dashboard") : registerHref}
+                href={isAuthenticated ? (checkIsSpamApp() ? "/dashboard" : "/spam/dashboard") : registerHref}
                 className="btn-primary inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 border-[#0A192F] bg-[#0A192F] px-7 text-[0.98rem] font-bold tracking-[0.01em] text-white shadow-[0_10px_20px_rgba(10,25,47,0.12)] transition duration-200 hover:-translate-y-0.5 hover:border-[#1f366c] hover:bg-[#1f366c] hover:shadow-[0_14px_26px_rgba(10,25,47,0.18)] active:translate-y-0 active:shadow-none shrink-0 cursor-pointer"
               >
                 {isAuthenticated

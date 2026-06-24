@@ -2,6 +2,7 @@
 
 import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useEffect, useState, Suspense } from "react";
@@ -169,7 +170,7 @@ function ReferralsPageContent() {
         typeof window !== "undefined"
           ? window.location.origin
           : "https://spam.reanswer.ru";
-      const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+      const isSpamApp = checkIsSpamApp();
       const link = isSpamApp
         ? `${origin}/?ref=${referralCode}&source=respam`
         : `${origin}/spam?ref=${referralCode}&source=respam`;
@@ -208,7 +209,7 @@ function ReferralsPageContent() {
         typeof window !== "undefined"
           ? window.location.origin
           : "http://localhost:8082";
-      const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+      const isSpamApp = checkIsSpamApp();
       const returnUrl = isSpamApp
         ? `${origin}/tariffs`
         : `${origin}/spam/tariffs`;

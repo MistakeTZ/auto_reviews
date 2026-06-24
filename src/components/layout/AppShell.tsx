@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import Sidebar from "@/components/layout/Sidebar";
@@ -26,6 +26,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { jwtToken } = useAppStore();
+  const [mounted, setMounted] = useState(false);
 
   const hideDashboard = PUBLIC_PATHS.has(pathname);
   const useDarkFooter = DARK_FOOTER_PATHS.has(pathname);
@@ -33,11 +34,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const footerClassName = (pathname === "/" || pathname === "/spam") ? "site-footer" : "";
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     // If trying to access a protected route without a jwtToken, redirect to login
-    if (!hideDashboard && !jwtToken) {
+    if (mounted && !hideDashboard && !jwtToken) {
       router.push("/login");
     }
-  }, [hideDashboard, jwtToken, router]);
+  }, [mounted, hideDashboard, jwtToken, router]);
 
   return (
     <div className="w-full min-h-screen flex flex-col">

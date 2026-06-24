@@ -4,6 +4,7 @@ import React from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter, usePathname } from "next/navigation";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 import { Lock, Gift, Sparkles, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -30,7 +31,7 @@ export default function SubscriptionGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isSpamMode = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" || pathname.startsWith("/spam");
+  const isSpamMode = checkIsSpamApp() || pathname.startsWith("/spam");
 
   if (!isAuthenticated) {
     return <>{children}</>;
@@ -97,7 +98,7 @@ export default function SubscriptionGuard({
     : t("subscription.expiredDesc");
 
   const handleActionClick = () => {
-    const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+    const isSpamApp = checkIsSpamApp();
     if (isTrialNotStarted) {
       router.push(isSpamApp ? "/settings" : (isSpamMode ? "/spam/settings" : "/settings"));
     } else {

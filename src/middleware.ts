@@ -5,7 +5,8 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
 
-  const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+  const host = request.headers.get("host") || "";
+  const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" || host.includes("spam") || host.includes(":3001");
 
   // 1. If this is the SPAM app (port 3001, serving spam.reanswer.ru)
   if (isSpamApp) {

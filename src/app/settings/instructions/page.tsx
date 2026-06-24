@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Monitor, CheckCircle2, ChevronRight, HelpCircle, ExternalLink } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 
 export default function TokenInstructionsPage() {
   const { t, language } = useTranslation();
@@ -12,7 +13,7 @@ export default function TokenInstructionsPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("from") === "spam" || process.env.NEXT_PUBLIC_IS_SPAM_APP === "true") {
+    if (params.get("from") === "spam" || checkIsSpamApp()) {
       setIsSpam(true);
     }
   }, []);

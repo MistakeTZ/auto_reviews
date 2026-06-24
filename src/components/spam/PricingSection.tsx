@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 
 type PricingSectionProps = {
   t: (key: string) => string;
@@ -168,8 +169,8 @@ export default function PricingSection({
               href={
                 isAuthenticated
                   ? plan.href === "tariffs"
-                    ? (process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" ? "/tariffs" : "/spam/tariffs")
-                    : (process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" ? "/dashboard" : "/spam/dashboard")
+                    ? (checkIsSpamApp() ? "/tariffs" : "/spam/tariffs")
+                    : (checkIsSpamApp() ? "/dashboard" : "/spam/dashboard")
                   : registerHref
               }
               className={`inline-flex min-h-[3.25rem] items-center justify-center rounded-[0.625rem] border-2 px-7 text-[0.98rem] font-bold tracking-[0.01em] transition duration-200 hover:-translate-y-0.5 active:translate-y-0 active:shadow-none ${

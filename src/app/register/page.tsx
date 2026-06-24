@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -134,7 +135,7 @@ function RegisterPageContent() {
           if (loginRes.ok) {
             const data = await loginRes.json();
             login(data.access_token);
-            const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+            const isSpamApp = checkIsSpamApp();
             if (isSpamApp) {
               router.push("/dashboard");
             } else if (pendingReferralSource === "respam") {

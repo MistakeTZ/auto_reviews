@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAppStore } from "@/store/useAppStore";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -43,20 +44,16 @@ export default function Sidebar() {
   const [isSpamMode, setIsSpamMode] = useState(false);
 
   const getSwitcherHref = (currentActiveSpam: boolean) => {
-    const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+    const isSpamApp = checkIsSpamApp();
     if (isSpamApp) {
       return "https://reanswer.ru/dashboard";
     } else {
-      return currentActiveSpam
-        ? "/dashboard"
-        : "https://spam.reanswer.ru/dashboard";
+      return currentActiveSpam ? "/dashboard" : "https://spam.reanswer.ru/dashboard";
     }
   };
 
   useEffect(() => {
-    const isSpamRoute =
-      pathname.startsWith("/spam") ||
-      process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+    const isSpamRoute = pathname.startsWith("/spam") || checkIsSpamApp();
     const isFromSpamParam =
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("from") === "spam";
@@ -136,7 +133,7 @@ export default function Sidebar() {
     onClose?: () => void,
   ) => {
     const activeSpam = sidebarMode === "respam";
-    const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+    const isSpamApp = checkIsSpamApp();
     const prefix = isSpamApp ? "" : "/spam";
     const tabs = activeSpam
       ? [

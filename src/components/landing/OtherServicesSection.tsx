@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Reveal from "@/components/ui/Reveal";
 import { ArrowUpRight } from "lucide-react";
+import { checkIsSpamApp } from "@/lib/isSpamApp";
 
 type OtherServicesSectionProps = {
   t: (key: string) => string;
@@ -22,7 +23,7 @@ export default function OtherServicesSection({
   const ctaKey = isReSpam ? "landing.otherServicesCta" : "landing.otherServicesReAnswerCta";
   const subtitleKey = isReSpam ? "landing.otherServicesSubtitle" : "landing.otherServicesReAnswerSubtitle";
 
-  const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+  const isSpamApp = checkIsSpamApp();
   const mainDomain = "https://reanswer.ru";
   const spamDomain = "https://spam.reanswer.ru";
 
