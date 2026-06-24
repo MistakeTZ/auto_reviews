@@ -31,10 +31,10 @@ export default function OtherServicesSection({
   if (isSpamApp) {
     href = isReSpam
       ? (isAuthenticated ? "/dashboard" : "/")
-      : (isAuthenticated ? `${mainDomain}/dashboard` : mainDomain);
+      : mainDomain;
   } else {
     href = isReSpam
-      ? (isAuthenticated ? `${spamDomain}/dashboard` : spamDomain)
+      ? spamDomain
       : (isAuthenticated ? "/dashboard" : "/");
   }
 

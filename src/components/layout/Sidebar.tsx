@@ -197,9 +197,10 @@ export default function Sidebar() {
           {/* Logo / Header */}
           <div className="relative group p-6 border-b border-slate-100/50 shrink-0">
             <div className="flex justify-between items-center">
-              <div
+              <a
                 className="text-left cursor-pointer select-none"
-                onClick={() => setShowMobileSwitcher(!showMobileSwitcher)}
+                href={activeSpam ? "https://reanswer.ru" : "https://spam.reanswer.ru"}
+                // onClick={() => setShowMobileSwitcher(!showMobileSwitcher)}
               >
                 <h1
                   className={`text-2xl font-black tracking-tight transition-colors ${
@@ -213,8 +214,8 @@ export default function Sidebar() {
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">
                   Wildberries
                 </p>
-              </div>
-              {onClose && (
+              </a>
+              {/* {onClose && (
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 hover:text-rose-600 text-slate-500 transition-colors"
@@ -222,11 +223,11 @@ export default function Sidebar() {
                 >
                   <X size={18} />
                 </button>
-              )}
+              )} */}
             </div>
 
             {/* Hover/Click Switch Option (Premium Popover Modal) */}
-            <div
+            {/* <div
               className={`absolute left-3 right-6 top-[72px] z-50 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-2xl p-4 transition-all duration-200 origin-top ${
                 showMobileSwitcher
                   ? "block scale-100 opacity-100 translate-y-0"
@@ -234,7 +235,6 @@ export default function Sidebar() {
               }`}
               style={{ minWidth: "230px" }}
             >
-              {/* Little arrow pointing up */}
               <div className="absolute -top-2 left-12 w-4 h-4 bg-white border-t border-l border-slate-200/80 rotate-45" />
 
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 relative z-10">
@@ -276,7 +276,7 @@ export default function Sidebar() {
                   </p>
                 </div>
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Navigation Links */}
@@ -395,6 +395,21 @@ export default function Sidebar() {
           {renderSidebarContent(mode)}
         </div>
       </aside>
+
+      {/* Desktop Switcher Button in Top-Right Corner */}
+      <div className="fixed top-6 right-6 z-40 hidden md:block">
+        <Link
+          href={getSwitcherHref(isSpamMode)}
+          className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center shrink-0 shadow-sm hover:scale-105 active:scale-95 hover:shadow-md ${
+            isSpamMode
+              ? "bg-indigo-50/80 border-indigo-200/80 text-indigo-600 hover:bg-indigo-50"
+              : "bg-violet-50/80 border-violet-200/80 text-violet-600 hover:bg-violet-50"
+          }`}
+          title={isSpamMode ? "reAnswer" : "reSpam"}
+        >
+          {isSpamMode ? <MessageSquare size={18} /> : <Megaphone size={18} />}
+        </Link>
+      </div>
     </>
   );
 }

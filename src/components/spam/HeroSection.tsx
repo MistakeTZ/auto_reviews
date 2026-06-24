@@ -29,7 +29,7 @@ export default function HeroSection({
           </Reveal>
           <Reveal
             as="h2"
-            className="hero-headline mb-6 max-w-[22ch] text-[clamp(2rem,4.7vw,3.5rem)] font-extrabold leading-[1.1] tracking-[-1px] text-[#0A192F]"
+            className="text-center lg:text-left hero-headline mb-6 max-w-[22ch] text-[clamp(2rem,4.7vw,3.5rem)] font-extrabold leading-[1.1] tracking-[-1px] text-[#0A192F]"
             delay={180}
           >
             {t("spamLanding.heroTitlePrefix")}
@@ -40,7 +40,7 @@ export default function HeroSection({
 
           <Reveal
             as="p"
-            className="hero-subheadline mb-10 max-w-[90%] text-[clamp(1rem,1.8vw,1.125rem)] leading-[1.6] text-[#4A5568] lg:max-w-none"
+            className="text-center lg:text-left hero-subheadline mb-10 max-w-[90%] text-[clamp(1rem,1.8vw,1.125rem)] leading-[1.6] text-[#4A5568] lg:max-w-none"
             delay={260}
           >
             {t("spamLanding.heroSubtitle")}
