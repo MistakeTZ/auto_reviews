@@ -134,8 +134,11 @@ function RegisterPageContent() {
           if (loginRes.ok) {
             const data = await loginRes.json();
             login(data.access_token);
-            if (pendingReferralSource === "respam") {
-              router.push("/spam/dashboard");
+            const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+            if (isSpamApp) {
+              router.push("/dashboard");
+            } else if (pendingReferralSource === "respam") {
+              window.location.href = "https://spam.reanswer.ru/dashboard";
             } else {
               router.push("/dashboard");
             }

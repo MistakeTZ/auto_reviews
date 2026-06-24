@@ -26,6 +26,8 @@ services:
         condition: service_healthy
       frontend:
         condition: service_started
+      frontend-spam:
+        condition: service_started
 
   backend:
     build:
@@ -118,6 +120,24 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
       - MAX_BOT_NAME=${MAX_BOT_NAME:-none}
       - TG_BOT_NAME=${TG_BOT_NAME:-none}
+      - NEXT_PUBLIC_IS_SPAM_APP=false
+    volumes:
+      - node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+  frontend-spam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
+      - MAX_BOT_NAME=${MAX_BOT_NAME:-none}
+      - TG_BOT_NAME=${TG_BOT_NAME:-none}
+      - PORT=3001
+      - NEXT_PUBLIC_IS_SPAM_APP=true
     volumes:
       - node_modules:/app/node_modules
     depends_on:

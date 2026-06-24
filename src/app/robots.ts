@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
+  const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === 'true';
+  const domain = isSpamApp ? 'spam.reanswer.ru' : 'reanswer.ru';
   return {
     rules: [
       {
@@ -9,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/dashboard', '/reviews', '/questions', '/rules', '/settings', '/api/'],
       },
     ],
-    sitemap: 'https://reanswer.ru/sitemap.xml',
+    sitemap: `https://${domain}/sitemap.xml`,
   };
 }

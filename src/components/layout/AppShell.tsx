@@ -5,7 +5,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import CookieBanner from "@/components/layout/CookieBanner";
 import AppFooter from "@/components/layout/AppFooter";
 
-const NO_DASHBOARD_PATHS = new Set(["/spam", "/privacy", "/consent", "/legal", "/amo/policy"]);
+const NO_DASHBOARD_PATHS = new Set(["/", "/spam", "/privacy", "/consent", "/legal", "/amo/policy"]);
 const DARK_FOOTER_PATHS = new Set(["/", "/spam", "/privacy", "/consent", "/legal", "/amo/policy"]);
 const COMPACT_FOOTER_PATHS = new Set(["/privacy", "/consent", "/legal", "/amo/policy"]);
 

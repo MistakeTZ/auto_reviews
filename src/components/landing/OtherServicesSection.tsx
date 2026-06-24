@@ -22,9 +22,20 @@ export default function OtherServicesSection({
   const ctaKey = isReSpam ? "landing.otherServicesCta" : "landing.otherServicesReAnswerCta";
   const subtitleKey = isReSpam ? "landing.otherServicesSubtitle" : "landing.otherServicesReAnswerSubtitle";
 
-  const href = isReSpam
-    ? (isAuthenticated ? "/spam/dashboard" : "/spam")
-    : (isAuthenticated ? "/dashboard" : "/");
+  const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+  const mainDomain = "https://reanswer.ru";
+  const spamDomain = "https://spam.reanswer.ru";
+
+  let href = "";
+  if (isSpamApp) {
+    href = isReSpam
+      ? (isAuthenticated ? "/dashboard" : "/")
+      : (isAuthenticated ? `${mainDomain}/dashboard` : mainDomain);
+  } else {
+    href = isReSpam
+      ? (isAuthenticated ? `${spamDomain}/dashboard` : spamDomain)
+      : (isAuthenticated ? "/dashboard" : "/");
+  }
 
   const imageSrcSm = isReSpam ? "/spam_sm.webp" : "/dashboard_sm.webp";
   const imageSrcMd = isReSpam ? "/spam_md.webp" : "/dashboard_md.webp";

@@ -42,8 +42,21 @@ export default function Sidebar() {
 
   const [isSpamMode, setIsSpamMode] = useState(false);
 
+  const getSwitcherHref = (currentActiveSpam: boolean) => {
+    const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+    if (isSpamApp) {
+      return "https://reanswer.ru/dashboard";
+    } else {
+      return currentActiveSpam
+        ? "/dashboard"
+        : "https://spam.reanswer.ru/dashboard";
+    }
+  };
+
   useEffect(() => {
-    const isSpamRoute = pathname.startsWith("/spam");
+    const isSpamRoute =
+      pathname.startsWith("/spam") ||
+      process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
     const isFromSpamParam =
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("from") === "spam";
@@ -93,7 +106,11 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showMobileSwitcher, setShowMobileSwitcher] = useState(false);
 
-  if (pathname === "/" || pathname === "/spam" || (!isAuthenticated && pathname !== "/demo"))
+  if (
+    pathname === "/" ||
+    pathname === "/spam" ||
+    (!isAuthenticated && pathname !== "/demo")
+  )
     return null;
 
   const handleLogout = () => {
@@ -119,25 +136,27 @@ export default function Sidebar() {
     onClose?: () => void,
   ) => {
     const activeSpam = sidebarMode === "respam";
+    const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+    const prefix = isSpamApp ? "" : "/spam";
     const tabs = activeSpam
       ? [
           {
-            href: "/spam/dashboard",
+            href: `${prefix}/dashboard`,
             label: t("spam.dashboardTab"),
             icon: LayoutDashboard,
           },
           {
-            href: "/spam/rules",
+            href: `${prefix}/rules`,
             label: t("spam.rulesTab"),
             icon: Megaphone,
           },
           {
-            href: "/spam/settings",
+            href: `${prefix}/settings`,
             label: t("spam.settingsTab"),
             icon: Settings,
           },
           {
-            href: "/spam/tariffs",
+            href: `${prefix}/tariffs`,
             label: t("spam.referralsTab"),
             icon: CreditCard,
           },
@@ -225,7 +244,7 @@ export default function Sidebar() {
                 {t("common.switchService")}
               </p>
               <Link
-                href={activeSpam ? "/dashboard" : "/spam/dashboard"}
+                href={getSwitcherHref(activeSpam)}
                 onClick={() => {
                   setShowMobileSwitcher(false);
                   if (onClose) onClose();
@@ -339,7 +358,7 @@ export default function Sidebar() {
         </Link>
 
         <Link
-          href={isSpamMode ? "/dashboard" : "/spam/dashboard"}
+          href={getSwitcherHref(isSpamMode)}
           className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center shrink-0 ${
             isSpamMode
               ? "bg-indigo-50/50 border-indigo-200/50 text-indigo-600 hover:bg-indigo-50"

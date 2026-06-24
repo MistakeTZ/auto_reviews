@@ -1,23 +1,29 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://reanswer.ru';
-
 export default function sitemap(): MetadataRoute.Sitemap {
+  const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === 'true';
+  const BASE_URL = isSpamApp ? 'https://spam.reanswer.ru' : 'https://reanswer.ru';
   const now = new Date();
 
-  return [
+  const routes: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 1.0,
     },
-    {
+  ];
+
+  if (!isSpamApp) {
+    routes.push({
       url: `${BASE_URL}/spam`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 1.0,
-    },
+    });
+  }
+
+  routes.push(
     {
       url: `${BASE_URL}/privacy`,
       lastModified: now,
@@ -59,6 +65,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'yearly',
       priority: 0.5,
-    },
-  ];
+    }
+  );
+
+  return routes;
 }

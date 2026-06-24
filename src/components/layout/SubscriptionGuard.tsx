@@ -30,7 +30,7 @@ export default function SubscriptionGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isSpamMode = pathname.startsWith("/spam");
+  const isSpamMode = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true" || pathname.startsWith("/spam");
 
   if (!isAuthenticated) {
     return <>{children}</>;
@@ -97,10 +97,11 @@ export default function SubscriptionGuard({
     : t("subscription.expiredDesc");
 
   const handleActionClick = () => {
+    const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
     if (isTrialNotStarted) {
-      router.push(isSpamMode ? "/spam/settings" : "/settings");
+      router.push(isSpamApp ? "/settings" : (isSpamMode ? "/spam/settings" : "/settings"));
     } else {
-      router.push(isSpamMode ? "/spam/tariffs" : "/referrals");
+      router.push(isSpamApp ? "/tariffs" : (isSpamMode ? "/spam/tariffs" : "/referrals"));
     }
   };
 

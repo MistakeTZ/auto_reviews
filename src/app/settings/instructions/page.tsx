@@ -12,7 +12,7 @@ export default function TokenInstructionsPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("from") === "spam") {
+    if (params.get("from") === "spam" || process.env.NEXT_PUBLIC_IS_SPAM_APP === "true") {
       setIsSpam(true);
     }
   }, []);

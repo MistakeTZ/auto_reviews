@@ -168,8 +168,11 @@ function ReferralsPageContent() {
       const origin =
         typeof window !== "undefined"
           ? window.location.origin
-          : "https://respam.ru";
-      const link = `${origin}/spam?ref=${referralCode}&source=respam`;
+          : "https://spam.reanswer.ru";
+      const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+      const link = isSpamApp
+        ? `${origin}/?ref=${referralCode}&source=respam`
+        : `${origin}/spam?ref=${referralCode}&source=respam`;
       void navigator.clipboard.writeText(link);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
@@ -205,7 +208,10 @@ function ReferralsPageContent() {
         typeof window !== "undefined"
           ? window.location.origin
           : "http://localhost:8082";
-      const returnUrl = `${origin}/spam/tariffs`;
+      const isSpamApp = process.env.NEXT_PUBLIC_IS_SPAM_APP === "true";
+      const returnUrl = isSpamApp
+        ? `${origin}/tariffs`
+        : `${origin}/spam/tariffs`;
       const selected = planOptions.find((o) => o.id === selectedPlan);
       const res = await createPayment(
         selected?.amount || "490.00",
