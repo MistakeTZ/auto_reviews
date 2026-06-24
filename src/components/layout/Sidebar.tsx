@@ -199,7 +199,7 @@ export default function Sidebar() {
             <div className="flex justify-between items-center">
               <a
                 className="text-left cursor-pointer select-none"
-                href={activeSpam ? "https://reanswer.ru" : "https://spam.reanswer.ru"}
+                href={activeSpam ? "https://spam.reanswer.ru" : "https://reanswer.ru"}
                 // onClick={() => setShowMobileSwitcher(!showMobileSwitcher)}
               >
                 <h1
