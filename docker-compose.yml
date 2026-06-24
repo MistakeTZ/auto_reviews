@@ -115,9 +115,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+        NEXT_PUBLIC_API_URL: /api
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
+      - NEXT_PUBLIC_API_URL=/api
       - MAX_BOT_NAME=${MAX_BOT_NAME:-none}
       - TG_BOT_NAME=${TG_BOT_NAME:-none}
       - NEXT_PUBLIC_IS_SPAM_APP=false
@@ -131,9 +131,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+        NEXT_PUBLIC_API_URL: /api
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
+      - NEXT_PUBLIC_API_URL=/api
       - MAX_BOT_NAME=${MAX_BOT_NAME:-none}
       - TG_BOT_NAME=${TG_BOT_NAME:-none}
       - PORT=3001
