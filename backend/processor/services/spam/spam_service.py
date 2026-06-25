@@ -25,6 +25,13 @@ class SpamService:
         if not rules:
             return
 
+        # Выполнение отправки сообщений по расписанию
+        current_hour = (now_utc + datetime.resolution.__class__(hours=3)).hour
+        rules = [r for r in rules if SpamScheduler.can_send(r, now_utc)]
+
+        if not rules:
+            return
+        
         try:
             fetched_chats = await self.wb.get_chats(token)
         except Exception as e:
@@ -33,8 +40,6 @@ class SpamService:
 
         chats_by_id = {c.get("chatID"): c for c in fetched_chats}
 
-        # Реконсиляция изменений контента в чатах
-        active_rules = []
         for rule in rules:
             chat = chats_by_id.get(rule.chat_id)
             if not chat:
@@ -62,16 +67,7 @@ class SpamService:
                         db, user.id, client_name, last_msg, stopped=True
                     )
                     continue
-            active_rules.append(rule)
 
-        # Выполнение отправки сообщений по расписанию
-        current_hour = (now_utc + datetime.resolution.__class__(hours=3)).hour
-
-        for rule in active_rules:
-            if not SpamScheduler.can_send(rule, now_utc):
-                continue
-
-            chat = chats_by_id.get(rule.chat_id)
             candidate_templates = []
             for t in rule.templates:
                 if t.start_hour is not None and t.end_hour is not None:
