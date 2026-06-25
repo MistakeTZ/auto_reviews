@@ -51,7 +51,7 @@ class SpamService:
 
             if rule.last_sent_message_timestamp > 0 and last_msg_ts:
                 if (
-                    last_msg_ts != rule.last_sent_message_timestamp
+                    last_msg_ts > rule.last_sent_message_timestamp
                     and not rule.spam_endlessly
                     and abs(last_msg_ts - rule.last_sent_message_timestamp) > 1000 * 15
                 ):
