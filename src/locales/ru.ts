@@ -678,6 +678,8 @@ export const ru = {
     dashboardTab: 'Дашборд',
     add: 'Добавить',
     chooseFromRecentChats: 'Выбрать из недавних чатов',
+    duplicateRule: 'Дубликат',
+    chatAlreadyHasRule: 'для этого чата уже создано правило',
     enterIdManually: 'Ввести ID вручную',
     buyer: 'Покупатель',
     loadingRecentChats: 'Загрузка недавних чатов...',

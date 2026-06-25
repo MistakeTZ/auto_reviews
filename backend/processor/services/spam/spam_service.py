@@ -32,7 +32,7 @@ class SpamService:
 
         if not rules:
             return
-        
+
         try:
             fetched_chats = await self.wb.get_chats(token)
         except Exception as e:
@@ -49,26 +49,24 @@ class SpamService:
             last_msg = chat.get("lastMessage") or {}
             last_msg_ts = last_msg.get("addTimestamp")
 
-            if rule.last_sent_message_timestamp > 0 and last_msg_ts:
-                if (
-                    last_msg_ts > rule.last_sent_message_timestamp
-                    and not rule.spam_endlessly
-                    and abs(last_msg_ts - rule.last_sent_message_timestamp) > 1000 * 15
-                ):
-                    logger.info(
-                        "Reconciliation: Pausing spam rule %s due to unexpected buyer message",
-                        rule.id,
-                    )
-                    rule.is_active = False
-                    db.commit()
+            if (
+                rule.last_sent_message_timestamp > 0
+                and last_msg_ts
+                and last_msg_ts > rule.last_sent_message_timestamp
+                and not rule.spam_endlessly
+            ):
+                logger.info(
+                    "Reconciliation: Pausing spam rule %s due to unexpected buyer message",
+                    rule.id,
+                )
+                rule.is_active = False
+                db.commit()
 
-                    client_name = (
-                        rule.client_name or chat.get("clientName") or "Покупатель"
-                    )
-                    await SpamNotificationService.send_chat_message_notification(
-                        db, user.id, client_name, last_msg, stopped=True
-                    )
-                    continue
+                client_name = rule.client_name or chat.get("clientName") or "Покупатель"
+                await SpamNotificationService.send_chat_message_notification(
+                    db, user.id, client_name, last_msg, stopped=True
+                )
+                continue
 
             candidate_templates = []
             for t in rule.templates:
@@ -117,10 +115,6 @@ class SpamService:
                     rule.id,
                 )
             except Exception as e:
-                crud.log_spam_sent_message(
-                    db, rule.id, rendered_text, rule.chat_id, time() * 1000,
-                )
-                rule.last_sent_at = datetime.now(timezone.utc)
-                rule.last_sent_message_timestamp = time() * 1000
+                rule.last_sent_message_timestamp = -1
                 db.commit()
                 logger.error("Error sending message for rule %s: %s", rule.id, e)

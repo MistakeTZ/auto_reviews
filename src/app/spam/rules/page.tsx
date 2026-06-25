@@ -184,7 +184,12 @@ export default function SpamRulesPage() {
           const data = await res.json();
           if (data.found) {
             setClientName(data.clientName);
-            setChatValidationMsg("");
+            const hasExisting = rules.some((r) => r.chat_id === normalizedChatId);
+            if (hasExisting) {
+              setChatValidationMsg(`${t("spam.duplicateRule")} (${t("spam.chatAlreadyHasRule")})`);
+            } else {
+              setChatValidationMsg("");
+            }
           } else {
             setClientName("");
             setChatValidationMsg(t("spam.chatNotFound"));
@@ -201,7 +206,7 @@ export default function SpamRulesPage() {
     }, 600);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [chatId, isManualInput, jwtToken, t, API_URL]);
+  }, [chatId, isManualInput, jwtToken, t, API_URL, rules]);
 
   const handleAddRuleSpecificText = () => {
     if (!newSpecificText.trim()) return;
@@ -712,6 +717,9 @@ export default function SpamRulesPage() {
                                 const isSelected = selectedChats.some(
                                   (c) => c.chatID === chat.chatID,
                                 );
+                                const alreadyHasRule = rules.some(
+                                  (r) => r.chat_id === chat.chatID,
+                                );
                                 return (
                                   <button
                                     key={chat.chatID}
@@ -746,9 +754,16 @@ export default function SpamRulesPage() {
                                         )}
                                         {chat.clientName}
                                       </span>
-                                      <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-2">
-                                        {chat.chatID.replace(/^1:/, "")}
-                                      </span>
+                                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                                        {alreadyHasRule && (
+                                          <span className="text-[9px] font-extrabold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                            {t("spam.duplicateRule")}
+                                          </span>
+                                        )}
+                                        <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
+                                          {chat.chatID.replace(/^1:/, "")}
+                                        </span>
+                                      </div>
                                     </div>
                                     {chat.lastMessageText && (
                                       <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1 italic">
@@ -779,32 +794,46 @@ export default function SpamRulesPage() {
                             </button>
                           </div>
                           <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-40 overflow-y-auto">
-                            {selectedChats.map((chat) => (
-                              <div
-                                key={chat.chatID}
-                                className="flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm animate-fade-in"
-                              >
-                                <span className="text-xs font-bold text-slate-800">
-                                  {chat.clientName}
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-mono font-semibold">
-                                  ({chat.chatID.replace(/^1:/, "")})
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setSelectedChats((prev) =>
-                                      prev.filter(
-                                        (c) => c.chatID !== chat.chatID,
-                                      ),
-                                    )
-                                  }
-                                  className="text-slate-400 hover:text-red-500 transition-colors p-0.5 text-xs font-bold"
+                            {selectedChats.map((chat) => {
+                              const alreadyHasRule = rules.some(
+                                (r) => r.chat_id === chat.chatID,
+                              );
+                              return (
+                                <div
+                                  key={chat.chatID}
+                                  className={`flex items-center gap-1.5 px-3 py-1 bg-white border rounded-lg shadow-sm animate-fade-in ${
+                                    alreadyHasRule
+                                      ? "border-amber-300 bg-amber-50/20"
+                                      : "border-slate-200"
+                                  }`}
                                 >
-                                  &times;
-                                </button>
-                              </div>
-                            ))}
+                                  <span className="text-xs font-bold text-slate-800">
+                                    {chat.clientName}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono font-semibold">
+                                    ({chat.chatID.replace(/^1:/, "")})
+                                  </span>
+                                  {alreadyHasRule && (
+                                    <span className="text-[9px] font-extrabold text-amber-600 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                      {t("spam.duplicateRule")}
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setSelectedChats((prev) =>
+                                        prev.filter(
+                                          (c) => c.chatID !== chat.chatID,
+                                        ),
+                                      )
+                                    }
+                                    className="text-slate-400 hover:text-red-500 transition-colors p-0.5 text-xs font-bold animate-fade-in"
+                                  >
+                                    &times;
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

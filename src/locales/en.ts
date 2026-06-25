@@ -677,6 +677,8 @@ export const en = {
     dashboardTab: 'Dashboard',
     add: 'Add',
     chooseFromRecentChats: 'Choose from recent chats',
+    duplicateRule: 'Duplicate',
+    chatAlreadyHasRule: 'rule already exists for this chat',
     enterIdManually: 'Enter ID manually',
     buyer: 'Buyer',
     loadingRecentChats: 'Loading recent chats...',
