@@ -49,62 +49,6 @@ def run_migrations():
                     "ALTER TABLE questions ADD COLUMN proposed_answer_text VARCHAR"
                 )
 
-            rule_columns = {col.get("name") for col in inspector.get_columns("rules")}
-            if "is_active" not in rule_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE rules ADD COLUMN is_active BOOLEAN DEFAULT 1"
-                )
-
-            user_columns = {col.get("name") for col in inspector.get_columns("users")}
-            if "wb_chat_api_token" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN wb_chat_api_token VARCHAR"
-                )
-            if "notify_answers_in_chats" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN notify_answers_in_chats BOOLEAN DEFAULT 1"
-                )
-            if "notify_all_messages" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN notify_all_messages BOOLEAN DEFAULT 0"
-                )
-            if "respam_subscription_expires_at" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN respam_subscription_expires_at DATETIME"
-                )
-            if "respam_tariff_type" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN respam_tariff_type VARCHAR"
-                )
-            if "respam_trial_activated" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN respam_trial_activated BOOLEAN DEFAULT 0"
-                )
-            if "respam_registration_bonus_days" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN respam_registration_bonus_days INTEGER DEFAULT 0"
-                )
-            if "referral_source" not in user_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN referral_source VARCHAR DEFAULT 'reanswer'"
-                )
-
-            payment_columns = {
-                col.get("name") for col in inspector.get_columns("payments")
-            }
-            if "service_type" not in payment_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE payments ADD COLUMN service_type VARCHAR"
-                )
-
-            spam_rule_columns = {
-                col.get("name") for col in inspector.get_columns("spam_rules")
-            }
-            if "reply_sign" not in spam_rule_columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE spam_rules ADD COLUMN reply_sign VARCHAR"
-                )
-
             conn.commit()
 
     except Exception as e:

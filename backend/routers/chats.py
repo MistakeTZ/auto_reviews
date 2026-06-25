@@ -256,6 +256,11 @@ async def update_spam_rule(
 
     # If changes is_active to true, fetch last message addTimestamp
     if rule_in.is_active is True and not db_rule.is_active:
+        logger.info(
+            "Current last_sent_message_timestamp: %s, fetching latest message timestamp for rule_id: %s",
+            db_rule.last_sent_message_timestamp,
+            rule_id,
+        )
         rule_in.last_sent_message_timestamp = 0
 
     # If chat_id is changing, resolve the new reply_sign
