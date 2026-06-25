@@ -1,7 +1,10 @@
 import random
 import logging
 from datetime import datetime, timezone
+from time import time
+
 from sqlalchemy.orm import Session
+
 import database.crud as crud
 from database.models import User, SpamRule
 from processor.services.wb.chat_client import WBChatClient
@@ -22,8 +25,6 @@ class SpamService:
             .filter(SpamRule.user_id == user.id, SpamRule.is_active == True)
             .all()
         )
-        if not rules:
-            return
 
         # Выполнение отправки сообщений по расписанию
         current_hour = (now_utc + datetime.resolution.__class__(hours=3)).hour
@@ -52,6 +53,7 @@ class SpamService:
                 if (
                     last_msg_ts != rule.last_sent_message_timestamp
                     and not rule.spam_endlessly
+                    and abs(last_msg_ts - rule.last_sent_message_timestamp) > 1000 * 15
                 ):
                     logger.info(
                         "Reconciliation: Pausing spam rule %s due to unexpected buyer message",
@@ -102,17 +104,23 @@ class SpamService:
             try:
                 result = await self.wb.send_message(token, reply_sign, rendered_text)
                 add_time = result.get("addTime")
-                if add_time:
-                    crud.log_spam_sent_message(
-                        db, rule.id, rendered_text, rule.chat_id, add_time
-                    )
-                    rule.last_sent_at = datetime.now(timezone.utc)
-                    rule.last_sent_message_timestamp = add_time
-                    db.commit()
-                    logger.info(
-                        "Successfully sent spam message to chat %s (rule %s)",
-                        rule.chat_id,
-                        rule.id,
-                    )
+
+                crud.log_spam_sent_message(
+                    db, rule.id, rendered_text, rule.chat_id, add_time
+                )
+                rule.last_sent_at = datetime.now(timezone.utc)
+                rule.last_sent_message_timestamp = add_time
+                db.commit()
+                logger.info(
+                    "Successfully sent spam message to chat %s (rule %s)",
+                    rule.chat_id,
+                    rule.id,
+                )
             except Exception as e:
+                crud.log_spam_sent_message(
+                    db, rule.id, rendered_text, rule.chat_id, time() * 1000,
+                )
+                rule.last_sent_at = datetime.now(timezone.utc)
+                rule.last_sent_message_timestamp = time() * 1000
+                db.commit()
                 logger.error("Error sending message for rule %s: %s", rule.id, e)
