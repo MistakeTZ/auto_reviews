@@ -50,11 +50,14 @@ class WBChatClient:
             data = response.json()
         except Exception:
             response.raise_for_status()
+            raise ValueError
+
         if not data.get("result"):
             logger.warning(data)
             response.raise_for_status()
+            raise ValueError
 
-        return response.json().get("result") or {}
+        return data.get("result") or {}
 
     async def close(self):
         if self._client and not self._external_client and not self._client.is_closed:

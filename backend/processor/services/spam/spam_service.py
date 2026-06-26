@@ -1,7 +1,6 @@
 import random
 import logging
 from datetime import datetime, timezone
-from time import time
 
 from sqlalchemy.orm import Session
 
@@ -10,6 +9,7 @@ from database.models import User, SpamRule
 from processor.services.wb.chat_client import WBChatClient
 from processor.services.spam.scheduler import SpamScheduler
 from processor.services.spam.notifications import SpamNotificationService
+from processor.utils.errors import ReplySignError
 
 logger = logging.getLogger("spam_service")
 
@@ -88,8 +88,8 @@ class SpamService:
                 "[name]", rule.client_name or "Покупатель"
             )
 
-            reply_sign = rule.reply_sign or chat.get("replySign")
-            if reply_sign and not rule.reply_sign:
+            reply_sign = chat.get("replySign") or rule.reply_sign
+            if reply_sign and reply_sign != rule.reply_sign:
                 rule.reply_sign = reply_sign
                 db.commit()
 
