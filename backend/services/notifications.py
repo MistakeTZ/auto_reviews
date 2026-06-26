@@ -136,11 +136,9 @@ def build_feedback_notification_text(review: models.Review) -> str:
         [
             "",
             (
-                (
-                    f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>"
-                    if auto_answer
-                    else "⚠️ Не получилось сгенерировать автоответ"
-                ),
+                f"🤖 <b>Автоответ:</b> <i>{auto_answer}</i>"
+                if auto_answer
+                else "⚠️ Не получилось сгенерировать автоответ"
             ),
         ]
     )
