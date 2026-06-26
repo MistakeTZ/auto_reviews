@@ -46,7 +46,14 @@ class WBChatClient:
             headers=self._headers(token),
             json={"replySign": reply_sign, "message": text},
         )
-        response.raise_for_status()
+        try:
+            data = response.json()
+        except Exception:
+            response.raise_for_status()
+        if not data.get("result"):
+            logger.warning(data)
+            response.raise_for_status()
+
         return response.json().get("result") or {}
 
     async def close(self):
