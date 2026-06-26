@@ -9,7 +9,6 @@ from database.models import User, SpamRule
 from processor.services.wb.chat_client import WBChatClient
 from processor.services.spam.scheduler import SpamScheduler
 from processor.services.spam.notifications import SpamNotificationService
-from processor.utils.errors import ReplySignError
 
 logger = logging.getLogger("spam_service")
 
