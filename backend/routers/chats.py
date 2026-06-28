@@ -424,3 +424,23 @@ def list_sent_messages(
             .all()
         )
     return crud.get_spam_sent_messages(db, current_user.id)
+
+
+@router.post("/check-rules")
+def check_rules(
+    request: schemas.MessagesCheckRequest,
+    db: Session = Depends(database.get_db),
+):
+    if not request.messages:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one message must be provided for checking.",
+        )
+
+    templates = (
+        db.query(models.SpamMessageTemplate)
+        .filter(models.SpamMessageTemplate.text.in_(request.messages))
+        .all()
+    )
+
+    return {"hide": list(set([template.text for template in templates]))}

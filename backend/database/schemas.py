@@ -323,3 +323,7 @@ class SpamSettingsUpdate(BaseModel):
     wb_chat_api_token: Optional[str] = None
     notify_answers_in_chats: Optional[bool] = None
     notify_all_messages: Optional[bool] = None
+
+
+class MessagesCheckRequest(BaseModel):
+    messages: List[str]
