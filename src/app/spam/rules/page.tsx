@@ -114,23 +114,26 @@ export default function SpamRulesPage() {
     }
   }, [jwtToken, API_URL]);
 
-  const loadRules = useCallback(async () => {
-    if (!jwtToken) return;
-    setLoadingRules(true);
-    try {
-      const res = await fetch(`${API_URL}/chats/rules`, {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setRules(data);
+  const loadRules = useCallback(
+    async (silent = false) => {
+      if (!jwtToken) return;
+      if (!silent) setLoadingRules(true);
+      try {
+        const res = await fetch(`${API_URL}/chats/rules`, {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRules(data);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (!silent) setLoadingRules(false);
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingRules(false);
-    }
-  }, [jwtToken, API_URL]);
+    },
+    [jwtToken, API_URL],
+  );
 
   const loadTemplates = useCallback(async () => {
     if (!jwtToken) return;
@@ -448,6 +451,12 @@ export default function SpamRulesPage() {
   };
 
   const toggleRuleActive = async (rule: SpamRule) => {
+    // Optimistic update
+    setRules((prev) =>
+      prev.map((r) =>
+        r.id === rule.id ? { ...r, is_active: !rule.is_active } : r,
+      ),
+    );
     try {
       const res = await fetch(`${API_URL}/chats/rules/${rule.id}`, {
         method: "PUT",
@@ -460,25 +469,33 @@ export default function SpamRulesPage() {
         }),
       });
       if (res.ok) {
+        await loadRules(true);
+      } else {
         await loadRules();
       }
     } catch (e) {
       console.error(e);
+      await loadRules();
     }
   };
 
   const handleDeleteRule = async (id: number) => {
     if (!confirm(t("common.delete") + "?")) return;
+    // Optimistic delete
+    setRules((prev) => prev.filter((r) => r.id !== id));
     try {
       const res = await fetch(`${API_URL}/chats/rules/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
       if (res.ok) {
+        await loadRules(true);
+      } else {
         await loadRules();
       }
     } catch (e) {
       console.error(e);
+      await loadRules();
     }
   };
 
@@ -495,6 +512,19 @@ export default function SpamRulesPage() {
   };
 
   const toggleRuleChatActive = async (ruleId: number, chatId: string) => {
+    // Optimistic update
+    setRules((prev) =>
+      prev.map((r) =>
+        r.id === ruleId
+          ? {
+              ...r,
+              chats: r.chats?.map((c) =>
+                c.chat_id === chatId ? { ...c, is_active: !c.is_active } : c,
+              ),
+            }
+          : r,
+      ),
+    );
     try {
       const res = await fetch(
         `${API_URL}/chats/rules/${ruleId}/chats/${encodeURIComponent(chatId)}/toggle`,
@@ -506,12 +536,14 @@ export default function SpamRulesPage() {
         },
       );
       if (res.ok) {
-        await loadRules();
+        await loadRules(true);
       } else {
         alert("Error toggling chat activity");
+        await loadRules();
       }
     } catch {
       alert(t("auth.connectionError"));
+      await loadRules();
     }
   };
 
@@ -524,6 +556,17 @@ export default function SpamRulesPage() {
     ) {
       return;
     }
+    // Optimistic update
+    setRules((prev) =>
+      prev.map((r) =>
+        r.id === ruleId
+          ? {
+              ...r,
+              chats: r.chats?.filter((c) => c.chat_id !== chatId),
+            }
+          : r,
+      ),
+    );
     try {
       const res = await fetch(
         `${API_URL}/chats/rules/${ruleId}/chats/${encodeURIComponent(chatId)}`,
@@ -535,12 +578,14 @@ export default function SpamRulesPage() {
         },
       );
       if (res.ok) {
-        await loadRules();
+        await loadRules(true);
       } else {
         alert("Error deleting chat from rule");
+        await loadRules();
       }
     } catch {
       alert(t("auth.connectionError"));
+      await loadRules();
     }
   };
 
@@ -567,7 +612,7 @@ export default function SpamRulesPage() {
         setShowAddChatsModal(false);
         setTargetRuleToAddChats(null);
         setSelectedChatsToAdd([]);
-        await loadRules();
+        await loadRules(true);
       } else {
         const errData = await res.json().catch(() => ({}));
         alert(errData.detail || "Error adding chats to rule");
@@ -1474,9 +1519,13 @@ export default function SpamRulesPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           {rule.chats && rule.chats.length > 1 ? (
                             <h3 className="text-xs font-semibold text-slate-800 bg-purple-50 border border-purple-200/50 px-2 py-0.5 rounded-lg shadow-xs flex items-center gap-1">
-                              <MessageSquare size={13} className="text-purple-600 shrink-0" />
+                              <MessageSquare
+                                size={13}
+                                className="text-purple-600 shrink-0"
+                              />
                               <span>
-                                {t("spam.rulesTab") || "Rule"} #{rule.id} ({rule.chats.length}{" "}
+                                {t("spam.rulesTab") || "Rule"} #{rule.id} (
+                                {rule.chats.length}{" "}
                                 {t("spam.selectedChats") || "chats"})
                               </span>
                             </h3>
@@ -1616,7 +1665,12 @@ export default function SpamRulesPage() {
                               className="text-[10px] font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 cursor-pointer select-none border border-purple-100 hover:border-purple-200 bg-purple-50/30 px-2 py-0.5 rounded-lg shadow-xs transition-all active:scale-95 shrink-0"
                             >
                               <Plus size={12} />
-                              <span>{t("spam.addChatsBtn").replace(/ чаты| Chats/gi, "")}</span>
+                              <span>
+                                {t("spam.addChatsBtn").replace(
+                                  / чаты| Chats/gi,
+                                  "",
+                                )}
+                              </span>
                             </button>
                           </div>
 
@@ -1915,10 +1969,21 @@ export default function SpamRulesPage() {
                                 : "bg-slate-50 hover:bg-slate-100 border border-slate-200"
                             }`}
                           >
-                            <div className="min-w-0">
-                              <p className="font-bold text-slate-800 text-xs">
-                                {chat.clientName || t("spam.buyer")}
-                              </p>
+                            <div className="min-w-0 flex-1 mr-3">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="font-bold text-slate-800 text-xs">
+                                  {chat.clientName || t("spam.buyer")}
+                                </span>
+                                {rules.some((r) =>
+                                  r.chats?.some(
+                                    (c) => c.chat_id === chat.chatID,
+                                  ),
+                                ) && (
+                                  <span className="text-[9px] font-extrabold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
+                                    {t("spam.duplicateRule")}
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[10px] font-mono font-semibold text-slate-400 mt-1">
                                 {chat.chatID.replace(/^1:/, "")}
                               </p>
