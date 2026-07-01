@@ -21,6 +21,7 @@ import {
   Reply,
   Calendar,
   Pencil,
+  Search,
 } from "lucide-react";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
 import { Button } from "@/components/ui/Button";
@@ -38,9 +39,25 @@ const getPaginationRange = (currentPage: number, totalPages: number) => {
     if (currentPage <= 4) {
       pages.push(1, 2, 3, 4, 5, "...", totalPages);
     } else if (currentPage >= totalPages - 3) {
-      pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "...",
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     } else {
-      pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      pages.push(
+        1,
+        "...",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "...",
+        totalPages,
+      );
     }
   }
   return pages;
@@ -78,6 +95,7 @@ function QuestionsPageContent() {
   const searchParams = useSearchParams();
 
   const [allQuestions, setAllQuestions] = useState<QuestionItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -333,6 +351,13 @@ function QuestionsPageContent() {
     const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null;
 
     return allQuestions.filter((question) => {
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        const questionId = String(question.id || "").toLowerCase();
+        if (!questionId.includes(query)) {
+          return false;
+        }
+      }
       const resolvedProductName =
         productNamesByNmId[String(question.nm_id || "")] ||
         question.product_name ||
@@ -369,6 +394,7 @@ function QuestionsPageContent() {
     });
   }, [
     allQuestions,
+    searchQuery,
     statusFilter,
     productFilter,
     withAnswerFilter,
@@ -423,6 +449,7 @@ function QuestionsPageContent() {
     setWithAnswerFilter("all");
     setDateFrom("");
     setDateTo("");
+    setSearchQuery("");
     setCurrentPage(1);
   };
 
@@ -522,148 +549,104 @@ function QuestionsPageContent() {
             </Button>
           </div>
 
-          <div className="relative shrink-0">
-            <Button
-              variant="outline"
-              onClick={() => setIsFilterMenuOpen(true)}
-              className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 active:scale-98 transition-all shrink-0 cursor-pointer"
-            >
-              <Filter size={15} className="text-indigo-600" />
-              <span>{t("questions.filters")}</span>
-              {activeFiltersCount > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] font-black text-white">
-                  {activeFiltersCount}
-                </span>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
+            {/* Search Bar */}
+            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder={t("questions.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full h-9 pl-9 pr-8 rounded-xl border border-slate-200 bg-white text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold text-slate-800"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
               )}
-            </Button>
+            </div>
 
-            {isFilterMenuOpen && (
-              <>
-                <div
-                  onClick={() => setIsFilterMenuOpen(false)}
-                  className="questions-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
-                />
-                <div className="questions-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]">
-                  <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-                    <h2 className="text-xl font-black text-slate-900">
-                      {t("questions.filters")}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterMenuOpen(false)}
-                      className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title={t("questions.closeFilters")}
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
+            <div className="relative shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => setIsFilterMenuOpen(true)}
+                className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 active:scale-98 transition-all shrink-0 cursor-pointer"
+              >
+                <Filter size={15} className="text-indigo-600" />
+                <span>{t("questions.filters")}</span>
+                {activeFiltersCount > 0 && (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] font-black text-white">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </Button>
 
-                  <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
-                    <div className="mb-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1 rounded bg-emerald-50 text-emerald-600">
-                          <MessageSquare size={16} />
-                        </div>
-                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                          {t("questions.filterStatus")}
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value as StatusFilter);
-                            setCurrentPage(1);
-                          }}
-                          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
-                        >
-                          <option value="all">{t("questions.all")}</option>
-                          <option value="answered">
-                            {t("questions.answered")}
-                          </option>
-                          <option value="answeredGlobal">
-                            {t("questions.answeredGlobal")}
-                          </option>
-                          <option value="answeredPrivate">
-                            {t("questions.answeredPrivate")}
-                          </option>
-                          <option value="unanswered">
-                            {t("questions.unanswered")}
-                          </option>
-                        </select>
-                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg
-                            className="h-4 w-4 fill-current"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                          </svg>
-                        </div>
-                      </div>
+              {isFilterMenuOpen && (
+                <>
+                  <div
+                    onClick={() => setIsFilterMenuOpen(false)}
+                    className="questions-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
+                  />
+                  <div className="questions-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
+                      <h2 className="text-xl font-black text-slate-900">
+                        {t("questions.filters")}
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterMenuOpen(false)}
+                        className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                        title={t("questions.closeFilters")}
+                      >
+                        <X size={18} />
+                      </button>
                     </div>
 
-                    <div className="mb-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1 rounded bg-indigo-50 text-indigo-600">
-                          <ShoppingBag size={16} />
-                        </div>
-                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                          {t("questions.filterProduct")}
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={productFilter}
-                          onChange={(e) => {
-                            setProductFilter(e.target.value);
-                            setCurrentPage(1);
-                          }}
-                          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
-                        >
-                          <option value="all">{t("questions.all")}</option>
-                          {productOptions.map((product) => (
-                            <option key={product} value={product}>
-                              {product}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg
-                            className="h-4 w-4 fill-current"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-sky-50 text-sky-600">
-                            <Reply size={14} className="scale-x-[-1]" />
+                    <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                      <div className="mb-5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="p-1 rounded bg-emerald-50 text-emerald-600">
+                            <MessageSquare size={16} />
                           </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
-                            {t("questions.filterWithAnswer")}
+                          <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                            {t("questions.filterStatus")}
                           </span>
                         </div>
                         <div className="relative">
                           <select
-                            value={withAnswerFilter}
+                            value={statusFilter}
                             onChange={(e) => {
-                              setWithAnswerFilter(e.target.value as TriFilter);
+                              setStatusFilter(e.target.value as StatusFilter);
                               setCurrentPage(1);
                             }}
-                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
                           >
                             <option value="all">{t("questions.all")}</option>
-                            <option value="yes">{t("questions.yes")}</option>
-                            <option value="no">{t("questions.no")}</option>
+                            <option value="answered">
+                              {t("questions.answered")}
+                            </option>
+                            <option value="answeredGlobal">
+                              {t("questions.answeredGlobal")}
+                            </option>
+                            <option value="answeredPrivate">
+                              {t("questions.answeredPrivate")}
+                            </option>
+                            <option value="unanswered">
+                              {t("questions.unanswered")}
+                            </option>
                           </select>
-                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                             <svg
-                              className="h-3 w-3 fill-current"
+                              className="h-4 w-4 fill-current"
                               viewBox="0 0 20 20"
                             >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -672,108 +655,181 @@ function QuestionsPageContent() {
                         </div>
                       </div>
 
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-sky-50 text-sky-600">
-                            <Calendar size={14} />
+                      <div className="mb-5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="p-1 rounded bg-indigo-50 text-indigo-600">
+                            <ShoppingBag size={16} />
                           </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
-                            {t("questions.filterDateFrom").replace(" с", "")}
+                          <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                            {t("questions.filterProduct")}
                           </span>
                         </div>
-                        <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                          <div className="relative flex-1 min-w-0">
-                            <input
-                              type={dateFrom ? "date" : "text"}
-                              placeholder="От"
-                              onFocus={(e) => (e.target.type = "date")}
-                              onBlur={(e) => {
-                                if (!e.target.value) e.target.type = "text";
-                              }}
-                              value={dateFrom}
-                              onChange={(e) => {
-                                setDateFrom(e.target.value);
-                                setCurrentPage(1);
-                              }}
-                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
-                            />
-                          </div>
-                          <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
-                          <div className="relative flex-1 min-w-0">
-                            <input
-                              type={dateTo ? "date" : "text"}
-                              placeholder="до"
-                              onFocus={(e) => (e.target.type = "date")}
-                              onBlur={(e) => {
-                                if (!e.target.value) e.target.type = "text";
-                              }}
-                              value={dateTo}
-                              onChange={(e) => {
-                                setDateTo(e.target.value);
-                                setCurrentPage(1);
-                              }}
-                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
-                            />
+                        <div className="relative">
+                          <select
+                            value={productFilter}
+                            onChange={(e) => {
+                              setProductFilter(e.target.value);
+                              setCurrentPage(1);
+                            }}
+                            className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
+                          >
+                            <option value="all">{t("questions.all")}</option>
+                            {productOptions.map((product) => (
+                              <option key={product} value={product}>
+                                {product}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg
+                              className="h-4 w-4 fill-current"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                            </svg>
                           </div>
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-sky-50 text-sky-600">
+                              <Reply size={14} className="scale-x-[-1]" />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                              {t("questions.filterWithAnswer")}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={withAnswerFilter}
+                              onChange={(e) => {
+                                setWithAnswerFilter(
+                                  e.target.value as TriFilter,
+                                );
+                                setCurrentPage(1);
+                              }}
+                              className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            >
+                              <option value="all">{t("questions.all")}</option>
+                              <option value="yes">{t("questions.yes")}</option>
+                              <option value="no">{t("questions.no")}</option>
+                            </select>
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                              <svg
+                                className="h-3 w-3 fill-current"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-sky-50 text-sky-600">
+                              <Calendar size={14} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
+                              {t("questions.filterDateFrom").replace(" с", "")}
+                            </span>
+                          </div>
+                          <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                            <div className="relative flex-1 min-w-0">
+                              <input
+                                type={dateFrom ? "date" : "text"}
+                                placeholder="От"
+                                onFocus={(e) => (e.target.type = "date")}
+                                onBlur={(e) => {
+                                  if (!e.target.value) e.target.type = "text";
+                                }}
+                                value={dateFrom}
+                                onChange={(e) => {
+                                  setDateFrom(e.target.value);
+                                  setCurrentPage(1);
+                                }}
+                                className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                              />
+                            </div>
+                            <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
+                            <div className="relative flex-1 min-w-0">
+                              <input
+                                type={dateTo ? "date" : "text"}
+                                placeholder="до"
+                                onFocus={(e) => (e.target.type = "date")}
+                                onBlur={(e) => {
+                                  if (!e.target.value) e.target.type = "text";
+                                }}
+                                value={dateTo}
+                                onChange={(e) => {
+                                  setDateTo(e.target.value);
+                                  setCurrentPage(1);
+                                }}
+                                className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {activeTags.length > 0 && (
+                        <div className="mt-6 pt-6 border-t border-slate-100">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                              {t("questions.activeFilters")}
+                            </span>
+                            <span className="inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-[10px] font-black text-indigo-600 border border-indigo-100">
+                              {activeTags.length}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {activeTags.map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                              >
+                                <span>{tag.label}</span>
+                                <button
+                                  type="button"
+                                  onClick={tag.onClear}
+                                  className="p-0.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                  title="Remove"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {activeTags.length > 0 && (
-                      <div className="mt-6 pt-6 border-t border-slate-100">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                            {t("questions.activeFilters")}
-                          </span>
-                          <span className="inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-[10px] font-black text-indigo-600 border border-indigo-100">
-                            {activeTags.length}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {activeTags.map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
-                            >
-                              <span>{tag.label}</span>
-                              <button
-                                type="button"
-                                onClick={tag.onClear}
-                                className="p-0.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                                title="Remove"
-                              >
-                                <X size={12} />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="flex-1 flex items-center justify-center gap-1.5 h-11 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-slate-800 active:scale-98 transition-all text-xs font-bold cursor-pointer bg-white"
+                      >
+                        <RotateCw size={14} className="text-slate-500" />
+                        <span>{t("questions.resetFilters")}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterMenuOpen(false)}
+                        className="flex-[2] flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-bold shadow-md shadow-indigo-100 active:scale-98 transition-all text-xs cursor-pointer"
+                      >
+                        <span>{t("questions.showQuestionsBtn")}</span>
+                        <span className="bg-indigo-500/80 px-2 py-0.5 rounded-full text-[10px] font-black text-white">
+                          {filteredQuestions.length}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={resetFilters}
-                      className="flex-1 flex items-center justify-center gap-1.5 h-11 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-slate-800 active:scale-98 transition-all text-xs font-bold cursor-pointer bg-white"
-                    >
-                      <RotateCw size={14} className="text-slate-500" />
-                      <span>{t("questions.resetFilters")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterMenuOpen(false)}
-                      className="flex-[2] flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-bold shadow-md shadow-indigo-100 active:scale-98 transition-all text-xs cursor-pointer"
-                    >
-                      <span>{t("questions.showQuestionsBtn")}</span>
-                      <span className="bg-indigo-500/80 px-2 py-0.5 rounded-full text-[10px] font-black text-white">
-                        {filteredQuestions.length}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -865,18 +921,22 @@ function QuestionsPageContent() {
                         </div>
                       )}
 
-                      {hasProposedAnswer && !hasAnswer && !isEditingAnswer[question.id] && (
-                        <div className="bg-amber-50/60 border border-amber-100 p-4 rounded-xl mt-3">
-                          <p className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5">
-                            {t("questions.proposedAnswerLabel")}
-                          </p>
-                          <p className="text-sm text-slate-800 font-medium">
-                            {question.proposed_answer_text}
-                          </p>
-                        </div>
-                      )}
+                      {hasProposedAnswer &&
+                        !hasAnswer &&
+                        !isEditingAnswer[question.id] && (
+                          <div className="bg-amber-50/60 border border-amber-100 p-4 rounded-xl mt-3">
+                            <p className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5">
+                              {t("questions.proposedAnswerLabel")}
+                            </p>
+                            <p className="text-sm text-slate-800 font-medium">
+                              {question.proposed_answer_text}
+                            </p>
+                          </div>
+                        )}
 
-                      {(!hasAnswer || isEditingAnswer[question.id] || hasProposedAnswer) && (
+                      {(!hasAnswer ||
+                        isEditingAnswer[question.id] ||
+                        hasProposedAnswer) && (
                         <div className="mt-5 pt-4 border-t border-slate-100 space-y-4">
                           <div className="flex flex-col gap-1.5">
                             <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
@@ -954,9 +1014,11 @@ function QuestionsPageContent() {
                                 aria-label={t("questions.generateReply")}
                                 title={t("questions.generateReply")}
                               >
-                                {isGeneratingReply[question.id]
-                                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                                  : <WandSparkles className="h-4 w-4" />}
+                                {isGeneratingReply[question.id] ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <WandSparkles className="h-4 w-4" />
+                                )}
                               </Button>
                               <Button
                                 onClick={() => handleReply(question.id)}
@@ -1023,31 +1085,33 @@ function QuestionsPageContent() {
                   ← {t("questions.back")}
                 </button>
 
-                {getPaginationRange(safeCurrentPage, totalPages).map((p, idx) => {
-                  if (p === "...") {
+                {getPaginationRange(safeCurrentPage, totalPages).map(
+                  (p, idx) => {
+                    if (p === "...") {
+                      return (
+                        <span
+                          key={`dots-${idx}`}
+                          className="px-3 py-2 text-sm font-bold text-slate-400 select-none cursor-default"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
                     return (
-                      <span
-                        key={`dots-${idx}`}
-                        className="px-3 py-2 text-sm font-bold text-slate-400 select-none cursor-default"
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p as number)}
+                        className={`rounded-xl px-4 py-2 text-sm font-bold transition-all shadow-sm ${
+                          safeCurrentPage === p
+                            ? "bg-indigo-600 text-white shadow-indigo-200"
+                            : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                        }`}
                       >
-                        ...
-                      </span>
+                        {p}
+                      </button>
                     );
-                  }
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => setCurrentPage(p as number)}
-                      className={`rounded-xl px-4 py-2 text-sm font-bold transition-all shadow-sm ${
-                        safeCurrentPage === p
-                          ? "bg-indigo-600 text-white shadow-indigo-200"
-                          : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  );
-                })}
+                  },
+                )}
 
                 <button
                   onClick={() =>

@@ -17,6 +17,8 @@ import {
   Clock,
   MessageSquare,
   Copy,
+  Search,
+  X,
 } from "lucide-react";
 import { SpamRule, SpamTemplate, SpamSentMessage } from "../types";
 import SubscriptionGuard from "@/components/layout/SubscriptionGuard";
@@ -71,6 +73,7 @@ export default function SpamRulesPage() {
   const [sortBy, setSortBy] = useState<"last_sent" | "new" | "old">(
     "last_sent",
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [recentChats, setRecentChats] = useState<
     { chatID: string; clientName: string; lastMessageText: string }[]
@@ -184,9 +187,13 @@ export default function SpamRulesPage() {
           const data = await res.json();
           if (data.found) {
             setClientName(data.clientName);
-            const hasExisting = rules.some((r) => r.chat_id === normalizedChatId);
+            const hasExisting = rules.some(
+              (r) => r.chat_id === normalizedChatId,
+            );
             if (hasExisting) {
-              setChatValidationMsg(`${t("spam.duplicateRule")} (${t("spam.chatAlreadyHasRule")})`);
+              setChatValidationMsg(
+                `${t("spam.duplicateRule")} (${t("spam.chatAlreadyHasRule")})`,
+              );
             } else {
               setChatValidationMsg("");
             }
@@ -474,6 +481,17 @@ export default function SpamRulesPage() {
     .filter((rule) => {
       if (statusFilter === "active") return rule.is_active !== false;
       if (statusFilter === "inactive") return rule.is_active === false;
+      return true;
+    })
+    .filter((rule) => {
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        const chatId = String(rule.chat_id || "").toLowerCase();
+        const clientName = String(rule.client_name || "").toLowerCase();
+        if (!chatId.includes(query) && !clientName.includes(query)) {
+          return false;
+        }
+      }
       return true;
     })
     .sort((a, b) => {
@@ -1185,31 +1203,56 @@ export default function SpamRulesPage() {
 
         {/* Filters and Sorting Controls */}
         {rules.length > 0 && (
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 border border-slate-200/60 p-4 rounded-2xl shadow-sm mb-6 animate-fade-in">
-            {/* Status Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                {t("spam.status")}:
-              </span>
-              <div className="inline-flex rounded-xl p-0.5 bg-slate-100 border border-slate-200/50">
-                {(["all", "active", "inactive"] as const).map((filter) => (
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50 border border-slate-200/60 p-4 rounded-2xl shadow-sm mb-6 animate-fade-in w-full">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 w-full">
+              {/* Status Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {t("spam.status")}:
+                </span>
+                <div className="inline-flex rounded-xl p-0.5 bg-slate-100 border border-slate-200/50">
+                  {(["all", "active", "inactive"] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setStatusFilter(filter)}
+                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        statusFilter === filter
+                          ? "bg-white text-purple-700 shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      {filter === "all"
+                        ? t("spam.filterAll")
+                        : filter === "active"
+                          ? t("spam.filterActive")
+                          : t("spam.filterInactive")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Search Input */}
+              <div className="relative flex-1 max-w-xs w-full">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search size={14} />
+                </span>
+                <input
+                  type="text"
+                  placeholder={t("spam.searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-8 pl-8 pr-8 rounded-xl border border-slate-200 bg-white text-xs shadow-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all font-semibold text-slate-800"
+                />
+                {searchQuery && (
                   <button
-                    key={filter}
                     type="button"
-                    onClick={() => setStatusFilter(filter)}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      statusFilter === filter
-                        ? "bg-white text-purple-700 shadow-sm font-bold"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 cursor-pointer"
                   >
-                    {filter === "all"
-                      ? t("spam.filterAll")
-                      : filter === "active"
-                        ? t("spam.filterActive")
-                        : t("spam.filterInactive")}
+                    <X size={12} />
                   </button>
-                ))}
+                )}
               </div>
             </div>
 

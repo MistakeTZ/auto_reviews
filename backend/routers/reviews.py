@@ -31,6 +31,7 @@ def read_reviews(
     page: Optional[int] = None,
     page_size: Optional[int] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
@@ -41,8 +42,9 @@ def read_reviews(
             page=page,
             page_size=page_size,
             status=status,
+            search=search,
         )
-    return crud.get_reviews(db, user_id=current_user.id, status=status)
+    return crud.get_reviews(db, user_id=current_user.id, status=status, search=search)
 
 
 from processor.chat_processor import ChatProcessor

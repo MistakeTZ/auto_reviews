@@ -127,10 +127,11 @@ def get_spam_dashboard_stats(
 
 @router.get("/rules", response_model=List[schemas.SpamRule])
 def list_spam_rules(
+    search: Optional[str] = None,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(check_active_spam_subscription),
 ):
-    return crud.get_spam_rules(db, current_user.id)
+    return crud.get_spam_rules(db, current_user.id, search=search)
 
 
 @router.post("/rules", response_model=schemas.SpamRule)
@@ -223,7 +224,6 @@ async def create_spam_rules_bulk(
                 last_sent_message_timestamp = wb_chat["lastMessage"].get(
                     "addTimestamp", 0
                 )
-            
 
         if not reply_sign:
             raise HTTPException(

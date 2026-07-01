@@ -289,6 +289,7 @@ export const ru = {
   },
   reviews: {
     title: 'Отзывы',
+    searchPlaceholder: 'Поиск по Chat ID или имени покупателя...',
     filters: 'Фильтры',
     filterStatus: 'Статус',
     filterStars: 'Оценка',
@@ -334,6 +335,7 @@ export const ru = {
   },
   questions: {
     title: 'Вопросы',
+    searchPlaceholder: 'Поиск по Chat ID...',
     filters: 'Фильтры',
     filterStatus: 'Статус',
     filterProduct: 'Товар',
@@ -610,6 +612,7 @@ export const ru = {
   },
   spam: {
     title: 'Периодическая рассылка в чаты',
+    searchPlaceholder: 'Поиск по Chat ID или имени покупателя...',
     about: 'Автоматические сообщения в чатах Wildberries для повышения лояльности и повторных покупок',
     stats: 'Статистика',
     activeRules: 'Активные правила',

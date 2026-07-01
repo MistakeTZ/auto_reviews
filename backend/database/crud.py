@@ -351,7 +351,7 @@ def delete_rule(db: Session, rule_id: int, user_id: int):
     return False
 
 
-def get_reviews(db: Session, user_id: int, status: str = None):
+def get_reviews(db: Session, user_id: int, status: str = None, search: Optional[str] = None):
     def normalize_review_status(value: str | None):
         if value == "auto-answered":
             return "auto"
@@ -364,6 +364,11 @@ def get_reviews(db: Session, user_id: int, status: str = None):
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
     if status and status != "all":
         query = query.filter(models.Review.status == normalize_review_status(status))
+    if search:
+        query = query.filter(
+            models.Review.wb_review_id.contains(search)
+            | models.Review.user_name.contains(search)
+        )
     return query.order_by(models.Review.id.desc()).all()
 
 
@@ -384,6 +389,7 @@ def get_reviews_paginated(
     page: int = 1,
     page_size: int = 10,
     status: str = None,
+    search: Optional[str] = None,
 ):
     def normalize_review_status(value: str | None):
         if value == "auto-answered":
@@ -397,6 +403,11 @@ def get_reviews_paginated(
     query = db.query(models.Review).filter(models.Review.user_id == user_id)
     if status and status != "all":
         query = query.filter(models.Review.status == normalize_review_status(status))
+    if search:
+        query = query.filter(
+            models.Review.wb_review_id.contains(search)
+            | models.Review.user_name.contains(search)
+        )
 
     total = query.count()
     pages = (total + page_size - 1) // page_size if total > 0 else 1
@@ -508,13 +519,15 @@ def update_review_status(
     return db_review
 
 
-def get_questions(db: Session, user_id: int, include_answered: bool = True):
+def get_questions(db: Session, user_id: int, include_answered: bool = True, search: Optional[str] = None):
     query = db.query(models.Question).filter(models.Question.user_id == user_id)
     if not include_answered:
         query = query.filter(
             (models.Question.answer_text.is_(None))
             | (models.Question.answer_text == "")
         )
+    if search:
+        query = query.filter(models.Question.wb_question_id.contains(search))
     return query.order_by(models.Question.id.desc()).all()
 
 
@@ -666,8 +679,14 @@ def delete_notification_method(db: Session, method_id: int, user_id: int):
     return False
 
 
-def get_spam_rules(db: Session, user_id: int):
-    return db.query(models.SpamRule).filter(models.SpamRule.user_id == user_id).all()
+def get_spam_rules(db: Session, user_id: int, search: Optional[str] = None):
+    query = db.query(models.SpamRule).filter(models.SpamRule.user_id == user_id)
+    if search:
+        query = query.filter(
+            models.SpamRule.chat_id.contains(search)
+            | models.SpamRule.client_name.contains(search)
+        )
+    return query.all()
 
 
 def get_spam_rule(db: Session, rule_id: int, user_id: int):

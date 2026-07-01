@@ -22,6 +22,7 @@ import {
   Video,
   Calendar,
   Filter,
+  Search,
 } from "lucide-react";
 import "./reviews.css";
 
@@ -33,9 +34,25 @@ const getPaginationRange = (currentPage: number, totalPages: number) => {
     if (currentPage <= 4) {
       pages.push(1, 2, 3, 4, 5, "...", totalPages);
     } else if (currentPage >= totalPages - 3) {
-      pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "...",
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     } else {
-      pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      pages.push(
+        1,
+        "...",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "...",
+        totalPages,
+      );
     }
   }
   return pages;
@@ -54,6 +71,7 @@ export default function ReviewsPage() {
   type TriFilter = "all" | "yes" | "no";
 
   const [statusFilter, setStatusFilter] = useState<ReviewFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [starsFilter, setStarsFilter] = useState<number[]>([]);
   const [productFilter, setProductFilter] = useState<string>("all");
   const [withCommentFilter, setWithCommentFilter] = useState<TriFilter>("all");
@@ -280,6 +298,16 @@ export default function ReviewsPage() {
     const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null;
 
     return allReviews.filter((review) => {
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        const reviewId = String(
+          review.wb_review_id || review.id || "",
+        ).toLowerCase();
+        const userName = String(review.userName || "").toLowerCase();
+        if (!reviewId.includes(query) && !userName.includes(query)) {
+          return false;
+        }
+      }
       const resolvedProductName =
         productsByNmId[String(review.nmId || "")]?.name || review.productName;
       const normalizedStatus = getNormalizedStatus(
@@ -322,6 +350,7 @@ export default function ReviewsPage() {
     });
   }, [
     allReviews,
+    searchQuery,
     statusFilter,
     starsFilter,
     productFilter,
@@ -408,6 +437,7 @@ export default function ReviewsPage() {
     setEditableFilter("all");
     setDateFrom("");
     setDateTo("");
+    setSearchQuery("");
     setCurrentPage(1);
   };
 
@@ -564,277 +594,109 @@ export default function ReviewsPage() {
               {isSyncing ? t("reviews.syncing") : t("reviews.syncReviews")}
             </Button>
           </div>
-          <div className="relative shrink-0">
-            <Button
-              variant="outline"
-              onClick={() => setIsFilterMenuOpen(true)}
-              className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 active:scale-98 transition-all shrink-0 cursor-pointer animate-fade-in"
-            >
-              <Filter size={15} className="text-indigo-600" />
-              <span>{t("reviews.filters")}</span>
-              {activeFiltersCount > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] font-black text-white shadow-sm shadow-indigo-200">
-                  {activeFiltersCount}
-                </span>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
+            {/* Search Bar */}
+            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder={t("reviews.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full h-9 pl-9 pr-8 rounded-xl border border-slate-200 bg-white text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold text-slate-800"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
               )}
-            </Button>
+            </div>
 
-            {/* Custom high-performance sliding drawer */}
-            {isFilterMenuOpen && (
-              <>
-                <div
-                  onClick={() => setIsFilterMenuOpen(false)}
-                  className="reviews-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
-                />
-                <div className="reviews-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]">
-                  {/* Sticky Header */}
-                  <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-                    <h2 className="text-xl font-black text-slate-900">
-                      {t("reviews.filters")}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterMenuOpen(false)}
-                      className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title={t("reviews.closeFilters")}
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
+            <div className="relative shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => setIsFilterMenuOpen(true)}
+                className="h-9 px-3.5 rounded-xl text-sm font-bold inline-flex items-center gap-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 active:scale-98 transition-all shrink-0 cursor-pointer animate-fade-in"
+              >
+                <Filter size={15} className="text-indigo-600" />
+                <span>{t("reviews.filters")}</span>
+                {activeFiltersCount > 0 && (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[11px] font-black text-white shadow-sm shadow-indigo-200">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </Button>
 
-                  {/* Scrollable Body */}
-                  <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
-                    {/* Status of Review */}
-                    <div className="mb-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1 rounded bg-emerald-50 text-emerald-600">
-                          <MessageSquare size={16} />
-                        </div>
-                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                          {t("reviews.filterStatus")}
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={statusFilter}
-                          onChange={(e) =>
-                            handleStatusFilterChange(
-                              e.target.value as ReviewFilter,
-                            )
-                          }
-                          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
-                        >
-                          {(
-                            [
-                              "all",
-                              "none",
-                              "fetched",
-                              "auto",
-                              "manually",
-                            ] as const
-                          ).map((f) => (
-                            <option key={f} value={f}>
-                              {getFilterText(f)}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg
-                            className="h-4 w-4 fill-current"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                          </svg>
-                        </div>
-                      </div>
+              {/* Custom high-performance sliding drawer */}
+              {isFilterMenuOpen && (
+                <>
+                  <div
+                    onClick={() => setIsFilterMenuOpen(false)}
+                    className="reviews-filter-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40"
+                  />
+                  <div className="reviews-filter-drawer fixed top-0 right-0 bottom-0 w-full max-w-[480px] bg-white z-50 flex flex-col shadow-2xl overflow-hidden [color-scheme:light]">
+                    {/* Sticky Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
+                      <h2 className="text-xl font-black text-slate-900">
+                        {t("reviews.filters")}
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterMenuOpen(false)}
+                        className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                        title={t("reviews.closeFilters")}
+                      >
+                        <X size={18} />
+                      </button>
                     </div>
 
-                    {/* Score */}
-                    <div className="mb-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1 rounded bg-amber-50 text-amber-500">
-                          <Star size={16} fill="currentColor" />
-                        </div>
-                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                          {t("reviews.filterStars")}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 bg-slate-50/50 border border-slate-100 p-1.5 rounded-xl">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setStarsFilter([]);
-                            setCurrentPage(1);
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            starsFilter.length === 0
-                              ? "bg-slate-200 text-slate-800 shadow-sm"
-                              : "bg-white text-slate-600 hover:bg-slate-100/80 hover:text-slate-800 border border-slate-200/60"
-                          }`}
-                        >
-                          {t("reviews.all")}
-                        </button>
-                        {[1, 2, 3, 4, 5].map((star) => {
-                          const isChecked = starsFilter.includes(star);
-                          return (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => toggleStarFilter(star)}
-                              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                isChecked
-                                  ? "bg-indigo-50 border border-indigo-600 text-indigo-700 shadow-sm"
-                                  : "bg-white border border-slate-200/60 text-slate-600 hover:bg-slate-100/80 hover:text-slate-800"
-                              }`}
-                            >
-                              <Star
-                                size={12}
-                                className={
-                                  isChecked
-                                    ? "text-amber-500 fill-amber-500"
-                                    : "text-amber-400 fill-amber-400"
-                                }
-                              />
-                              <span>{star}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Product */}
-                    <div className="mb-5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1 rounded bg-indigo-50 text-indigo-600">
-                          <ShoppingBag size={16} />
-                        </div>
-                        <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                          {t("reviews.filterProduct")}
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={productFilter}
-                          onChange={(e) => {
-                            setProductFilter(e.target.value);
-                            setCurrentPage(1);
-                          }}
-                          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
-                        >
-                          <option value="all">{t("reviews.all")}</option>
-                          {productOptions.map((product) => (
-                            <option key={product} value={product}>
-                              {product}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <svg
-                            className="h-4 w-4 fill-current"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tri-state row 1 */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-indigo-50 text-indigo-600">
-                            <MessageSquare size={14} />
-                          </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
-                            {t("reviews.filterWithComment")}
-                          </span>
-                        </div>
-                        <div className="relative">
-                          <select
-                            value={withCommentFilter}
-                            onChange={(e) => {
-                              setWithCommentFilter(e.target.value as TriFilter);
-                              setCurrentPage(1);
-                            }}
-                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
-                          >
-                            <option value="all">{t("reviews.all")}</option>
-                            <option value="yes">{t("reviews.yes")}</option>
-                            <option value="no">{t("reviews.no")}</option>
-                          </select>
-                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg
-                              className="h-3 w-3 fill-current"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-sky-50 text-sky-600">
-                            <Reply size={14} className="scale-x-[-1]" />
-                          </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
-                            {t("reviews.filterWithAnswer")}
-                          </span>
-                        </div>
-                        <div className="relative">
-                          <select
-                            value={withAnswerFilter}
-                            onChange={(e) => {
-                              setWithAnswerFilter(e.target.value as TriFilter);
-                              setCurrentPage(1);
-                            }}
-                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
-                          >
-                            <option value="all">{t("reviews.all")}</option>
-                            <option value="yes">{t("reviews.yes")}</option>
-                            <option value="no">{t("reviews.no")}</option>
-                          </select>
-                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg
-                              className="h-3 w-3 fill-current"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tri-state row 2 */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
+                    {/* Scrollable Body */}
+                    <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                      {/* Status of Review */}
+                      <div className="mb-5">
+                        <div className="flex items-center gap-2 mb-2">
                           <div className="p-1 rounded bg-emerald-50 text-emerald-600">
-                            <Image size={14} />
+                            <MessageSquare size={16} />
                           </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
-                            {t("reviews.filterWithPhoto")}
+                          <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                            {t("reviews.filterStatus")}
                           </span>
                         </div>
                         <div className="relative">
                           <select
-                            value={withPhotoFilter}
-                            onChange={(e) => {
-                              setWithPhotoFilter(e.target.value as TriFilter);
-                              setCurrentPage(1);
-                            }}
-                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            value={statusFilter}
+                            onChange={(e) =>
+                              handleStatusFilterChange(
+                                e.target.value as ReviewFilter,
+                              )
+                            }
+                            className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
                           >
-                            <option value="all">{t("reviews.all")}</option>
-                            <option value="yes">{t("reviews.yes")}</option>
-                            <option value="no">{t("reviews.no")}</option>
+                            {(
+                              [
+                                "all",
+                                "none",
+                                "fetched",
+                                "auto",
+                                "manually",
+                              ] as const
+                            ).map((f) => (
+                              <option key={f} value={f}>
+                                {getFilterText(f)}
+                              </option>
+                            ))}
                           </select>
-                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                             <svg
-                              className="h-3 w-3 fill-current"
+                              className="h-4 w-4 fill-current"
                               viewBox="0 0 20 20"
                             >
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -843,179 +705,378 @@ export default function ReviewsPage() {
                         </div>
                       </div>
 
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-indigo-50 text-indigo-600">
-                            <Video size={14} />
+                      {/* Score */}
+                      <div className="mb-5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="p-1 rounded bg-amber-50 text-amber-500">
+                            <Star size={16} fill="currentColor" />
                           </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
-                            {t("reviews.filterWithVideo")}
+                          <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                            {t("reviews.filterStars")}
                           </span>
                         </div>
-                        <div className="relative">
-                          <select
-                            value={withVideoFilter}
-                            onChange={(e) => {
-                              setWithVideoFilter(e.target.value as TriFilter);
+                        <div className="flex flex-wrap gap-1.5 bg-slate-50/50 border border-slate-100 p-1.5 rounded-xl">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStarsFilter([]);
                               setCurrentPage(1);
                             }}
-                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              starsFilter.length === 0
+                                ? "bg-slate-200 text-slate-800 shadow-sm"
+                                : "bg-white text-slate-600 hover:bg-slate-100/80 hover:text-slate-800 border border-slate-200/60"
+                            }`}
                           >
-                            <option value="all">{t("reviews.all")}</option>
-                            <option value="yes">{t("reviews.yes")}</option>
-                            <option value="no">{t("reviews.no")}</option>
-                          </select>
-                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg
-                              className="h-3 w-3 fill-current"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tri-state row 3 */}
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-indigo-50 text-indigo-600">
-                            <Pencil size={14} />
-                          </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
-                            {t("reviews.filterEditable")}
-                          </span>
-                        </div>
-                        <div className="relative">
-                          <select
-                            value={editableFilter}
-                            onChange={(e) => {
-                              setEditableFilter(e.target.value as TriFilter);
-                              setCurrentPage(1);
-                            }}
-                            className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
-                          >
-                            <option value="all">{t("reviews.all")}</option>
-                            <option value="yes">{t("reviews.yes")}</option>
-                            <option value="no">{t("reviews.no")}</option>
-                          </select>
-                          <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg
-                              className="h-3 w-3 fill-current"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1 rounded bg-sky-50 text-sky-600">
-                            <Calendar size={14} />
-                          </div>
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
-                            {t("reviews.filterDateFrom").replace(" с", "")}
-                          </span>
-                        </div>
-                        <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                          <div className="relative flex-1 min-w-0">
-                            <input
-                              type={dateFrom ? "date" : "text"}
-                              placeholder="От"
-                              onFocus={(e) => (e.target.type = "date")}
-                              onBlur={(e) => {
-                                if (!e.target.value) e.target.type = "text";
-                              }}
-                              value={dateFrom}
-                              onChange={(e) => {
-                                setDateFrom(e.target.value);
-                                setCurrentPage(1);
-                              }}
-                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
-                            />
-                          </div>
-                          <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
-                          <div className="relative flex-1 min-w-0">
-                            <input
-                              type={dateTo ? "date" : "text"}
-                              placeholder="до"
-                              onFocus={(e) => (e.target.type = "date")}
-                              onBlur={(e) => {
-                                if (!e.target.value) e.target.type = "text";
-                              }}
-                              value={dateTo}
-                              onChange={(e) => {
-                                setDateTo(e.target.value);
-                                setCurrentPage(1);
-                              }}
-                              className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Active tags inside drawer body (bottom) */}
-                    {activeTags.length > 0 && (
-                      <div className="mt-6 pt-6 border-t border-slate-100">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                            {t("reviews.activeFilters")}
-                          </span>
-                          <span className="inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-[10px] font-black text-indigo-600 border border-indigo-100">
-                            {activeTags.length}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {activeTags.map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
-                            >
-                              <span>{tag.label}</span>
+                            {t("reviews.all")}
+                          </button>
+                          {[1, 2, 3, 4, 5].map((star) => {
+                            const isChecked = starsFilter.includes(star);
+                            return (
                               <button
+                                key={star}
                                 type="button"
-                                onClick={tag.onClear}
-                                className="p-0.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                                title="Remove"
+                                onClick={() => toggleStarFilter(star)}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                  isChecked
+                                    ? "bg-indigo-50 border border-indigo-600 text-indigo-700 shadow-sm"
+                                    : "bg-white border border-slate-200/60 text-slate-600 hover:bg-slate-100/80 hover:text-slate-800"
+                                }`}
                               >
-                                <X size={12} />
+                                <Star
+                                  size={12}
+                                  className={
+                                    isChecked
+                                      ? "text-amber-500 fill-amber-500"
+                                      : "text-amber-400 fill-amber-400"
+                                  }
+                                />
+                                <span>{star}</span>
                               </button>
-                            </span>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Sticky Footer */}
-                  <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={resetFilters}
-                      className="flex-1 flex items-center justify-center gap-1.5 h-11 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-slate-800 active:scale-98 transition-all text-xs font-bold cursor-pointer bg-white"
-                    >
-                      <RotateCw size={14} className="text-slate-500" />
-                      <span>{t("reviews.resetFilters")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterMenuOpen(false)}
-                      className="flex-[2] flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-bold shadow-md shadow-indigo-100 active:scale-98 transition-all text-xs cursor-pointer"
-                    >
-                      <span>{t("reviews.showReviewsBtn")}</span>
-                      <span className="bg-indigo-500/80 px-2 py-0.5 rounded-full text-[10px] font-black text-white">
-                        {filteredReviews.length}
-                      </span>
-                    </button>
+                      {/* Product */}
+                      <div className="mb-5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="p-1 rounded bg-indigo-50 text-indigo-600">
+                            <ShoppingBag size={16} />
+                          </div>
+                          <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                            {t("reviews.filterProduct")}
+                          </span>
+                        </div>
+                        <div className="relative">
+                          <select
+                            value={productFilter}
+                            onChange={(e) => {
+                              setProductFilter(e.target.value);
+                              setCurrentPage(1);
+                            }}
+                            className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-10 font-semibold text-slate-800"
+                          >
+                            <option value="all">{t("reviews.all")}</option>
+                            {productOptions.map((product) => (
+                              <option key={product} value={product}>
+                                {product}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg
+                              className="h-4 w-4 fill-current"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tri-state row 1 */}
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-indigo-50 text-indigo-600">
+                              <MessageSquare size={14} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                              {t("reviews.filterWithComment")}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={withCommentFilter}
+                              onChange={(e) => {
+                                setWithCommentFilter(
+                                  e.target.value as TriFilter,
+                                );
+                                setCurrentPage(1);
+                              }}
+                              className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            >
+                              <option value="all">{t("reviews.all")}</option>
+                              <option value="yes">{t("reviews.yes")}</option>
+                              <option value="no">{t("reviews.no")}</option>
+                            </select>
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                              <svg
+                                className="h-3 w-3 fill-current"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-sky-50 text-sky-600">
+                              <Reply size={14} className="scale-x-[-1]" />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                              {t("reviews.filterWithAnswer")}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={withAnswerFilter}
+                              onChange={(e) => {
+                                setWithAnswerFilter(
+                                  e.target.value as TriFilter,
+                                );
+                                setCurrentPage(1);
+                              }}
+                              className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            >
+                              <option value="all">{t("reviews.all")}</option>
+                              <option value="yes">{t("reviews.yes")}</option>
+                              <option value="no">{t("reviews.no")}</option>
+                            </select>
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                              <svg
+                                className="h-3 w-3 fill-current"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tri-state row 2 */}
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-emerald-50 text-emerald-600">
+                              <Image size={14} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                              {t("reviews.filterWithPhoto")}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={withPhotoFilter}
+                              onChange={(e) => {
+                                setWithPhotoFilter(e.target.value as TriFilter);
+                                setCurrentPage(1);
+                              }}
+                              className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            >
+                              <option value="all">{t("reviews.all")}</option>
+                              <option value="yes">{t("reviews.yes")}</option>
+                              <option value="no">{t("reviews.no")}</option>
+                            </select>
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                              <svg
+                                className="h-3 w-3 fill-current"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-indigo-50 text-indigo-600">
+                              <Video size={14} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                              {t("reviews.filterWithVideo")}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={withVideoFilter}
+                              onChange={(e) => {
+                                setWithVideoFilter(e.target.value as TriFilter);
+                                setCurrentPage(1);
+                              }}
+                              className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            >
+                              <option value="all">{t("reviews.all")}</option>
+                              <option value="yes">{t("reviews.yes")}</option>
+                              <option value="no">{t("reviews.no")}</option>
+                            </select>
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                              <svg
+                                className="h-3 w-3 fill-current"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tri-state row 3 */}
+                      <div className="grid grid-cols-2 gap-3 mb-6">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-indigo-50 text-indigo-600">
+                              <Pencil size={14} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider truncate">
+                              {t("reviews.filterEditable")}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={editableFilter}
+                              onChange={(e) => {
+                                setEditableFilter(e.target.value as TriFilter);
+                                setCurrentPage(1);
+                              }}
+                              className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer pr-8 font-semibold text-slate-800"
+                            >
+                              <option value="all">{t("reviews.all")}</option>
+                              <option value="yes">{t("reviews.yes")}</option>
+                              <option value="no">{t("reviews.no")}</option>
+                            </select>
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                              <svg
+                                className="h-3 w-3 fill-current"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1 rounded bg-sky-50 text-sky-600">
+                              <Calendar size={14} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
+                              {t("reviews.filterDateFrom").replace(" с", "")}
+                            </span>
+                          </div>
+                          <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                            <div className="relative flex-1 min-w-0">
+                              <input
+                                type={dateFrom ? "date" : "text"}
+                                placeholder="От"
+                                onFocus={(e) => (e.target.type = "date")}
+                                onBlur={(e) => {
+                                  if (!e.target.value) e.target.type = "text";
+                                }}
+                                value={dateFrom}
+                                onChange={(e) => {
+                                  setDateFrom(e.target.value);
+                                  setCurrentPage(1);
+                                }}
+                                className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                              />
+                            </div>
+                            <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
+                            <div className="relative flex-1 min-w-0">
+                              <input
+                                type={dateTo ? "date" : "text"}
+                                placeholder="до"
+                                onFocus={(e) => (e.target.type = "date")}
+                                onBlur={(e) => {
+                                  if (!e.target.value) e.target.type = "text";
+                                }}
+                                value={dateTo}
+                                onChange={(e) => {
+                                  setDateTo(e.target.value);
+                                  setCurrentPage(1);
+                                }}
+                                className="w-full min-w-0 h-10 px-3 py-1.5 text-xs outline-none bg-transparent font-semibold text-slate-800 cursor-pointer [color-scheme:light] border-0 focus:ring-0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Active tags inside drawer body (bottom) */}
+                      {activeTags.length > 0 && (
+                        <div className="mt-6 pt-6 border-t border-slate-100">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                              {t("reviews.activeFilters")}
+                            </span>
+                            <span className="inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-[10px] font-black text-indigo-600 border border-indigo-100">
+                              {activeTags.length}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {activeTags.map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                              >
+                                <span>{tag.label}</span>
+                                <button
+                                  type="button"
+                                  onClick={tag.onClear}
+                                  className="p-0.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                  title="Remove"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Sticky Footer */}
+                    <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="flex-1 flex items-center justify-center gap-1.5 h-11 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-slate-800 active:scale-98 transition-all text-xs font-bold cursor-pointer bg-white"
+                      >
+                        <RotateCw size={14} className="text-slate-500" />
+                        <span>{t("reviews.resetFilters")}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterMenuOpen(false)}
+                        className="flex-[2] flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-bold shadow-md shadow-indigo-100 active:scale-98 transition-all text-xs cursor-pointer"
+                      >
+                        <span>{t("reviews.showReviewsBtn")}</span>
+                        <span className="bg-indigo-500/80 px-2 py-0.5 rounded-full text-[10px] font-black text-white">
+                          {filteredReviews.length}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1055,7 +1116,7 @@ export default function ReviewsPage() {
                           <div
                             className={`hidden sm:block w-2.5 h-2.5 mt-2 rounded-full mr-3 shrink-0 ${getStatusDotClass(review.status, review.autoAnswerText)} shadow-sm`}
                           />
-                          
+
                           {/* Image and Title column on mobile, row on desktop */}
                           <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full">
                             {productPhoto && (
@@ -1220,35 +1281,37 @@ export default function ReviewsPage() {
                               variant="outline"
                               onClick={() => handleGenerateReply(review.id)}
                               disabled={
-                                  !isReviewEditable ||
-                                  isReplying[review.id] ||
-                                  isGeneratingReply[review.id]
+                                !isReviewEditable ||
+                                isReplying[review.id] ||
+                                isGeneratingReply[review.id]
                               }
                               className="h-9 w-9 rounded-lg cursor-pointer p-0"
                               aria-label={t("reviews.generateReply")}
                               title={t("reviews.generateReply")}
                             >
-                              {isGeneratingReply[review.id]
-                                ? <Loader2 className="h-4 w-4 animate-spin" />
-                                : <WandSparkles className="h-4 w-4" />}
+                              {isGeneratingReply[review.id] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <WandSparkles className="h-4 w-4" />
+                              )}
                             </Button>
                             <Button
                               onClick={() => handleReply(review.id)}
                               disabled={
-                                  !(replyText[review.id] || "").trim() ||
-                                  !isReviewEditable ||
-                                  isReplying[review.id] ||
-                                  isGeneratingReply[review.id]
+                                !(replyText[review.id] || "").trim() ||
+                                !isReviewEditable ||
+                                isReplying[review.id] ||
+                                isGeneratingReply[review.id]
                               }
                               className="h-9 w-9 rounded-lg font-bold cursor-pointer p-0"
                               aria-label={t("reviews.sendReply")}
                               title={t("reviews.sendReply")}
                             >
-                                {isReplying[review.id] ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <SendHorizontal className="h-4 w-4" />
-                                )}
+                              {isReplying[review.id] ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <SendHorizontal className="h-4 w-4" />
+                              )}
                             </Button>
                             {isEditingAnswer[review.id] && (
                               <Button

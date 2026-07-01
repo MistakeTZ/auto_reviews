@@ -289,6 +289,7 @@ export const en = {
   },
   reviews: {
     title: 'Reviews',
+    searchPlaceholder: 'Search by Chat ID or customer name...',
     filters: 'Filters',
     filterStatus: 'Status',
     filterStars: 'Stars',
@@ -334,6 +335,7 @@ export const en = {
   },
   questions: {
     title: 'Questions',
+    searchPlaceholder: 'Search by Chat ID...',
     filters: 'Filters',
     filterStatus: 'Status',
     filterProduct: 'Product',
@@ -609,6 +611,7 @@ export const en = {
   },
   spam: {
     title: 'Periodic Chat Distribution',
+    searchPlaceholder: 'Search by Chat ID or client name...',
     about: 'Set up automatic message distribution to your Wildberries chats based on specific conditions and schedules.',
     stats: 'Statistics',
     activeRules: 'Active Rules',
