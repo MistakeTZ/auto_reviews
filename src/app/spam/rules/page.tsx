@@ -1473,17 +1473,19 @@ export default function SpamRulesPage() {
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
                           {rule.chats && rule.chats.length > 1 ? (
-                            <h3 className="text-sm font-black text-slate-800 bg-purple-50 border border-purple-200/50 px-2.5 py-0.5 rounded-lg shadow-sm">
-                              🚀 {t("spam.rulesTab") || "Rule"} #{rule.id} (
-                              {rule.chats.length}{" "}
-                              {t("spam.selectedChats") || "chats"})
+                            <h3 className="text-xs font-semibold text-slate-800 bg-purple-50 border border-purple-200/50 px-2 py-0.5 rounded-lg shadow-xs flex items-center gap-1">
+                              <MessageSquare size={13} className="text-purple-600 shrink-0" />
+                              <span>
+                                {t("spam.rulesTab") || "Rule"} #{rule.id} ({rule.chats.length}{" "}
+                                {t("spam.selectedChats") || "chats"})
+                              </span>
                             </h3>
                           ) : (
                             <h3
                               title={
                                 rule.chats?.[0]?.chat_id || rule.chat_id || ""
                               }
-                              className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm hover:bg-purple-50/50 hover:border-purple-200 transition-colors"
+                              className="font-mono text-xs font-semibold text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-xs hover:bg-purple-50/50 hover:border-purple-200 transition-colors"
                             >
                               <a
                                 href={`https://seller.wildberries.ru/chat-with-clients?chatId=${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "")}`}
@@ -1496,7 +1498,7 @@ export default function SpamRulesPage() {
                                   rule.chat_id ||
                                   ""
                                 ).replace(/^1:/, "").length > 18
-                                  ? `${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "").slice(0, 10)}...${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "").slice(-5)}`
+                                  ? `${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "").slice(0, 8)}...${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "").slice(-4)}`
                                   : (
                                       rule.chats?.[0]?.chat_id ||
                                       rule.chat_id ||
@@ -1506,7 +1508,7 @@ export default function SpamRulesPage() {
                             </h3>
                           )}
                           <span
-                            className={`px-2.5 py-1 text-sm font-bold rounded-lg border ${
+                            className={`px-2 py-0.5 text-xs font-semibold rounded-lg border ${
                               rule.is_active
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : "bg-slate-50 text-slate-500 border-slate-200"
@@ -1518,9 +1520,9 @@ export default function SpamRulesPage() {
                           </span>
                         </div>
 
-                        <div className="text-base text-slate-700 font-semibold flex items-center gap-1.5">
+                        <div className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
                           <span>{t("spam.clientName")}:</span>
-                          <span className="text-purple-700 font-extrabold">
+                          <span className="text-slate-800 font-bold">
                             {rule.chats && rule.chats.length > 1
                               ? `${rule.chats
                                   .map((c) => c.client_name || t("spam.buyer"))
@@ -1535,8 +1537,8 @@ export default function SpamRulesPage() {
                         </div>
 
                         <div className="text-sm text-slate-500 font-medium">
-                          {t("spam.frequency")}:{" "}
-                          <span className="font-bold text-slate-700">
+                          <span>{t("spam.frequency")}:</span>{" "}
+                          <span className="font-bold text-slate-800">
                             {rule.frequency_type === "days"
                               ? `${t("spam.every")} ${rule.interval_days} ${t("spam.daysShort")} ${t("spam.atHour")} ${rule.send_hours}:00`
                               : `${rule.send_hours.split(",").length} ${t("spam.timesDaily")}`}
@@ -1544,8 +1546,8 @@ export default function SpamRulesPage() {
                         </div>
 
                         {rule.last_sent_at && (
-                          <div className="text-xs text-slate-400 font-semibold flex items-center gap-1">
-                            <Clock size={12} />
+                          <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                            <Clock size={13} className="shrink-0" />
                             <span>
                               {t("spam.lastSentAt")}{" "}
                               {formatDateTime(rule.last_sent_at)}
@@ -1555,7 +1557,7 @@ export default function SpamRulesPage() {
 
                         {/* Associated templates preview */}
                         <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                             {t("spam.linkedTemplates")}
                           </span>
                           <div className="flex flex-wrap gap-1.5">
@@ -1594,14 +1596,14 @@ export default function SpamRulesPage() {
 
                         {/* Associated chats management */}
                         <div className="pt-3 border-t border-slate-100 mt-3 space-y-2">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between gap-2">
                             <button
                               type="button"
                               onClick={() => toggleChatsExpanded(rule.id)}
-                              className="text-xs font-bold text-slate-400 hover:text-slate-655 uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                              className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wider flex items-center gap-1 cursor-pointer select-none"
                             >
                               <span>
-                                💬 {t("spam.linkedChats")} (
+                                {t("spam.linkedChats")} (
                                 {rule.chats?.length || 0})
                               </span>
                               <span className="text-[9px]">
@@ -1611,10 +1613,10 @@ export default function SpamRulesPage() {
                             <button
                               type="button"
                               onClick={() => openAddChatsModal(rule)}
-                              className="text-xs font-bold text-purple-650 hover:text-purple-750 flex items-center gap-1 cursor-pointer"
+                              className="text-[10px] font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 cursor-pointer select-none border border-purple-100 hover:border-purple-200 bg-purple-50/30 px-2 py-0.5 rounded-lg shadow-xs transition-all active:scale-95 shrink-0"
                             >
                               <Plus size={12} />
-                              <span>{t("spam.addChatsBtn")}</span>
+                              <span>{t("spam.addChatsBtn").replace(/ чаты| Chats/gi, "")}</span>
                             </button>
                           </div>
 
@@ -1623,48 +1625,48 @@ export default function SpamRulesPage() {
                               {rule.chats?.map((c) => (
                                 <div
                                   key={c.id}
-                                  className="flex items-center justify-between gap-4 p-2 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100/50 transition-colors"
+                                  className="flex items-center justify-between gap-2 p-1.5 sm:p-2 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100/50 transition-colors"
                                 >
-                                  <div className="flex flex-col min-w-0">
-                                    <div className="flex items-center gap-2">
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 min-w-0">
                                       <a
                                         href={`https://seller.wildberries.ru/chat-with-clients?chatId=${c.chat_id.replace(/^1:/, "")}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-xs font-mono font-bold text-slate-700 hover:text-purple-600 hover:underline transition-colors block truncate max-w-[150px] sm:max-w-xs"
+                                        className="text-xs font-mono font-bold text-slate-700 hover:text-purple-600 hover:underline transition-colors block truncate max-w-[80px] sm:max-w-xs shrink-0"
                                       >
                                         {c.chat_id.replace(/^1:/, "")}
                                       </a>
-                                      <span className="text-[10px] text-slate-400 font-semibold">
+                                      <span className="text-[10px] text-slate-400 font-semibold shrink-0">
                                         •
                                       </span>
-                                      <span className="text-xs text-slate-800 font-bold truncate max-w-[100px] sm:max-w-xs">
+                                      <span className="text-xs text-slate-500 font-semibold truncate max-w-[70px] sm:max-w-xs">
                                         {c.client_name || t("spam.buyer")}
                                       </span>
                                     </div>
                                     {c.last_sent_at && (
-                                      <span className="text-[10px] text-slate-400 font-semibold">
+                                      <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium mt-0.5">
                                         {t("spam.lastSentAt")}:{" "}
                                         {formatDateTime(c.last_sent_at)}
                                       </span>
                                     )}
                                   </div>
 
-                                  <div className="flex items-center gap-3 shrink-0">
+                                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                                     {/* Toggle chat activity */}
                                     <button
                                       type="button"
                                       onClick={() =>
                                         toggleRuleChatActive(rule.id, c.chat_id)
                                       }
-                                      className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-205 ease-in-out outline-none ${
+                                      className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out outline-none ${
                                         c.is_active
                                           ? "bg-emerald-500"
                                           : "bg-slate-300"
                                       }`}
                                     >
                                       <span
-                                        className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm ring-0 transition duration-205 ease-in-out ${
+                                        className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
                                           c.is_active
                                             ? "translate-x-3"
                                             : "translate-x-0"
@@ -1678,7 +1680,7 @@ export default function SpamRulesPage() {
                                       onClick={() =>
                                         deleteRuleChat(rule.id, c.chat_id)
                                       }
-                                      className="p-1 rounded-md text-slate-450 hover:text-rose-600 hover:bg-rose-50/50 transition-all cursor-pointer"
+                                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50/50 transition-all cursor-pointer"
                                       title={t("common.delete")}
                                     >
                                       <Trash2 size={12} />
@@ -1698,8 +1700,8 @@ export default function SpamRulesPage() {
                     </div>
 
                     {/* Actions and toggle on right side */}
-                    <div className="sm:pl-6 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 flex flex-row sm:flex-col gap-2 min-w-[150px] items-center sm:items-stretch">
-                      <div className="flex items-center justify-between gap-2 px-1 mb-1 w-full sm:w-auto select-none">
+                    <div className="pt-4 sm:pt-0 sm:pl-6 border-t sm:border-t-0 sm:border-l border-slate-100 flex flex-col gap-3 min-w-[140px] w-full sm:w-auto justify-between shrink-0">
+                      <div className="flex items-center justify-between sm:justify-start gap-4 px-1 select-none">
                         <span
                           className={`text-xs font-bold ${rule.is_active ? "text-emerald-600" : "text-slate-400"}`}
                         >
@@ -1722,42 +1724,44 @@ export default function SpamRulesPage() {
                         </button>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          startEditRule(rule);
-                          loadRecentChats();
-                        }}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 size={14} />
-                        <span className="hidden sm:inline">
-                          {t("rules.edit")}
-                        </span>
-                      </button>
+                      <div className="flex items-center gap-2 w-full sm:flex-col">
+                        <button
+                          onClick={() => {
+                            startEditRule(rule);
+                            loadRecentChats();
+                          }}
+                          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold px-3 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer min-h-[36px] w-full"
+                          title="Edit"
+                        >
+                          <Edit2 size={13} className="shrink-0" />
+                          <span className="hidden sm:inline">
+                            {t("rules.edit")}
+                          </span>
+                        </button>
 
-                      <button
-                        onClick={() => fetchRuleHistory(rule.id)}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-600 border border-indigo-100 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
-                        title="View sent log"
-                      >
-                        <Eye size={14} />
-                        <span className="hidden sm:inline">
-                          {t("spam.log")}
-                        </span>
-                      </button>
+                        <button
+                          onClick={() => fetchRuleHistory(rule.id)}
+                          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-600 border border-indigo-100 font-semibold px-3 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer min-h-[36px] w-full"
+                          title="View sent log"
+                        >
+                          <Eye size={13} className="shrink-0" />
+                          <span className="hidden sm:inline">
+                            {t("spam.log")}
+                          </span>
+                        </button>
 
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDeleteRule(rule.id)}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
-                        title="Delete"
-                      >
-                        <Trash2 size={14} />
-                        <span className="hidden sm:inline">
-                          {t("common.delete")}
-                        </span>
-                      </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => handleDeleteRule(rule.id)}
+                          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-3 py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs cursor-pointer min-h-[36px] w-full"
+                          title="Delete"
+                        >
+                          <Trash2 size={13} className="shrink-0" />
+                          <span className="hidden sm:inline">
+                            {t("common.delete")}
+                          </span>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
 
@@ -1918,6 +1922,11 @@ export default function SpamRulesPage() {
                               <p className="text-[10px] font-mono font-semibold text-slate-400 mt-1">
                                 {chat.chatID.replace(/^1:/, "")}
                               </p>
+                              {chat.lastMessageText && (
+                                <p className="text-[11px] text-slate-500 mt-1.5 line-clamp-1 italic">
+                                  &ldquo;{chat.lastMessageText}&rdquo;
+                                </p>
+                              )}
                             </div>
                             <div
                               className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
