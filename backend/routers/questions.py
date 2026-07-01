@@ -117,7 +117,6 @@ async def _fetch_questions_from_wb(
 @router.get("/", response_model=List[QuestionOut])
 def read_questions(
     include_answered: bool = True,
-    search: Optional[str] = None,
     db: Session = Depends(database.get_db),
     current_user: User = Depends(check_active_subscription),
 ):
@@ -125,7 +124,6 @@ def read_questions(
         db,
         user_id=current_user.id,
         include_answered=include_answered,
-        search=search,
     )
     normalized = [
         _to_question_out_from_model(schemas.Question.model_validate(row))

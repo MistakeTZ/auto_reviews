@@ -335,7 +335,6 @@ export const en = {
   },
   questions: {
     title: 'Questions',
-    searchPlaceholder: 'Search by Chat ID...',
     filters: 'Filters',
     filterStatus: 'Status',
     filterProduct: 'Product',

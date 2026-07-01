@@ -335,7 +335,6 @@ export const ru = {
   },
   questions: {
     title: 'Вопросы',
-    searchPlaceholder: 'Поиск по Chat ID...',
     filters: 'Фильтры',
     filterStatus: 'Статус',
     filterProduct: 'Товар',

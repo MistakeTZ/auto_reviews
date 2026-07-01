@@ -253,7 +253,9 @@ def buy_service_subscription(db: Session, user_id: int, service_type: str):
                 days=PREMIUM_PLAN_DAYS
             )
         else:
-            db_user.respam_subscription_expires_at = now + timedelta(days=PREMIUM_PLAN_DAYS)
+            db_user.respam_subscription_expires_at = now + timedelta(
+                days=PREMIUM_PLAN_DAYS
+            )
         db_user.respam_tariff_type = "full"
 
     elif service_type == "both":
@@ -280,7 +282,9 @@ def buy_service_subscription(db: Session, user_id: int, service_type: str):
                 days=PREMIUM_PLAN_DAYS
             )
         else:
-            db_user.respam_subscription_expires_at = now + timedelta(days=PREMIUM_PLAN_DAYS)
+            db_user.respam_subscription_expires_at = now + timedelta(
+                days=PREMIUM_PLAN_DAYS
+            )
         db_user.respam_tariff_type = "full"
 
     db.commit()
@@ -351,7 +355,9 @@ def delete_rule(db: Session, rule_id: int, user_id: int):
     return False
 
 
-def get_reviews(db: Session, user_id: int, status: str = None, search: Optional[str] = None):
+def get_reviews(
+    db: Session, user_id: int, status: str = None, search: Optional[str] = None
+):
     def normalize_review_status(value: str | None):
         if value == "auto-answered":
             return "auto"
@@ -519,15 +525,13 @@ def update_review_status(
     return db_review
 
 
-def get_questions(db: Session, user_id: int, include_answered: bool = True, search: Optional[str] = None):
+def get_questions(db: Session, user_id: int, include_answered: bool = True):
     query = db.query(models.Question).filter(models.Question.user_id == user_id)
     if not include_answered:
         query = query.filter(
             (models.Question.answer_text.is_(None))
             | (models.Question.answer_text == "")
         )
-    if search:
-        query = query.filter(models.Question.wb_question_id.contains(search))
     return query.order_by(models.Question.id.desc()).all()
 
 
