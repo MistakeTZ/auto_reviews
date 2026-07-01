@@ -7,9 +7,18 @@ export interface SpamTemplate {
   rule_id: number | null;
 }
 
-export interface SpamRule {
+export interface SpamRuleChat {
   id: number;
   chat_id: string;
+  client_name: string | null;
+  reply_sign: string | null;
+  is_active: boolean;
+  last_sent_at: string | null;
+}
+
+export interface SpamRule {
+  id: number;
+  chat_id: string | null;
   client_name: string | null;
   reply_sign: string | null;
   frequency_type: string;
@@ -19,6 +28,7 @@ export interface SpamRule {
   is_active: boolean;
   last_sent_at: string | null;
   templates: SpamTemplate[];
+  chats: SpamRuleChat[];
 }
 
 export interface SpamSentMessage {

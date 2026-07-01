@@ -250,7 +250,7 @@ class SpamMessageTemplate(SpamMessageTemplateBase):
 
 
 class SpamRuleBase(BaseModel):
-    chat_id: str
+    chat_id: Optional[str] = None
     client_name: Optional[str] = None
     reply_sign: Optional[str] = None
     frequency_type: str = "hours"  # 'hours' or 'days'
@@ -259,6 +259,23 @@ class SpamRuleBase(BaseModel):
     spam_endlessly: bool = False
     is_active: bool = True
     last_sent_message_timestamp: int = 0
+
+
+class SpamRuleChatBase(BaseModel):
+    chat_id: str
+    client_name: Optional[str] = None
+    reply_sign: Optional[str] = None
+    is_active: bool = True
+    last_sent_message_timestamp: int = 0
+
+
+class SpamRuleChat(SpamRuleChatBase):
+    id: int
+    rule_id: int
+    last_sent_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
 
 
 class SpamRuleCreate(SpamRuleBase):
@@ -286,6 +303,10 @@ class ChatIdWithName(BaseModel):
     reply_sign: Optional[str] = None
 
 
+class AddChatsToRuleInput(BaseModel):
+    chats: List[ChatIdWithName]
+
+
 class SpamRulesBulkCreate(BaseModel):
     chats: List[ChatIdWithName]
     frequency_type: str = "hours"
@@ -303,6 +324,7 @@ class SpamRule(SpamRuleBase):
     last_sent_at: Optional[datetime] = None
     last_sent_message_timestamp: int = 0
     templates: List[SpamMessageTemplate] = []
+    chats: List[SpamRuleChat] = []
 
     class Config:
         from_attributes = True

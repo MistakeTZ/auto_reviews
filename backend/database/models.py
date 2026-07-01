@@ -250,6 +250,24 @@ class SpamRule(Base):
 
     owner = relationship("User")
     templates = relationship("SpamMessageTemplate", secondary="spam_rule_templates")
+    chats = relationship(
+        "SpamRuleChat", back_populates="rule", cascade="all, delete-orphan"
+    )
+
+
+class SpamRuleChat(Base):
+    __tablename__ = "spam_rule_chats"
+
+    id = Column(Integer, primary_key=True, index=True)
+    rule_id = Column(Integer, ForeignKey("spam_rules.id", ondelete="CASCADE"))
+    chat_id = Column(String, index=True)
+    client_name = Column(String, nullable=True)
+    reply_sign = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    last_sent_at = Column(DateTime(timezone=True), nullable=True)
+    last_sent_message_timestamp = Column(BigInteger, default=0)
+
+    rule = relationship("SpamRule", back_populates="chats")
 
 
 class SpamMessageTemplate(Base):

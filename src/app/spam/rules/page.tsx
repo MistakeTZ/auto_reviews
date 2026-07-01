@@ -75,6 +75,17 @@ export default function SpamRulesPage() {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [expandedRules, setExpandedRules] = useState<Record<number, boolean>>(
+    {},
+  );
+  const [showAddChatsModal, setShowAddChatsModal] = useState(false);
+  const [targetRuleToAddChats, setTargetRuleToAddChats] =
+    useState<SpamRule | null>(null);
+  const [selectedChatsToAdd, setSelectedChatsToAdd] = useState<
+    { chatID: string; clientName: string }[]
+  >([]);
+  const [chatsSearchQuery, setChatsSearchQuery] = useState("");
+
   const [recentChats, setRecentChats] = useState<
     { chatID: string; clientName: string; lastMessageText: string }[]
   >([]);
@@ -348,7 +359,7 @@ export default function SpamRulesPage() {
 
   const startEditRule = (rule: SpamRule) => {
     setEditingRuleId(rule.id);
-    setChatId(rule.chat_id);
+    setChatId(rule.chat_id || "");
     setClientName(rule.client_name || "");
     setSpamNotEndlessly(!rule.spam_endlessly);
     setRuleActive(rule.is_active);
@@ -471,6 +482,101 @@ export default function SpamRulesPage() {
     }
   };
 
+  const toggleChatsExpanded = (ruleId: number) => {
+    setExpandedRules((prev) => ({ ...prev, [ruleId]: !prev[ruleId] }));
+  };
+
+  const openAddChatsModal = (rule: SpamRule) => {
+    setTargetRuleToAddChats(rule);
+    setSelectedChatsToAdd([]);
+    setChatsSearchQuery("");
+    setShowAddChatsModal(true);
+    loadRecentChats();
+  };
+
+  const toggleRuleChatActive = async (ruleId: number, chatId: string) => {
+    try {
+      const res = await fetch(
+        `${API_URL}/chats/rules/${ruleId}/chats/${encodeURIComponent(chatId)}/toggle`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        },
+      );
+      if (res.ok) {
+        await loadRules();
+      } else {
+        alert("Error toggling chat activity");
+      }
+    } catch {
+      alert(t("auth.connectionError"));
+    }
+  };
+
+  const deleteRuleChat = async (ruleId: number, chatId: string) => {
+    if (
+      !confirm(
+        t("spam.confirmDeleteChat") ||
+          "Вы действительно хотите удалить этот чат из рассылки?",
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${API_URL}/chats/rules/${ruleId}/chats/${encodeURIComponent(chatId)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        },
+      );
+      if (res.ok) {
+        await loadRules();
+      } else {
+        alert("Error deleting chat from rule");
+      }
+    } catch {
+      alert(t("auth.connectionError"));
+    }
+  };
+
+  const handleAddChatsSubmit = async () => {
+    if (!targetRuleToAddChats) return;
+    try {
+      const res = await fetch(
+        `${API_URL}/chats/rules/${targetRuleToAddChats.id}/chats`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify({
+            chats: selectedChatsToAdd.map((c) => ({
+              chat_id: c.chatID,
+              client_name: c.clientName || null,
+            })),
+          }),
+        },
+      );
+      if (res.ok) {
+        setShowAddChatsModal(false);
+        setTargetRuleToAddChats(null);
+        setSelectedChatsToAdd([]);
+        await loadRules();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.detail || "Error adding chats to rule");
+      }
+    } catch {
+      alert(t("auth.connectionError"));
+    }
+  };
+
   const toggleGlobalTemplateSelection = (id: number) => {
     setSelectedGlobalTplIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -486,9 +592,23 @@ export default function SpamRulesPage() {
     .filter((rule) => {
       if (searchQuery.trim()) {
         const query = searchQuery.trim().toLowerCase();
-        const chatId = String(rule.chat_id || "").toLowerCase();
-        const clientName = String(rule.client_name || "").toLowerCase();
-        if (!chatId.includes(query) && !clientName.includes(query)) {
+        const mainChatId = String(rule.chat_id || "").toLowerCase();
+        const mainClientName = String(rule.client_name || "").toLowerCase();
+        if (mainChatId.includes(query) || mainClientName.includes(query)) {
+          return true;
+        }
+
+        const matchesChild = rule.chats?.some(
+          (c) =>
+            String(c.chat_id || "")
+              .toLowerCase()
+              .includes(query) ||
+            String(c.client_name || "")
+              .toLowerCase()
+              .includes(query),
+        );
+
+        if (!matchesChild) {
           return false;
         }
       }
@@ -562,26 +682,43 @@ export default function SpamRulesPage() {
                 {/* Chat Selector */}
                 <div>
                   {editingRuleId ? (
-                    /* Editing mode: Single chat display */
+                    /* Editing mode: Single chat or multiple chats display */
                     <div className="space-y-2">
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                         {t("spam.chatId")}
                       </label>
-                      <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
-                            <Check className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-800 leading-snug">
-                              {clientName || t("spam.buyer")}
-                            </p>
-                            <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
-                              {chatId.replace(/^1:/, "")}
-                            </p>
+                      {rules.find((r) => r.id === editingRuleId)?.chats &&
+                      (rules.find((r) => r.id === editingRuleId)?.chats
+                        ?.length || 0) > 1 ? (
+                        <div className="p-4 bg-purple-50/50 border border-purple-200 rounded-2xl shadow-sm">
+                          <p className="font-bold text-purple-700 leading-snug">
+                            {t("spam.title") || "Rule"} #{editingRuleId}
+                          </p>
+                          <p className="text-xs font-semibold text-slate-500 mt-1">
+                            {t("spam.linkedChats") || "Привязанные чаты"}:{" "}
+                            {
+                              rules.find((r) => r.id === editingRuleId)?.chats
+                                ?.length
+                            }
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl shadow-sm">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
+                              <Check className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-800 leading-snug">
+                                {clientName || t("spam.buyer")}
+                              </p>
+                              <p className="text-xs font-mono font-semibold text-slate-400 mt-1">
+                                {chatId.replace(/^1:/, "")}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ) : (
                     /* Creation mode: Bulk selection enabled */
@@ -736,7 +873,11 @@ export default function SpamRulesPage() {
                                   (c) => c.chatID === chat.chatID,
                                 );
                                 const alreadyHasRule = rules.some(
-                                  (r) => r.chat_id === chat.chatID,
+                                  (r) =>
+                                    r.chat_id === chat.chatID ||
+                                    r.chats?.some(
+                                      (c) => c.chat_id === chat.chatID,
+                                    ),
                                 );
                                 return (
                                   <button
@@ -814,7 +955,11 @@ export default function SpamRulesPage() {
                           <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-40 overflow-y-auto">
                             {selectedChats.map((chat) => {
                               const alreadyHasRule = rules.some(
-                                (r) => r.chat_id === chat.chatID,
+                                (r) =>
+                                  r.chat_id === chat.chatID ||
+                                  r.chats?.some(
+                                    (c) => c.chat_id === chat.chatID,
+                                  ),
                               );
                               return (
                                 <div
@@ -1327,21 +1472,39 @@ export default function SpamRulesPage() {
 
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3
-                            title={rule.chat_id}
-                            className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm hover:bg-purple-50/50 hover:border-purple-200 transition-colors"
-                          >
-                            <a
-                              href={`https://seller.wildberries.ru/chat-with-clients?chatId=${rule.chat_id.replace(/^1:/, "")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors block"
+                          {rule.chats && rule.chats.length > 1 ? (
+                            <h3 className="text-sm font-black text-slate-800 bg-purple-50 border border-purple-200/50 px-2.5 py-0.5 rounded-lg shadow-sm">
+                              🚀 {t("spam.rulesTab") || "Rule"} #{rule.id} (
+                              {rule.chats.length}{" "}
+                              {t("spam.selectedChats") || "chats"})
+                            </h3>
+                          ) : (
+                            <h3
+                              title={
+                                rule.chats?.[0]?.chat_id || rule.chat_id || ""
+                              }
+                              className="font-mono text-sm font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm hover:bg-purple-50/50 hover:border-purple-200 transition-colors"
                             >
-                              {rule.chat_id.replace(/^1:/, "").length > 18
-                                ? `${rule.chat_id.replace(/^1:/, "").slice(0, 10)}...${rule.chat_id.replace(/^1:/, "").slice(-5)}`
-                                : rule.chat_id.replace(/^1:/, "")}
-                            </a>
-                          </h3>
+                              <a
+                                href={`https://seller.wildberries.ru/chat-with-clients?chatId=${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors block"
+                              >
+                                {(
+                                  rule.chats?.[0]?.chat_id ||
+                                  rule.chat_id ||
+                                  ""
+                                ).replace(/^1:/, "").length > 18
+                                  ? `${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "").slice(0, 10)}...${(rule.chats?.[0]?.chat_id || rule.chat_id || "").replace(/^1:/, "").slice(-5)}`
+                                  : (
+                                      rule.chats?.[0]?.chat_id ||
+                                      rule.chat_id ||
+                                      ""
+                                    ).replace(/^1:/, "")}
+                              </a>
+                            </h3>
+                          )}
                           <span
                             className={`px-2.5 py-1 text-sm font-bold rounded-lg border ${
                               rule.is_active
@@ -1358,7 +1521,16 @@ export default function SpamRulesPage() {
                         <div className="text-base text-slate-700 font-semibold flex items-center gap-1.5">
                           <span>{t("spam.clientName")}:</span>
                           <span className="text-purple-700 font-extrabold">
-                            {rule.client_name || t("spam.buyer")}
+                            {rule.chats && rule.chats.length > 1
+                              ? `${rule.chats
+                                  .map((c) => c.client_name || t("spam.buyer"))
+                                  .slice(0, 3)
+                                  .join(
+                                    ", ",
+                                  )}${rule.chats.length > 3 ? "..." : ""}`
+                              : rule.chats?.[0]?.client_name ||
+                                rule.client_name ||
+                                t("spam.buyer")}
                           </span>
                         </div>
 
@@ -1418,6 +1590,109 @@ export default function SpamRulesPage() {
                               </span>
                             )}
                           </div>
+                        </div>
+
+                        {/* Associated chats management */}
+                        <div className="pt-3 border-t border-slate-100 mt-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => toggleChatsExpanded(rule.id)}
+                              className="text-xs font-bold text-slate-400 hover:text-slate-655 uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>
+                                💬 {t("spam.linkedChats")} (
+                                {rule.chats?.length || 0})
+                              </span>
+                              <span className="text-[9px]">
+                                {expandedRules[rule.id] ? "▲" : "▼"}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openAddChatsModal(rule)}
+                              className="text-xs font-bold text-purple-650 hover:text-purple-750 flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} />
+                              <span>{t("spam.addChatsBtn")}</span>
+                            </button>
+                          </div>
+
+                          {expandedRules[rule.id] && (
+                            <div className="space-y-1.5 pl-2 mt-2 max-h-48 overflow-y-auto scrollbar-thin pr-1">
+                              {rule.chats?.map((c) => (
+                                <div
+                                  key={c.id}
+                                  className="flex items-center justify-between gap-4 p-2 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100/50 transition-colors"
+                                >
+                                  <div className="flex flex-col min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <a
+                                        href={`https://seller.wildberries.ru/chat-with-clients?chatId=${c.chat_id.replace(/^1:/, "")}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs font-mono font-bold text-slate-700 hover:text-purple-600 hover:underline transition-colors block truncate max-w-[150px] sm:max-w-xs"
+                                      >
+                                        {c.chat_id.replace(/^1:/, "")}
+                                      </a>
+                                      <span className="text-[10px] text-slate-400 font-semibold">
+                                        •
+                                      </span>
+                                      <span className="text-xs text-slate-800 font-bold truncate max-w-[100px] sm:max-w-xs">
+                                        {c.client_name || t("spam.buyer")}
+                                      </span>
+                                    </div>
+                                    {c.last_sent_at && (
+                                      <span className="text-[10px] text-slate-400 font-semibold">
+                                        {t("spam.lastSentAt")}:{" "}
+                                        {formatDateTime(c.last_sent_at)}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    {/* Toggle chat activity */}
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        toggleRuleChatActive(rule.id, c.chat_id)
+                                      }
+                                      className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-205 ease-in-out outline-none ${
+                                        c.is_active
+                                          ? "bg-emerald-500"
+                                          : "bg-slate-300"
+                                      }`}
+                                    >
+                                      <span
+                                        className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm ring-0 transition duration-205 ease-in-out ${
+                                          c.is_active
+                                            ? "translate-x-3"
+                                            : "translate-x-0"
+                                        }`}
+                                      />
+                                    </button>
+
+                                    {/* Delete chat */}
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deleteRuleChat(rule.id, c.chat_id)
+                                      }
+                                      className="p-1 rounded-md text-slate-450 hover:text-rose-600 hover:bg-rose-50/50 transition-all cursor-pointer"
+                                      title={t("common.delete")}
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                              {(!rule.chats || rule.chats.length === 0) && (
+                                <span className="text-xs text-slate-400 italic block py-1">
+                                  {t("spam.noLinkedChats")}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1533,6 +1808,175 @@ export default function SpamRulesPage() {
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* Add Chats to Rule Modal */}
+        {showAddChatsModal && targetRuleToAddChats && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white border border-slate-200 shadow-2xl rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden [color-scheme:light]">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">
+                    {t("spam.addChatsModalTitle") || "Добавить чаты в рассылку"}
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500 mt-1">
+                    {t("spam.addChatsModalDesc") ||
+                      "Выберите чаты для добавления в кампанию"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddChatsModal(false)}
+                  className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-950 transition-all cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Modal Search & Content */}
+              <div className="p-6 flex-1 overflow-y-auto space-y-4">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <Search size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder={
+                      t("spam.searchChatsPlaceholder") || "Поиск чатов..."
+                    }
+                    value={chatsSearchQuery}
+                    onChange={(e) => setChatsSearchQuery(e.target.value)}
+                    className="w-full h-9 pl-9 pr-4 rounded-xl border border-slate-200 bg-white text-xs shadow-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all font-semibold text-slate-800"
+                  />
+                </div>
+
+                {loadingRecentChats ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                    <Loader2 className="h-6 w-6 animate-spin text-purple-600 mb-2" />
+                    <span className="text-xs font-semibold">
+                      {t("spam.loadingRecentChats")}
+                    </span>
+                  </div>
+                ) : recentChatsError ? (
+                  <div className="text-center py-10 text-xs font-bold text-rose-500 bg-rose-50 border border-rose-100 rounded-xl">
+                    {recentChatsError}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1">
+                    {recentChats
+                      .filter((chat) => {
+                        if (chatsSearchQuery.trim()) {
+                          const query = chatsSearchQuery.trim().toLowerCase();
+                          const cId = String(chat.chatID || "").toLowerCase();
+                          const cName = String(
+                            chat.clientName || "",
+                          ).toLowerCase();
+                          if (!cId.includes(query) && !cName.includes(query)) {
+                            return false;
+                          }
+                        }
+                        const alreadyInRule = targetRuleToAddChats.chats?.some(
+                          (c) => c.chat_id === chat.chatID,
+                        );
+                        return !alreadyInRule;
+                      })
+                      .map((chat) => {
+                        const isSelected = selectedChatsToAdd.some(
+                          (c) => c.chatID === chat.chatID,
+                        );
+                        return (
+                          <button
+                            key={chat.chatID}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedChatsToAdd((prev) =>
+                                  prev.filter((c) => c.chatID !== chat.chatID),
+                                );
+                              } else {
+                                setSelectedChatsToAdd((prev) => [
+                                  ...prev,
+                                  {
+                                    chatID: chat.chatID,
+                                    clientName: chat.clientName,
+                                  },
+                                ]);
+                              }
+                            }}
+                            className={`text-left p-3 rounded-xl transition-all duration-200 shadow-sm outline-none cursor-pointer flex justify-between items-center ${
+                              isSelected
+                                ? "bg-purple-50/50 border-purple-400 border-2"
+                                : "bg-slate-50 hover:bg-slate-100 border border-slate-200"
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-800 text-xs">
+                                {chat.clientName || t("spam.buyer")}
+                              </p>
+                              <p className="text-[10px] font-mono font-semibold text-slate-400 mt-1">
+                                {chat.chatID.replace(/^1:/, "")}
+                              </p>
+                            </div>
+                            <div
+                              className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                                isSelected
+                                  ? "bg-purple-600 border-purple-600 text-white"
+                                  : "border-slate-300 bg-white"
+                              }`}
+                            >
+                              {isSelected && (
+                                <Check size={12} className="stroke-[3]" />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    {recentChats.filter((chat) => {
+                      if (chatsSearchQuery.trim()) {
+                        const query = chatsSearchQuery.trim().toLowerCase();
+                        const cId = String(chat.chatID || "").toLowerCase();
+                        const cName = String(
+                          chat.clientName || "",
+                        ).toLowerCase();
+                        if (!cId.includes(query) && !cName.includes(query)) {
+                          return false;
+                        }
+                      }
+                      const alreadyInRule = targetRuleToAddChats.chats?.some(
+                        (c) => c.chat_id === chat.chatID,
+                      );
+                      return !alreadyInRule;
+                    }).length === 0 && (
+                      <div className="text-center py-10 text-xs text-slate-500 font-semibold italic bg-slate-50 border border-slate-200/50 rounded-xl">
+                        {t("spam.noChatsToSelect") ||
+                          "Нет доступных чатов для выбора."}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddChatsModal(false)}
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-100 active:scale-95 transition-all text-xs font-bold cursor-pointer bg-white"
+                >
+                  {t("common.cancel")}
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedChatsToAdd.length === 0}
+                  onClick={handleAddChatsSubmit}
+                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-md active:scale-95 transition-all text-xs cursor-pointer"
+                >
+                  {t("common.save") || "Сохранить"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

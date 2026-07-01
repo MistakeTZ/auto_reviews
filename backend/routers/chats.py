@@ -201,7 +201,44 @@ async def create_spam_rules_bulk(
 
     wb_chats_map = {chat.get("chatID"): chat for chat in wb_chats}
 
-    created_rules = []
+    # 1. Create a single common SpamRule row
+    db_rule = models.SpamRule(
+        user_id=current_user.id,
+        chat_id=None,
+        client_name=None,
+        reply_sign=None,
+        frequency_type=bulk_input.frequency_type,
+        interval_days=bulk_input.interval_days,
+        send_hours=bulk_input.send_hours,
+        spam_endlessly=bulk_input.spam_endlessly,
+        is_active=bulk_input.is_active,
+    )
+    db.add(db_rule)
+    db.flush()
+
+    for tid in bulk_input.template_ids:
+        t = (
+            db.query(models.SpamMessageTemplate)
+            .filter(
+                models.SpamMessageTemplate.id == tid,
+                models.SpamMessageTemplate.user_id == current_user.id,
+            )
+            .first()
+        )
+        if t:
+            jt = models.SpamRuleTemplate(rule_id=db_rule.id, template_id=t.id)
+            db.add(jt)
+
+    for text in bulk_input.specific_templates:
+        st = models.SpamMessageTemplate(
+            user_id=current_user.id, rule_id=db_rule.id, text=text, is_global=False
+        )
+        db.add(st)
+        db.flush()
+        jt = models.SpamRuleTemplate(rule_id=db_rule.id, template_id=st.id)
+        db.add(jt)
+
+    # 2. Add all selected chats as SpamRuleChat relations
     for chat_input in bulk_input.chats:
         chat_id_stripped = chat_input.chat_id.strip()
         final_chat_id = (
@@ -231,23 +268,158 @@ async def create_spam_rules_bulk(
                 detail=f"Could not retrieve replySign for Chat ID {final_chat_id}. Please check if the Chat ID exists on Wildberries.",
             )
 
-        rule_create = schemas.SpamRuleCreate(
+        chat_rel = models.SpamRuleChat(
+            rule_id=db_rule.id,
             chat_id=final_chat_id,
             client_name=client_name or "Покупатель",
             reply_sign=reply_sign,
-            frequency_type=bulk_input.frequency_type,
-            interval_days=bulk_input.interval_days,
-            send_hours=bulk_input.send_hours,
-            spam_endlessly=bulk_input.spam_endlessly,
-            is_active=bulk_input.is_active,
-            template_ids=bulk_input.template_ids,
-            specific_templates=bulk_input.specific_templates,
+            is_active=True,
             last_sent_message_timestamp=last_sent_message_timestamp,
         )
-        db_rule = crud.create_spam_rule(db, current_user.id, rule_create)
-        created_rules.append(db_rule)
+        db.add(chat_rel)
 
-    return created_rules
+    db.commit()
+    db.refresh(db_rule)
+    return [db_rule]
+
+
+@router.put("/rules/{rule_id}/chats/{chat_id}/toggle", response_model=schemas.SpamRule)
+def toggle_rule_chat_activity(
+    rule_id: int,
+    chat_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(check_active_spam_subscription),
+):
+    rule = crud.get_spam_rule(db, rule_id, current_user.id)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Spam rule not found.")
+
+    chat = (
+        db.query(models.SpamRuleChat)
+        .filter(
+            models.SpamRuleChat.rule_id == rule_id,
+            models.SpamRuleChat.chat_id == chat_id,
+        )
+        .first()
+    )
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found in this rule.")
+
+    chat.is_active = not chat.is_active
+    db.commit()
+    db.refresh(rule)
+    return rule
+
+
+@router.delete("/rules/{rule_id}/chats/{chat_id}", response_model=schemas.SpamRule)
+def delete_rule_chat(
+    rule_id: int,
+    chat_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(check_active_spam_subscription),
+):
+    rule = crud.get_spam_rule(db, rule_id, current_user.id)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Spam rule not found.")
+
+    chat = (
+        db.query(models.SpamRuleChat)
+        .filter(
+            models.SpamRuleChat.rule_id == rule_id,
+            models.SpamRuleChat.chat_id == chat_id,
+        )
+        .first()
+    )
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found in this rule.")
+
+    db.delete(chat)
+    db.commit()
+    db.refresh(rule)
+    return rule
+
+
+@router.post("/rules/{rule_id}/chats", response_model=schemas.SpamRule)
+async def add_chats_to_rule(
+    rule_id: int,
+    input_data: schemas.AddChatsToRuleInput,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(check_active_spam_subscription),
+):
+    rule = crud.get_spam_rule(db, rule_id, current_user.id)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Spam rule not found.")
+
+    token = (current_user.wb_chat_api_token or "").strip()
+    if not token:
+        raise HTTPException(
+            status_code=400,
+            detail="Wildberries chat API token must be configured.",
+        )
+
+    # Fetch WB chats to resolve reply signs
+    wb_chats = []
+    try:
+        wb_chats = await fetch_wb_chats(token)
+    except Exception as e:
+        logger.error(f"Failed to fetch replySign during bulk rule creation: {e}")
+
+    wb_chats_map = {chat.get("chatID"): chat for chat in wb_chats}
+
+    for chat_input in input_data.chats:
+        chat_id_stripped = chat_input.chat_id.strip()
+        final_chat_id = (
+            chat_id_stripped
+            if chat_id_stripped.startswith("1:")
+            else f"1:{chat_id_stripped}"
+        )
+
+        # Check if chat already exists in this rule
+        exists = (
+            db.query(models.SpamRuleChat)
+            .filter(
+                models.SpamRuleChat.rule_id == rule_id,
+                models.SpamRuleChat.chat_id == final_chat_id,
+            )
+            .first()
+        )
+        if exists:
+            continue
+
+        reply_sign = chat_input.reply_sign
+        client_name = chat_input.client_name
+        last_sent_message_timestamp = 0
+
+        wb_chat = wb_chats_map.get(final_chat_id)
+        if wb_chat:
+            if not reply_sign:
+                reply_sign = wb_chat.get("replySign")
+            if not client_name:
+                client_name = wb_chat.get("clientName")
+            if wb_chat.get("lastMessage"):
+                last_sent_message_timestamp = wb_chat["lastMessage"].get(
+                    "addTimestamp", 0
+                )
+
+        if not reply_sign:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Could not retrieve replySign for Chat ID {final_chat_id}. Please check if the Chat ID exists on Wildberries.",
+            )
+
+        chat_rel = models.SpamRuleChat(
+            rule_id=rule_id,
+            chat_id=final_chat_id,
+            client_name=client_name or "Покупатель",
+            reply_sign=reply_sign,
+            is_active=True,
+            last_sent_message_timestamp=last_sent_message_timestamp,
+        )
+        db.add(chat_rel)
+
+    db.commit()
+    db.refresh(rule)
+    return rule
 
 
 @router.put("/rules/{rule_id}", response_model=schemas.SpamRule)

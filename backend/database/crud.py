@@ -686,19 +686,56 @@ def delete_notification_method(db: Session, method_id: int, user_id: int):
 def get_spam_rules(db: Session, user_id: int, search: Optional[str] = None):
     query = db.query(models.SpamRule).filter(models.SpamRule.user_id == user_id)
     if search:
-        query = query.filter(
+        query = query.outerjoin(models.SpamRuleChat).filter(
             models.SpamRule.chat_id.contains(search)
             | models.SpamRule.client_name.contains(search)
+            | models.SpamRuleChat.chat_id.contains(search)
+            | models.SpamRuleChat.client_name.contains(search)
         )
-    return query.all()
+    rules = query.all()
+
+    # Auto-migration for legacy rules
+    migrated = False
+    for rule in rules:
+        if not rule.chats and rule.chat_id:
+            legacy_chat = models.SpamRuleChat(
+                rule_id=rule.id,
+                chat_id=rule.chat_id,
+                client_name=rule.client_name,
+                reply_sign=rule.reply_sign,
+                is_active=rule.is_active,
+                last_sent_at=rule.last_sent_at,
+                last_sent_message_timestamp=rule.last_sent_message_timestamp,
+            )
+            db.add(legacy_chat)
+            migrated = True
+    if migrated:
+        db.commit()
+        # Refetch rules to include the relationship
+        rules = query.all()
+    return rules
 
 
 def get_spam_rule(db: Session, rule_id: int, user_id: int):
-    return (
+    rule = (
         db.query(models.SpamRule)
         .filter(models.SpamRule.id == rule_id, models.SpamRule.user_id == user_id)
         .first()
     )
+    if rule and not rule.chats and rule.chat_id:
+        legacy_chat = models.SpamRuleChat(
+            rule_id=rule.id,
+            chat_id=rule.chat_id,
+            client_name=rule.client_name,
+            reply_sign=rule.reply_sign,
+            is_active=rule.is_active,
+            last_sent_at=rule.last_sent_at,
+            last_sent_message_timestamp=rule.last_sent_message_timestamp,
+        )
+        db.add(legacy_chat)
+        db.commit()
+        db.refresh(rule)
+    return rule
 
 
 def create_spam_rule(db: Session, user_id: int, rule: schemas.SpamRuleCreate):
@@ -715,6 +752,17 @@ def create_spam_rule(db: Session, user_id: int, rule: schemas.SpamRuleCreate):
     )
     db.add(db_rule)
     db.flush()
+
+    if rule.chat_id:
+        chat_rel = models.SpamRuleChat(
+            rule_id=db_rule.id,
+            chat_id=rule.chat_id,
+            client_name=rule.client_name,
+            reply_sign=rule.reply_sign,
+            is_active=True,
+            last_sent_message_timestamp=rule.last_sent_message_timestamp,
+        )
+        db.add(chat_rel)
 
     for tid in rule.template_ids:
         t = (

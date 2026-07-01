@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from database.models import SpamRule
 from processor.utils.hashing import get_hour_offset
 
@@ -7,7 +8,9 @@ class SpamScheduler:
     MOSCOW_TZ = timezone(timedelta(hours=3))
 
     @classmethod
-    def can_send(cls, rule: SpamRule, now_utc: datetime) -> bool:
+    def can_send(
+        cls, rule: SpamRule, last_sent_at: Optional[datetime], now_utc: datetime
+    ) -> bool:
         moscow_now = now_utc.astimezone(cls.MOSCOW_TZ)
         current_hour = moscow_now.hour
 
@@ -24,8 +27,8 @@ class SpamScheduler:
             return False
 
         # Проверка лимитов отправки (раз в час)
-        if rule.last_sent_at:
-            last_sent_moscow = rule.last_sent_at.astimezone(cls.MOSCOW_TZ)
+        if last_sent_at:
+            last_sent_moscow = last_sent_at.astimezone(cls.MOSCOW_TZ)
             if (
                 last_sent_moscow.date() == moscow_now.date()
                 and last_sent_moscow.hour == current_hour
@@ -33,8 +36,8 @@ class SpamScheduler:
                 return False
 
         # Проверка интервалов (в днях)
-        if rule.frequency_type == "days" and rule.last_sent_at:
-            if now_utc - rule.last_sent_at < timedelta(days=rule.interval_days or 1):
+        if rule.frequency_type == "days" and last_sent_at:
+            if now_utc - last_sent_at < timedelta(days=rule.interval_days or 1):
                 return False
 
         return True
