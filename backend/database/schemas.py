@@ -258,6 +258,7 @@ class SpamRuleBase(BaseModel):
     send_hours: str = "9,13,17,21"
     spam_endlessly: bool = False
     is_active: bool = True
+    last_sent_message_timestamp: int = 0
 
 
 class SpamRuleCreate(SpamRuleBase):

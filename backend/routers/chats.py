@@ -155,6 +155,10 @@ async def create_spam_rule(
                     rule.reply_sign = chat.get("replySign")
                     if not rule.client_name:
                         rule.client_name = chat.get("clientName")
+                    if chat.get("lastMessage"):
+                        rule.last_sent_message_timestamp = chat["lastMessage"].get(
+                            "addTimestamp", 0
+                        )
                     break
         except Exception as e:
             logger.error(f"Failed to fetch replySign during rule creation: {e}")
@@ -207,6 +211,7 @@ async def create_spam_rules_bulk(
 
         reply_sign = chat_input.reply_sign
         client_name = chat_input.client_name
+        last_sent_message_timestamp = 0
 
         wb_chat = wb_chats_map.get(final_chat_id)
         if wb_chat:
@@ -214,6 +219,11 @@ async def create_spam_rules_bulk(
                 reply_sign = wb_chat.get("replySign")
             if not client_name:
                 client_name = wb_chat.get("clientName")
+            if wb_chat.get("lastMessage"):
+                last_sent_message_timestamp = wb_chat["lastMessage"].get(
+                    "addTimestamp", 0
+                )
+            
 
         if not reply_sign:
             raise HTTPException(
@@ -232,6 +242,7 @@ async def create_spam_rules_bulk(
             is_active=bulk_input.is_active,
             template_ids=bulk_input.template_ids,
             specific_templates=bulk_input.specific_templates,
+            last_sent_message_timestamp=last_sent_message_timestamp,
         )
         db_rule = crud.create_spam_rule(db, current_user.id, rule_create)
         created_rules.append(db_rule)
@@ -261,7 +272,22 @@ async def update_spam_rule(
             db_rule.last_sent_message_timestamp,
             rule_id,
         )
-        rule_in.last_sent_message_timestamp = 0
+        chats = await fetch_wb_chats(token)
+        found = False
+        for chat in chats:
+            if chat.get("chatID") == rule_in.chat_id.strip():
+                rule_in.last_sent_message_timestamp = chat.get("lastMessage", {}).get(
+                    "addTimestamp", 0
+                )
+                found = True
+                break
+        if not found:
+            logger.warning(
+                "Could not find chat with chatID: %s while updating rule_id: %s",
+                rule_in.chat_id,
+                rule_id,
+            )
+            rule_in.last_sent_message_timestamp = 0
 
     # If chat_id is changing, resolve the new reply_sign
     if rule_in.chat_id is not None:
